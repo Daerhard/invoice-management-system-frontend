@@ -7,7 +7,7 @@ import MenuItem from './MenuItem'
 export default function Menu() {
     return (
         <Box
-            style={{ width: '100%', borderBottom: '3px solid #C28840', marginBottom: '1rem' }}
+            style={{ width: '100%', borderBottom: '3px solid #C28840', marginBottom: '2rem' }}
         >
             <Stack sx={{ width: '100%', padding: '0.5rem' }} direction='row'>
                 <Avatar sx={{ backgroundColor: '#C28840' }}>

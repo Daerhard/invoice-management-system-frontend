@@ -1,18 +1,16 @@
 import { Autocomplete, TextField, Tooltip } from '@mui/material'
-import { Customer } from '../../../api/generated/Schemas'
+import { customersAtom } from '../../../store/Global'
+import { useAtom } from 'jotai'
 
-interface CustomerSelectProps {
-    customers: Customer[];
-}
-
-export default function OrderCustomerSelect({ customers }: CustomerSelectProps) {
+export default function CustomerSelect() {
+    const [customers] = useAtom(customersAtom);
     const customerNames = customers.map((customer) => customer.user_name) ?? []
 
     const customersAreEmpty = customerNames.length === 0
 
     return (
             <Tooltip
-                title={customersAreEmpty ? 'No customers available' : ''}
+                title={customersAreEmpty ? 'Keine Kunden vorhanden' : ''}
                 placement="bottom"
                 arrow
             >
