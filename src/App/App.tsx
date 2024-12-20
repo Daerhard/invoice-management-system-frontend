@@ -1,0 +1,13 @@
+import React from 'react';
+import Layout from '../containers/Layout'
+
+function App() {
+
+  return (
+    <div>
+      <Layout></Layout>
+    </div>
+  );
+}
+
+export default App;

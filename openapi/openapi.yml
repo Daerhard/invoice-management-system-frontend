@@ -1,0 +1,341 @@
+openapi: '3.0.1'
+info:
+  title: invoice management system
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+paths:
+  /v1/customers:
+    get:
+      tags:
+        - customers
+      summary: get all customers
+      description: returns all customers
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customer'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/import:
+    post:
+      tags:
+        - CSVImport
+      summary: Upload a CSV file for database import
+      description: Accepts a CSV file and imports its data into the database.
+      operationId: importCSVData
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The CSV file to be uploaded.
+      responses:
+        '201':
+          description: CSV file imported successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
+  /v1/generatePDFInvoice/{cardmarketExternalOrderId}:
+    get:
+      tags:
+        - InvoiceGenerationPDF
+      summary: Generate and save an invoice in pdf format
+      description: Generate an invoice in pdf format and returns it for saving on the client's machine.
+      operationId: getPDFInvoice
+      parameters:
+        - name: cardmarketExternalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: PDF file generated successfully.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error occurred while generating the PDF.
+
+  /v1/generatePDFInvoices/{startDate}/{endDate}:
+    get:
+      tags:
+        - InvoiceGenerationPDF
+      summary: Download invoices as a ZIP file
+      description: Generates multiple invoices in PDF format and compresses them into a ZIP file.
+      operationId: getPDFInvoices
+      parameters:
+        - name: startDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date of the period (YYYY-MM-DD)
+        - name: endDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date of the period (YYYY-MM-DD)
+      responses:
+        '200':
+          description: ZIP file containing invoices
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: byte
+
+  /v1/orders:
+    get:
+      tags:
+        - orders
+      summary: get all orders
+      description: returns all orders
+      operationId: getOrders
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketOrder'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+
+
+  /v1/orders/{userName}:
+    get:
+      tags:
+        - orders
+      summary: get all orders by user name
+      description: returns all orders by user name
+      operationId: getOrdersByUserName
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username for which to retrieve orders.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketOrder'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+components:
+  schemas:
+    customer:
+      type: object
+      description: customer object
+      properties:
+        user_name:
+          type: string
+          description: user name of the customer
+          example: "FakeJohnny"
+        is_professional:
+            type: boolean
+            description: status of the customer
+            example: true
+      required:
+        - user_name
+
+
+    cardmarketOrder:
+      type: object
+      description: order object
+      properties:
+        customer:
+          $ref: '#/components/schemas/customer'
+        order_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the order.
+        article_count:
+          type: integer
+          format: int32
+          description: Number of articles in the order.
+        merchandise_value:
+          type: number
+          format: double
+          description: Total value of the merchandise in the order.
+        shipment_cost:
+          type: number
+          format: double
+          description: Cost of shipping for the order.
+        total_value:
+          type: number
+          format: double
+          description: Total value of the order, including merchandise and shipment costs.
+        commission:
+          type: number
+          format: double
+          description: Commission charged for the order.
+        currency:
+          type: string
+          description: Currency code for monetary values.
+          example: EUR
+        orderItems:
+          type: array
+          description: List of items associated with the purchase.
+          items:
+            $ref: '#/components/schemas/orderItem'
+      required:
+        - orderId
+        - articleCount
+        - merchandiseValue
+        - shipmentCost
+        - totalValue
+        - commission
+        - currency
+        - customer
+
+    orderItem:
+      type: object
+      description: Order item object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the order item.
+        orderId:
+          type: integer
+          format: int64
+          description: Identifier of the associated purchase.
+        count:
+          type: integer
+          format: int32
+          description: Number of items in the order.
+        condition:
+          type: string
+          description: Condition of the item (e.g., new, used).
+        price:
+          type: number
+          format: double
+          description: Price of the individual item.
+        card:
+          $ref: '#/components/schemas/card'
+      required:
+        - orderId
+        - count
+        - condition
+        - price
+        - card
+
+    card:
+      type: object
+      description: Card object
+      properties:
+        id:
+          $ref: '#/components/schemas/cardId'
+        completeDescription:
+          type: string
+          description: Detailed description of the card.
+        productName:
+          type: string
+          description: Name of the product associated with the card.
+        name:
+          type: string
+          description: Name of the card.
+        language:
+          type: string
+          description: Language of the card.
+        rarity:
+          type: string
+          description: Rarity level of the card.
+        productId:
+          type: integer
+          format: int64
+          description: Identifier of the associated product.
+      required:
+        - id
+        - productName
+        - name
+        - language
+        - rarity
+        - productId
+
+    cardId:
+      type: object
+      description: Composite key for the Card entity.
+      properties:
+        konamiSet:
+          type: string
+          description: Konami set identifier of the card.
+        number:
+          type: integer
+          format: int32
+          description: Unique card number within the Konami set.
+      required:
+        - konamiSet
+        - number
+
+    responseMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
+
+
+
