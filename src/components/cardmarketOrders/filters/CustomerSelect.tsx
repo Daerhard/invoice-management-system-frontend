@@ -2,11 +2,18 @@ import { Autocomplete, TextField, Tooltip } from '@mui/material'
 import { customersAtom } from '../../../store/Global'
 import { useAtom } from 'jotai'
 
-export default function CustomerSelect() {
+type CustomerSelectProps = {
+    onCustomerChange: (value: string | null) => void;
+};
+
+export default function CustomerSelect({ onCustomerChange }: CustomerSelectProps) {
     const [customers] = useAtom(customersAtom);
     const customerNames = customers.map((customer) => customer.user_name) ?? []
-
     const customersAreEmpty = customerNames.length === 0
+
+    const handleCustomerChange = (_: unknown, value: string | null) => {
+        onCustomerChange(value);
+    };
 
     return (
             <Tooltip
@@ -20,6 +27,7 @@ export default function CustomerSelect() {
                     options={customerNames}
                     getOptionLabel={(option) => option}
                     disabled={customersAreEmpty}
+                    onChange={handleCustomerChange}
                     renderInput={(params) =>
                         <TextField
                             {...params}

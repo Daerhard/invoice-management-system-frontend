@@ -10,7 +10,7 @@
  */
 export interface Customer {
   /** status of the customer */
-  is_professional?: boolean;
+  is_professional: boolean;
   /** user name of the customer */
   user_name: string;
 }

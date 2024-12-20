@@ -1,67 +1,60 @@
-import { CardmarketOrder } from '../../../api/generated/Schemas'
-import { useState } from 'react'
+import React, { useState } from 'react';
 import {
-    Card, CardContent,
-    CardHeader,
-    Collapse,
-    Stack,
-    Typography,
-} from '@mui/material'
-import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import CustomIconButton from '../../../customComponents/CustomIconButton'
-import OrderItemContent from './OrderItemContent'
+    Card, CardContent, CardHeader, Collapse, Stack, Typography,
+} from '@mui/material';
+import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import CustomIconButton from '../../../customComponents/CustomIconButton';
+import OrderItemContent from './OrderItemContent';
+import formatDate from '../../../helper/Utils';
+import { CardmarketOrder } from '../../../api/generated/Schemas';
+import CreatePDFInvoiceButton from './CreatePDFInvoiceButton'
 
 interface OrderItemProps {
-    order: CardmarketOrder;
+    cardmarketOrder: CardmarketOrder;
 }
 
-export default function OrderItem({ order }: OrderItemProps) {
-    const [open, setOpen] = useState(false)
-
-    const toggleDetails = () => setOpen(!open)
+export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
+    const [open, setOpen] = useState(false);
+    const toggleDetails = () => setOpen(!open);
 
     return (
-            <Card sx={{ width: '100%', marginBottom: '0.2rem' }}>
-                <CardHeader
-                    avatar={
-                            <FontAwesomeIcon icon={faFileLines} size="2x"/>
-                    }
-                    action={
-                    <Stack direction='row' sx={{justifyContent: 'left' }} >
+        <Card sx={{ width: '100%', marginBottom: '0.2rem' }}>
+            <CardHeader
+                avatar={<FontAwesomeIcon icon={faFileLines} size="2x" />}
+                action={
+                    <Stack direction="row" sx={{ justifyContent: 'left' }}>
                         <CustomIconButton
-                            title={'Öffne Bestelldetails'}
-                            titleVariant={'body2'}
+                            title="Öffne Bestelldetails"
+                            titleVariant="body2"
                             icon={faEnvelopeOpen}
-                            iconSize={'xs'}
-                            onClick={toggleDetails}/>
+                            iconSize="xs"
+                            onClick={toggleDetails}
+                        />
+                        <CreatePDFInvoiceButton cardmarketOrder={cardmarketOrder}></CreatePDFInvoiceButton>
                         <CustomIconButton
-                            title={'Erstelle Rechnung (PDF)'}
-                            titleVariant={'body2'}
+                            title="Erstelle Rechnung (E)"
+                            titleVariant="body2"
                             icon={faFileInvoiceDollar}
-                            iconSize={'xs'}/>
-                        <CustomIconButton
-                            title={'Erstelle Rechnung (E)'}
-                            titleVariant={'body2'}
-                            icon={faFileInvoiceDollar}
-                            iconSize={'xs'}/>
+                            iconSize="xs"
+                        />
                     </Stack>
-                    }
-                    title={
-                        <Typography variant={'body2'}>{`Kunde: ${order.customer.user_name}`}</Typography>
-                    }
-                    subheader={
-                        <Stack direction='row' spacing={6}>
-                            <Typography variant={'body2'}>{`Bezahldatum: ${order.order_id}`}</Typography>
-                            <Typography variant={'body2'}>{`Bestellnummer: ${order.order_id}`}</Typography>
-                        </Stack>
-                    }
-                />
-                <Collapse in={open} timeout="auto" unmountOnExit>
-                    <CardContent>
-                    <OrderItemContent order={order}></OrderItemContent>
-                    </CardContent>
-                </Collapse>
-            </Card>
-    )
+                }
+                title={
+                    <Typography variant="body2">{`Kunde: ${cardmarketOrder.customer.user_name}`}</Typography>
+                }
+                subheader={
+                    <Stack direction="row" spacing={6}>
+                        <Typography variant="body2">{`Bezahldatum: ${formatDate(cardmarketOrder.payment_date)}`}</Typography>
+                        <Typography variant="body2">{`Bestellnummer: ${cardmarketOrder.order_id}`}</Typography>
+                    </Stack>
+                }
+            />
+            <Collapse in={open} timeout="auto" unmountOnExit>
+                <CardContent>
+                    <OrderItemContent cardmarketOrder={cardmarketOrder} />
+                </CardContent>
+            </Collapse>
+        </Card>
+    );
 }

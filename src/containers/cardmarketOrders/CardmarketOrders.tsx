@@ -7,13 +7,18 @@ import {
 import { useGenericRequest } from '../../api/hooks/useGenericRequest'
 import { getOrders } from '../../api/generated/orders'
 import OrderItem from '../../components/cardmarketOrders/orderItem/OrderItem'
-import CardmarketOrderFilter from './CardmarketOrderFilter'
 import { useAtom } from 'jotai'
-import { ordersAtom } from '../../store/Global'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { customersAtom, cardmarketOrdersAtom } from '../../store/Global'
+import { getAllCustomers } from '../../api/generated/customers'
+import CustomerSelect from '../../components/cardmarketOrders/filters/CustomerSelect'
+import StardDateSelect from '../../components/cardmarketOrders/filters/StardDateSelect'
+import EndDateSelect from '../../components/cardmarketOrders/filters/EndDateSelect'
+import { CardmarketOrder } from '../../api/generated/Schemas'
 
 export default function CardmarketOrders(){
-    const [orders, setOrders] = useAtom(ordersAtom);
+    const [cardmarketOrders, setCardmarketOrders] = useAtom(cardmarketOrdersAtom);
+    const [, setCustomers] = useAtom(customersAtom);
 
     const { data: fetchedOrders } = useGenericRequest(
         'cardmarketOrders',
@@ -22,21 +27,46 @@ export default function CardmarketOrders(){
 
     useEffect(() => {
         if (fetchedOrders !== undefined && fetchedOrders.data.length > 0) {
-            setOrders(fetchedOrders.data);
+            setCardmarketOrders(fetchedOrders.data);
         }
-    }, [fetchedOrders, setOrders]);
+    }, [fetchedOrders, setCardmarketOrders]);
+
+    const { data: fetchedCustomers } = useGenericRequest(
+        'customers',
+        () => getAllCustomers()
+    );
+
+    useEffect(() => {
+        if (fetchedCustomers !== undefined && fetchedCustomers.data.length > 0) {
+            setCustomers(fetchedCustomers.data);
+        }
+    }, [fetchedCustomers, setCustomers]);
+
+    const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+
+    const filterBySelectedCustomer = (orders: CardmarketOrder[], selectedCustomer: string | null) => {
+        if (selectedCustomer) {
+            return orders.filter((order) => order.customer.user_name === selectedCustomer);
+        }
+        return orders;
+    };
 
     return (
         <Box style={{ width: '100%' }}>
             <Stack sx={{ width: '100%' }}>
-                <Stack direction="row">
-                    <CardmarketOrderFilter></CardmarketOrderFilter>
-                </Stack>
+                <Box sx={{ width: '100%', marginBottom: '2rem' }}>
+                    <Stack direction="row" spacing={4}>
+                        <CustomerSelect onCustomerChange={(value) => setSelectedCustomer(value)}></CustomerSelect>
+                        <StardDateSelect></StardDateSelect>
+                        <EndDateSelect></EndDateSelect>
+                    </Stack>
+                </Box>
                 <Typography>Bestellungen</Typography>
                 <List dense={true} >
-                    {orders.length > 0 ? (
-                        orders.map((order) => (
-                            <OrderItem key={order.order_id} order={order} />
+                    {cardmarketOrders.length > 0 ? (
+                        filterBySelectedCustomer(cardmarketOrders, selectedCustomer)
+                            .map((order) => (
+                            <OrderItem key={order.order_id} cardmarketOrder={order} />
                         ))
                     ) : (
                         <Typography variant="body2" color="textSecondary">

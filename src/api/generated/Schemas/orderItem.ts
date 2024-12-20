@@ -18,7 +18,7 @@ export interface OrderItem {
   /** Unique identifier for the order item. */
   id?: number;
   /** Identifier of the associated purchase. */
-  orderId: number;
+  orderId?: number;
   /** Price of the individual item. */
   price: number;
 }

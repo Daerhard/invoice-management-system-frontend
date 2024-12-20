@@ -11,16 +11,16 @@ import type { CardId } from './cardId';
  */
 export interface Card {
   /** Detailed description of the card. */
-  completeDescription?: string;
+  complete_description?: string;
   id: CardId;
   /** Language of the card. */
   language: string;
   /** Name of the card. */
   name: string;
   /** Identifier of the associated product. */
-  productId: number;
+  product_id: number;
   /** Name of the product associated with the card. */
-  productName: string;
+  product_name: string;
   /** Rarity level of the card. */
   rarity: string;
 }

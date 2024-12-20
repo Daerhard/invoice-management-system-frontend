@@ -12,20 +12,22 @@ import type { OrderItem } from './orderItem';
  */
 export interface CardmarketOrder {
   /** Number of articles in the order. */
-  article_count?: number;
+  article_count: number;
   /** Commission charged for the order. */
   commission: number;
   /** Currency code for monetary values. */
   currency: string;
   customer: Customer;
   /** Total value of the merchandise in the order. */
-  merchandise_value?: number;
+  merchandise_value: number;
   /** Unique identifier for the order. */
-  order_id?: number;
+  order_id: number;
   /** List of items associated with the purchase. */
   orderItems?: OrderItem[];
+  /** Date of payment for the order. */
+  payment_date: string;
   /** Cost of shipping for the order. */
-  shipment_cost?: number;
+  shipment_cost: number;
   /** Total value of the order, including merchandise and shipment costs. */
-  total_value?: number;
+  total_value: number;
 }
