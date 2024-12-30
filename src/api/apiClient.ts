@@ -1,17 +1,22 @@
 import axios from 'axios';
 
-const apiClient = axios.create({
-    baseURL: 'http://localhost:8080/invoice-management-system/api',
-    timeout: 5000,
+const axiosInstance = axios.create({
+    baseURL: 'http://localhost:8080/invoice-management-system/api/', // Your API base URL
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Add a response interceptor to automatically unwrap `data`
-apiClient.interceptors.response.use(
-    (response) => response.data, // Automatically return `response.data`
-    (error) => Promise.reject(error)
+axiosInstance.interceptors.response.use(
+    (response) => {
+        if (response.headers['content-type'].includes('application/zip')) {
+            response.data = new Blob([response.data], { type: 'application/zip' });
+        }
+        return response;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
 );
 
-export default apiClient;
+export default axiosInstance;

@@ -4,11 +4,11 @@ import { faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons'
 import CustomIconButton from '../../../customComponents/CustomIconButton'
 import { CardmarketOrder } from '../../../api/generated/Schemas'
 
-interface PDFInvoiceButtonProps {
-    cardmarketOrder: CardmarketOrder;
+interface PDFInvoiceProps {
+    cardmarketOrder: CardmarketOrder
 }
 
-export default function CreatePDFInvoiceButton({ cardmarketOrder }: Readonly<PDFInvoiceButtonProps>) {
+export default function CreatePDFInvoice({ cardmarketOrder }: Readonly<PDFInvoiceProps>) {
     const [showInvoicePreview, setShowInvoicePreview] = useState(false);
     const openInvoicePreview = () => setShowInvoicePreview(true);
     const closeInvoicePreview = () => setShowInvoicePreview(false);

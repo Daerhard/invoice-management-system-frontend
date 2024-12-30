@@ -13,7 +13,7 @@ export default function Layout() {
             padding: '0 16px',
         }}
         >
-          <Grid2
+          <Grid2 container
             direction="column"
             justifyContent="space-between"
             alignItems="baseline"

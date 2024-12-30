@@ -4,7 +4,7 @@ import { getPDFInvoice } from '../../api/generated/invoice-generation-pd-f';
 import { useGenericRequest } from '../../api/hooks/useGenericRequest';
 import PDFInvoice from '../../components/invoices/PDFInvoice';
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import formatDate from '../../helper/Utils'
+import { formatDate } from '../../helper/Utils'
 
 interface PDFInvoicePreviewProps {
     cardmarketOrder: CardmarketOrder;

@@ -2,7 +2,7 @@ import { Box, Grid2, List, ListItem, ListItemText, Typography } from '@mui/mater
 import { CardmarketOrder } from '../../../api/generated/Schemas'
 
 interface OrderItemContentProps {
-    cardmarketOrder: CardmarketOrder;
+    cardmarketOrder: CardmarketOrder
 }
 
 export default function OrderItemContent({ cardmarketOrder }: Readonly<OrderItemContentProps>) {

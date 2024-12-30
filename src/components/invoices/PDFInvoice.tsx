@@ -50,9 +50,9 @@ export default function PDFInvoiceDialog({ invoice }: Readonly<InvoicePreviewPro
             <Document
                 file={invoice}
                 onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                loading="Loading PDF..."
-                noData="No PDF available."
-                error="Failed to load PDF."
+                loading="Lade PDF..."
+                noData="Keine Vorschau verfügbar."
+                error="Laden fehlgeschlagen."
             >
                 <Page pageNumber={pageNumber} />
             </Document>

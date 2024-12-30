@@ -1,5 +1,3 @@
-const path = require('path');
-
 module.exports = {
     invoiceManagementSystem: {
         output: {
@@ -11,8 +9,13 @@ module.exports = {
             target: './openapi/openapi.yml',
         },
         override: {
-            axios: './src/axiosConfig',
-        },
-    },
-};
-
+            axios: './src/api/apiClient',
+            operations: {
+                getPDFInvoices: {
+                    responseType: 'blob',
+                }
+            }
+        }
+    }
+}
+export {}

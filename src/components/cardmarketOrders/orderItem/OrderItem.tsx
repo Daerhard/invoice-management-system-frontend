@@ -6,17 +6,17 @@ import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/f
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CustomIconButton from '../../../customComponents/CustomIconButton';
 import OrderItemContent from './OrderItemContent';
-import formatDate from '../../../helper/Utils';
+import { formatDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
-import CreatePDFInvoiceButton from './CreatePDFInvoiceButton'
+import CreatePDFInvoice from './CreatePDFInvoice'
 
 interface OrderItemProps {
-    cardmarketOrder: CardmarketOrder;
+    cardmarketOrder: CardmarketOrder
 }
 
 export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
-    const [open, setOpen] = useState(false);
-    const toggleDetails = () => setOpen(!open);
+    const [open, setOpen] = useState(false)
+    const toggleDetails = () => setOpen(!open)
 
     return (
         <Card sx={{ width: '100%', marginBottom: '0.2rem' }}>
@@ -31,7 +31,7 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                             iconSize="xs"
                             onClick={toggleDetails}
                         />
-                        <CreatePDFInvoiceButton cardmarketOrder={cardmarketOrder}></CreatePDFInvoiceButton>
+                        <CreatePDFInvoice cardmarketOrder={cardmarketOrder}></CreatePDFInvoice>
                         <CustomIconButton
                             title="Erstelle Rechnung (E)"
                             titleVariant="body2"
