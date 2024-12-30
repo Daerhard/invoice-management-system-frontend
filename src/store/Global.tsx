@@ -7,5 +7,5 @@ export const customersAtom = atom<Customer[]>([])
 
 export const customerSelectAtom = atom<Customer | null>(null)
 export const cardmarketOrderSelectAtom = atom<CardmarketOrder | null>(null)
-export const startDateSelectAtom = atom<Dayjs>(dayjs())
-export const endDateSelectAtom = atom<Dayjs>(dayjs())
+export const startDateSelectAtom = atom<Dayjs>(dayjs().startOf('year'))
+export const endDateSelectAtom = atom<Dayjs>(dayjs().endOf('year'))

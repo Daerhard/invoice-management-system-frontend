@@ -8,7 +8,7 @@ import {
     startDateSelectAtom, endDateSelectAtom,
 } from '../../store/Global'
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { Box, Grid, Grid2, List, Pagination, Stack, Typography } from '@mui/material'
+import { Box, Grid2, List, Pagination, Stack, Typography } from '@mui/material'
 import CustomerFilter from '../../components/cardmarketOrders/filters/CustomerFilter'
 import CardmarketOrderFilter from '../../components/cardmarketOrders/filters/CardmarketOrderFilter'
 import DateRangeFilter from '../../components/cardmarketOrders/filters/DateRangeFilter'
@@ -27,7 +27,7 @@ export default function CardmarketOrders() {
     const [startDateSelect] = useAtom(startDateSelectAtom)
     const [endDateSelect] = useAtom(endDateSelectAtom)
 
-    const [filteredCardmarketOrders, setFilteredCardmarketOrders] = useState<CardmarketOrder[]>(cardmarketOrders);
+    const [filteredCardmarketOrders, setFilteredCardmarketOrders] = useState<CardmarketOrder[]>();
 
     useEffect(() => {
         const filteredOrders = cardmarketOrders
@@ -46,10 +46,10 @@ export default function CardmarketOrders() {
         setPage(value)
     }
 
-    const paginatedOrders = filteredCardmarketOrders.slice(
+    const paginatedOrders = filteredCardmarketOrders ? filteredCardmarketOrders.slice(
         (page - 1) * itemsPerPage,
         page * itemsPerPage
-    )
+    ) : []
 
     return (
         <Box style={{ width:'100%' }}>
@@ -66,7 +66,7 @@ export default function CardmarketOrders() {
                         <Grid2 container direction='row' justifyContent='space-between' marginBottom='0.5rem' >
                             <Typography variant="h6">Bestellungen</Typography>
                             <Pagination
-                                count={Math.ceil(filteredCardmarketOrders.length / itemsPerPage)}
+                                count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
                                 page={page}
                                 onChange={(_, newValue) => handlePageChange(newValue)}
                                 shape="rounded"

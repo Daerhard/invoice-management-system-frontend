@@ -2,6 +2,8 @@ import React from 'react'
 import { Box, Grid2 } from '@mui/material'
 import Menu from '../components/menu/Menu'
 import CardmarketOrders from './cardmarketOrders/CardmarketOrders'
+import Import from './import/Import'
+import { Route, Routes } from 'react-router-dom'
 
 export default function Layout() {
 
@@ -21,7 +23,10 @@ export default function Layout() {
             style={{ width: '100%' }}
           >
               <Menu></Menu>
-              <CardmarketOrders></CardmarketOrders>
+              <Routes>
+                  <Route path="/bestellungen" element={<CardmarketOrders/>} />
+                  <Route path="/import" element={<Import/>} />
+              </Routes>
           </Grid2>
         </Box>
     );
