@@ -4,7 +4,7 @@ import { getPDFInvoice } from '../../api/generated/invoice-generation-pd-f';
 import { useGenericRequest } from '../../api/hooks/useGenericRequest';
 import PDFInvoice from '../../components/invoices/PDFInvoice';
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { formatDate } from '../../helper/Utils'
+import { formatStringToDate } from '../../helper/Utils'
 
 interface PDFInvoicePreviewProps {
     cardmarketOrder: CardmarketOrder;
@@ -25,7 +25,7 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
             const url = URL.createObjectURL(invoice);
             const a = document.createElement('a');
             a.href = url;
-            a.download =  `${formatDate(cardmarketOrder.payment_date)} - Rechnung ${cardmarketOrder.order_id} - ${cardmarketOrder.customer.user_name}.pdf`
+            a.download =  `${formatStringToDate(cardmarketOrder.payment_date)} - Rechnung ${cardmarketOrder.order_id} - ${cardmarketOrder.customer.user_name}.pdf`
             a.click();
             URL.revokeObjectURL(url);
         }

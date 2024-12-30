@@ -1,49 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { useGenericRequest } from '../../api/hooks/useGenericRequest';
-import { getOrders } from '../../api/generated/orders';
 import OrderItem from '../../components/cardmarketOrders/orderItem/OrderItem';
 import { useAtom } from 'jotai';
 import {
-    customersAtom,
     cardmarketOrdersAtom,
     customerSelectAtom,
     cardmarketOrderSelectAtom,
     startDateSelectAtom, endDateSelectAtom,
 } from '../../store/Global'
-import { getAllCustomers } from '../../api/generated/customers';
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { Box, List, Stack, Typography } from '@mui/material'
+import { Box, Grid, Grid2, List, Pagination, Stack, Typography } from '@mui/material'
 import CustomerFilter from '../../components/cardmarketOrders/filters/CustomerFilter'
 import CardmarketOrderFilter from '../../components/cardmarketOrders/filters/CardmarketOrderFilter'
 import DateRangeFilter from '../../components/cardmarketOrders/filters/DateRangeFilter'
 import CreatePDFInvoicesByDateRange from '../../components/cardmarketOrders/CreatePDFInvoicesByDateRange'
 import dayjs from 'dayjs'
+import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
+import useCustomers from '../../api/hooks/useCustomers'
 
 export default function CardmarketOrders() {
-    const [cardmarketOrders, setCardmarketOrders] = useAtom(cardmarketOrdersAtom)
-    const [,setCustomers] = useAtom(customersAtom)
-
-    const { data: fetchedOrders } = useGenericRequest(
-        'cardmarketOrders',
-        () => getOrders()
-    );
-
-    useEffect(() => {
-        if (fetchedOrders !== undefined && fetchedOrders.data.length > 0) {
-            setCardmarketOrders(fetchedOrders.data);
-        }
-    }, [fetchedOrders, setCardmarketOrders]);
-
-    const { data: fetchedCustomers } = useGenericRequest(
-        'customers',
-        () => getAllCustomers()
-    );
-
-    useEffect(() => {
-        if (fetchedCustomers !== undefined && fetchedCustomers.data.length > 0) {
-            setCustomers(fetchedCustomers.data);
-        }
-    }, [fetchedCustomers, setCustomers]);
+    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
+    useCardmarketOrders()
+    useCustomers()
 
     const [customerSelect] = useAtom(customerSelectAtom)
     const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom)
@@ -62,8 +39,20 @@ export default function CardmarketOrders() {
         setFilteredCardmarketOrders(filteredOrders)
     }, [cardmarketOrderSelect, cardmarketOrders, customerSelect, endDateSelect, startDateSelect]);
 
+    const [page, setPage] = useState(1)
+    const itemsPerPage = 15
+
+    const handlePageChange = (value: number) => {
+        setPage(value)
+    }
+
+    const paginatedOrders = filteredCardmarketOrders.slice(
+        (page - 1) * itemsPerPage,
+        page * itemsPerPage
+    )
+
     return (
-        <Box width="100%">
+        <Box style={{ width:'100%' }}>
             <Stack spacing={4} width="100%">
                 <Stack direction="row" spacing={4}>
                     <Stack spacing={2}>
@@ -71,12 +60,20 @@ export default function CardmarketOrders() {
                         <CardmarketOrderFilter/>
                     </Stack>
                     <DateRangeFilter/>
+                    <CreatePDFInvoicesByDateRange/>
                 </Stack>
-                <Box>
-                    <Typography variant="h6">Bestellungen</Typography>
                     <List dense>
-                        {filteredCardmarketOrders.length > 0 ? (
-                            filteredCardmarketOrders.map((order) => (
+                        <Grid2 container direction='row' justifyContent='space-between' marginBottom='0.5rem' >
+                            <Typography variant="h6">Bestellungen</Typography>
+                            <Pagination
+                                count={Math.ceil(filteredCardmarketOrders.length / itemsPerPage)}
+                                page={page}
+                                onChange={(_, newValue) => handlePageChange(newValue)}
+                                shape="rounded"
+                            />
+                        </Grid2>
+                        {paginatedOrders.length > 0 ? (
+                            paginatedOrders.map((order) => (
                                 <OrderItem key={order.order_id} cardmarketOrder={order} />
                             ))
                         ) : (
@@ -85,7 +82,6 @@ export default function CardmarketOrders() {
                             </Typography>
                         )}
                     </List>
-                </Box>
             </Stack>
         </Box>
     );

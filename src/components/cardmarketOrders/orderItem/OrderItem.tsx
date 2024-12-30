@@ -6,7 +6,7 @@ import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/f
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CustomIconButton from '../../../customComponents/CustomIconButton';
 import OrderItemContent from './OrderItemContent';
-import { formatDate } from '../../../helper/Utils';
+import { formatStringToDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
 import CreatePDFInvoice from './CreatePDFInvoice'
 
@@ -45,7 +45,7 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                 }
                 subheader={
                     <Stack direction="row" spacing={6}>
-                        <Typography variant="body2">{`Bezahldatum: ${formatDate(cardmarketOrder.payment_date)}`}</Typography>
+                        <Typography variant="body2">{`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}</Typography>
                         <Typography variant="body2">{`Bestellnummer: ${cardmarketOrder.order_id}`}</Typography>
                     </Stack>
                 }

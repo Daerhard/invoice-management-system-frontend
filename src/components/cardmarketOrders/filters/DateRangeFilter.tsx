@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { TextField, Autocomplete, Stack } from '@mui/material';
 import { useAtom } from 'jotai/index'
 import { cardmarketOrdersAtom, endDateSelectAtom, startDateSelectAtom, } from '../../../store/Global'
+import { getGermanMonthName } from '../../../helper/Utils'
 
 export default function DateRangeFilter() {
     const [startDate, setStartDate] = useAtom(startDateSelectAtom)
@@ -12,7 +13,7 @@ export default function DateRangeFilter() {
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
 
     const handleEndDateChange = (newEndDate: Dayjs) => {
-       setEndDate(newEndDate)
+        setEndDate(newEndDate)
     }
 
     const handleStartDateChange = (newStartDate: Dayjs) => {
@@ -33,6 +34,7 @@ export default function DateRangeFilter() {
                             value={startDate}
                             onChange={(date) => date ? handleStartDateChange(date) : startDate}
                             format="DD.MM.YYYY"
+                            maxDate={endDate}
                             slotProps={{
                                 textField: {
                                     sx: { width: 200 },
@@ -45,6 +47,7 @@ export default function DateRangeFilter() {
                             value={endDate}
                             onChange={(date) => date ? handleEndDateChange(date) : endDate}
                             format="DD.MM.YYYY"
+                            minDate={startDate}
                             slotProps={{
                                 textField: {
                                     sx: { width: 200 },
@@ -57,7 +60,7 @@ export default function DateRangeFilter() {
                 <Stack direction="row" spacing={2}>
                         <Autocomplete
                             options={months}
-                            getOptionLabel={(option) => option.monthName}
+                            getOptionLabel={(option) => getGermanMonthName(option.monthIndex)}
                             onChange={(_, newValue) => {
                                 if(newValue) {
                                     handleStartDateChange(dayjs().month(newValue.monthIndex).startOf('month'))
