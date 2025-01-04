@@ -12,5 +12,5 @@ export interface CardId {
   /** Konami set identifier of the card. */
   konamiSet: string;
   /** Unique card number within the Konami set. */
-  number: number;
+  number: string;
 }

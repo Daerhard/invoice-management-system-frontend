@@ -192,9 +192,9 @@ components:
           description: user name of the customer
           example: "FakeJohnny"
         is_professional:
-            type: boolean
-            description: status of the customer
-            example: true
+          type: boolean
+          description: status of the customer
+          example: true
       required:
         - user_name
         - is_professional
@@ -326,8 +326,7 @@ components:
           type: string
           description: Konami set identifier of the card.
         number:
-          type: integer
-          format: int32
+          type: string
           description: Unique card number within the Konami set.
       required:
         - konamiSet
@@ -339,6 +338,7 @@ components:
         message:
           type: string
           example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
+
 
 
 

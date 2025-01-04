@@ -16,12 +16,13 @@ import CreatePDFInvoicesByDateRange from '../../components/cardmarketOrders/Crea
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 import useCustomers from '../../api/hooks/useCustomers'
+import Statistic from '../../components/statistic/Statistic'
 
 export default function CardmarketOrders() {
-    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
     useCardmarketOrders()
     useCustomers()
 
+    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
     const [customerSelect] = useAtom(customerSelectAtom)
     const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom)
     const [startDateSelect] = useAtom(startDateSelectAtom)
@@ -61,6 +62,7 @@ export default function CardmarketOrders() {
                     </Stack>
                     <DateRangeFilter/>
                     <CreatePDFInvoicesByDateRange/>
+                    <Statistic></Statistic>
                 </Stack>
                     <List dense>
                         <Grid2 container direction='row' justifyContent='space-between' marginBottom='0.5rem' >
