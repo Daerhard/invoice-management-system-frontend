@@ -22,11 +22,11 @@ export default function CreatePDFInvoice({ cardmarketOrder }: Readonly<PDFInvoic
             iconSize="xs"
             onClick={openInvoicePreview}
         />
-            <PDFInvoicePreview
+            {showInvoicePreview && <PDFInvoicePreview
                 cardmarketOrder={cardmarketOrder}
                 open={showInvoicePreview}
                 onClose={closeInvoicePreview}
-            />
+            />}
         </div>
     )
 }

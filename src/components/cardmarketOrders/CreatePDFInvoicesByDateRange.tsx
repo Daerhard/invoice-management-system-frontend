@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Tooltip } from '@mui/material'
-import { getPDFInvoices } from '../../api/generated/invoice-generation-pd-f';
+import { getInvoicesPDF } from '../../api/generated/invoice-generation-pd-f';
 import { AxiosResponse } from 'axios'
 import { useAtom } from 'jotai/index'
 import { endDateSelectAtom, startDateSelectAtom } from '../../store/Global'
 import { getGermanMonthName } from '../../helper/Utils'
 
 export default function CreatePDFInvoicesByDateRange() {
-
     const [open, setOpen] = useState(false);
     const [pdfInvoices, setPdfInvoices] = useState<Blob | null>(null);
     const [startDate] = useAtom(startDateSelectAtom)
@@ -18,7 +17,7 @@ export default function CreatePDFInvoicesByDateRange() {
 
     const downloadInvoices = async () => {
         try {
-            const response = await getPDFInvoices<AxiosResponse<Blob>>(formattedStartDate, formattedEndDate, {
+            const response = await getInvoicesPDF<AxiosResponse<Blob>>(formattedStartDate, formattedEndDate, {
                 responseType: 'blob',
             });
             setPdfInvoices(response.data);

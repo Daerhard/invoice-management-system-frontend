@@ -41,7 +41,9 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                     </Stack>
                 }
                 title={
-                    <Typography variant="body2">{`Kunde: ${cardmarketOrder.customer.user_name}`}</Typography>
+                    <Typography variant="body2">
+                        {`Kunde: ${cardmarketOrder.customer.user_name} ${cardmarketOrder.customer.is_professional ? ' - gewerblich' : ''}`}
+                    </Typography>
                 }
                 subheader={
                     <Stack direction="row" spacing={6}>

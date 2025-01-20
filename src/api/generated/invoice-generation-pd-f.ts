@@ -17,11 +17,11 @@ import type {
  * Generate an invoice in pdf format and returns it for saving on the client's machine.
  * @summary Generate and save an invoice in pdf format
  */
-export const getPDFInvoice = <TData = AxiosResponse<Blob>>(
+export const getInvoicePDF = <TData = AxiosResponse<Blob>>(
     cardmarketExternalOrderId: number, options?: AxiosRequestConfig
  ): Promise<TData> => {
     return axios.get(
-      `/v1/generatePDFInvoice/${cardmarketExternalOrderId}`,{
+      `/v1/generateInvoicePDF/${cardmarketExternalOrderId}`,{
         responseType: 'blob',
     ...options,}
     );
@@ -30,13 +30,13 @@ export const getPDFInvoice = <TData = AxiosResponse<Blob>>(
  * Generates multiple invoices in PDF format and compresses them into a ZIP file.
  * @summary Download invoices as a ZIP file
  */
-export const getPDFInvoices = <TData = AxiosResponse<string>>(
+export const getInvoicesPDF = <TData = AxiosResponse<string>>(
     startDate: string,
     endDate: string, options?: AxiosRequestConfig
  ): Promise<TData> => {
     return axios.get(
-      `/v1/generatePDFInvoices/${startDate}/${endDate}`,options
+      `/v1/generateInvoicesPDF/${startDate}/${endDate}`,options
     );
   }
-export type GetPDFInvoiceResult = AxiosResponse<Blob>
-export type GetPDFInvoicesResult = AxiosResponse<string>
+export type GetInvoicePDFResult = AxiosResponse<Blob>
+export type GetInvoicesPDFResult = AxiosResponse<string>

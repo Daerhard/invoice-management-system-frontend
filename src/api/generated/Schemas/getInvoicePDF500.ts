@@ -5,6 +5,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetPDFInvoice500 = {
+export type GetInvoicePDF500 = {
   message?: string;
 };

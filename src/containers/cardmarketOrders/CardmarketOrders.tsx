@@ -5,7 +5,7 @@ import {
     cardmarketOrdersAtom,
     customerSelectAtom,
     cardmarketOrderSelectAtom,
-    startDateSelectAtom, endDateSelectAtom,
+    startDateSelectAtom, endDateSelectAtom, businessCustomerSelectAtom,
 } from '../../store/Global'
 import { CardmarketOrder } from '../../api/generated/Schemas'
 import { Box, Grid2, List, Pagination, Stack, Typography } from '@mui/material'
@@ -17,6 +17,7 @@ import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 import useCustomers from '../../api/hooks/useCustomers'
 import Statistic from '../../components/statistic/Statistic'
+import BusinessCustomerFilter from '../../components/cardmarketOrders/filters/BusinessCustomerFilter'
 
 export default function CardmarketOrders() {
     useCardmarketOrders()
@@ -27,6 +28,7 @@ export default function CardmarketOrders() {
     const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom)
     const [startDateSelect] = useAtom(startDateSelectAtom)
     const [endDateSelect] = useAtom(endDateSelectAtom)
+    const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom)
 
     const [filteredCardmarketOrders, setFilteredCardmarketOrders] = useState<CardmarketOrder[]>();
 
@@ -35,10 +37,15 @@ export default function CardmarketOrders() {
             .filter((order) => !customerSelect || order.customer.user_name === customerSelect.user_name)
             .filter((order) => !cardmarketOrderSelect || order.order_id === cardmarketOrderSelect?.order_id)
             .filter((order) => !startDateSelect || dayjs(order.payment_date) >= startDateSelect)
-            .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect)
+            .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect);
 
-        setFilteredCardmarketOrders(filteredOrders)
-    }, [cardmarketOrderSelect, cardmarketOrders, customerSelect, endDateSelect, startDateSelect]);
+        const finalFilteredOrders = onlyBusinessCustomers
+            ? filteredOrders.filter((order) => order.customer.is_professional)
+            : filteredOrders;
+
+        setFilteredCardmarketOrders(finalFilteredOrders);
+    }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
+
 
     const [page, setPage] = useState(1)
     const itemsPerPage = 15
@@ -59,6 +66,7 @@ export default function CardmarketOrders() {
                     <Stack spacing={2}>
                         <CustomerFilter/>
                         <CardmarketOrderFilter/>
+                        <BusinessCustomerFilter/>
                     </Stack>
                     <DateRangeFilter/>
                     <CreatePDFInvoicesByDateRange/>

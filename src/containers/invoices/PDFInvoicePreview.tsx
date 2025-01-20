@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { getPDFInvoice } from '../../api/generated/invoice-generation-pd-f';
+import { getInvoicePDF } from '../../api/generated/invoice-generation-pd-f';
 import { useGenericRequest } from '../../api/hooks/useGenericRequest';
 import PDFInvoice from '../../components/invoices/PDFInvoice';
 import { CardmarketOrder } from '../../api/generated/Schemas'
@@ -15,7 +15,7 @@ interface PDFInvoicePreviewProps {
 export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Readonly<PDFInvoicePreviewProps>) {
     const { data: fetchedPDFInvoice } = useGenericRequest(
         'getPDFInvoice',
-        () => getPDFInvoice(cardmarketOrder.order_id),
+        () => getInvoicePDF(cardmarketOrder.order_id),
     );
 
     const invoice = fetchedPDFInvoice?.data;
@@ -32,7 +32,7 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
     };
 
     return (
-        <Dialog style={{ display: 'flex' }}open={open} onClose={onClose} fullWidth maxWidth="md">
+        <Dialog style={{ display: 'flex' }} open={open} onClose={onClose} fullWidth maxWidth="md">
             <DialogTitle>Rechnungsvorschau</DialogTitle>
             <DialogContent>
                 {invoice ? (
