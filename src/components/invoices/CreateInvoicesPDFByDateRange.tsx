@@ -6,7 +6,7 @@ import { useAtom } from 'jotai/index'
 import { endDateSelectAtom, startDateSelectAtom } from '../../store/Global'
 import { getGermanMonthName } from '../../helper/Utils'
 
-export default function CreatePDFInvoicesByDateRange() {
+export default function CreateInvoicesPDFByDateRange() {
     const [open, setOpen] = useState(false);
     const [pdfInvoices, setPdfInvoices] = useState<Blob | null>(null);
     const [startDate] = useAtom(startDateSelectAtom)

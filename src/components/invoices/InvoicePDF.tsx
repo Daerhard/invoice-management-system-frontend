@@ -11,7 +11,7 @@ interface InvoicePreviewProps {
     invoice: Blob;
 }
 
-export default function PDFInvoiceDialog({ invoice }: Readonly<InvoicePreviewProps>) {
+export default function InvoicePDF({ invoice }: Readonly<InvoicePreviewProps>) {
     const [numPages, setNumPages] = useState<number>(0);
     const [pageNumber, setPageNumber] = useState<number>(1);
 

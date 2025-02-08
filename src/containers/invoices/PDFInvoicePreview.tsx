@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { getInvoicePDF } from '../../api/generated/invoice-generation-pd-f';
 import { useGenericRequest } from '../../api/hooks/useGenericRequest';
-import PDFInvoice from '../../components/invoices/PDFInvoice';
+import PDFInvoice from '../../components/invoices/InvoicePDF';
 import { CardmarketOrder } from '../../api/generated/Schemas'
 import { formatStringToDate } from '../../helper/Utils'
 

@@ -8,7 +8,7 @@ import CustomIconButton from '../../../customComponents/CustomIconButton';
 import OrderItemContent from './OrderItemContent';
 import { formatStringToDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
-import CreatePDFInvoice from './CreatePDFInvoice'
+import PDFInvoicePreview from '../../../containers/invoices/PDFInvoicePreview'
 
 interface OrderItemProps {
     cardmarketOrder: CardmarketOrder
@@ -17,6 +17,10 @@ interface OrderItemProps {
 export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
     const [open, setOpen] = useState(false)
     const toggleDetails = () => setOpen(!open)
+    const [showInvoicePreview, setShowInvoicePreview] = useState(false);
+    const openInvoicePreview = () => setShowInvoicePreview(true);
+    const closeInvoicePreview = () => setShowInvoicePreview(false);
+
 
     return (
         <Card sx={{ width: '100%', marginBottom: '0.2rem' }}>
@@ -31,7 +35,18 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                             iconSize="xs"
                             onClick={toggleDetails}
                         />
-                        <CreatePDFInvoice cardmarketOrder={cardmarketOrder}></CreatePDFInvoice>
+                        <CustomIconButton
+                            title="Erstelle Rechnung (PDF)"
+                            titleVariant="body2"
+                            icon={faFileInvoiceDollar}
+                            iconSize="xs"
+                            onClick={openInvoicePreview}
+                        />
+                        {showInvoicePreview && <PDFInvoicePreview
+                            cardmarketOrder={cardmarketOrder}
+                            open={showInvoicePreview}
+                            onClose={closeInvoicePreview}
+                        />}
                         <CustomIconButton
                             title="Erstelle Rechnung (E)"
                             titleVariant="body2"

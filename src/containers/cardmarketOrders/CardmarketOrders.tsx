@@ -12,7 +12,7 @@ import { Box, Grid2, List, Pagination, Stack, Typography } from '@mui/material'
 import CustomerFilter from '../../components/cardmarketOrders/filters/CustomerFilter'
 import CardmarketOrderFilter from '../../components/cardmarketOrders/filters/CardmarketOrderFilter'
 import DateRangeFilter from '../../components/cardmarketOrders/filters/DateRangeFilter'
-import CreatePDFInvoicesByDateRange from '../../components/cardmarketOrders/CreatePDFInvoicesByDateRange'
+import CreateInvoicesPDFByDateRange from '../../components/invoices/CreateInvoicesPDFByDateRange'
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 import useCustomers from '../../api/hooks/useCustomers'
@@ -69,12 +69,12 @@ export default function CardmarketOrders() {
                         <BusinessCustomerFilter/>
                     </Stack>
                     <DateRangeFilter/>
-                    <CreatePDFInvoicesByDateRange/>
-                    <Statistic></Statistic>
+                    <CreateInvoicesPDFByDateRange/>
                 </Stack>
                     <List dense>
                         <Grid2 container direction='row' justifyContent='space-between' marginBottom='0.5rem' >
                             <Typography variant="h6">Bestellungen</Typography>
+                            <Statistic cardmarketOrders={filteredCardmarketOrders || []} ></Statistic>
                             <Pagination
                                 count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
                                 page={page}
