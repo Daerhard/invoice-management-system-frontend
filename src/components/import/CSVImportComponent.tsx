@@ -10,7 +10,6 @@ const CSVImportComponent = () => {
     const [message, setMessage] = useState<string>('');
     const [error, setError] = useState<string>('');
 
-    // Handle file selection
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files ? e.target.files[0] : null;
         if (selectedFile && selectedFile.type === 'text/csv') {
@@ -21,28 +20,42 @@ const CSVImportComponent = () => {
         }
     };
 
-    // Handle file import
-    const handleImportCSV = async () => {
-        if (!file) {
-            setError('Please select a CSV file first.');
-            return;
-        }
+const handleImportCSV = async () => {
+    if (!file) {
+        setError('Please select a CSV file first.');
+        return;
+    }
 
-        setLoading(true);
-        const formData: ImportCSVDataBody = {
-            file: file
-        };
-
-        try {
-            const response = await importCSVData(formData);
-            setLoading(false);
-            setMessage('File uploaded successfully!');
-            // Optionally handle the response here if needed
-        } catch (err) {
-            setLoading(false);
-            setError('Failed to upload the file. Please try again.');
-        }
+    setLoading(true);
+    const formData: ImportCSVDataBody = {
+        file: file
     };
+
+    try {
+        const response = await importCSVData(formData);
+
+        setLoading(false);
+        setMessage('File uploaded successfully!');
+    } catch (err) {
+        setLoading(false);
+
+        const errorMessage = extractErrorMessage(err);
+        setError(`Failed to upload the file. ${errorMessage}`);
+    }
+};
+
+const extractErrorMessage = (err: any): string => {
+    if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof err.response === "object" &&
+        err.response?.data?.message
+    ) {
+        return err.response.data.message;
+    }
+    return "";
+};
 
     return (
         <div>
