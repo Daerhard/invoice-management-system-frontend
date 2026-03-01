@@ -4,6 +4,7 @@ import Menu from '../components/menu/Menu'
 import CardmarketOrders from './cardmarketOrders/CardmarketOrders'
 import Import from './import/Import'
 import Statistik from './statistik/Statistik'
+import Einkaeufe from './einkaeufe/Einkaeufe'
 import { Route, Routes } from 'react-router-dom'
 
 export default function Layout() {
@@ -26,6 +27,7 @@ export default function Layout() {
               <Menu></Menu>
               <Routes>
                   <Route path="/bestellungen" element={<CardmarketOrders/>} />
+                  <Route path="/einkaeufe" element={<Einkaeufe/>} />
                   <Route path="/statistik" element={<Statistik/>} />
                   <Route path="/import" element={<Import/>} />
               </Routes>
