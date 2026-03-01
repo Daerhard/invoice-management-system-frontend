@@ -5,6 +5,7 @@ import CustomerFilter from './CustomerFilter';
 import CardmarketOrderFilter from './CardmarketOrderFilter';
 import DateRangeFilter from './DateRangeFilter';
 import BusinessCustomerFilter from './BusinessCustomerFilter';
+import CreateInvoicesPDFByDateRange from '../../invoices/CreateInvoicesPDFByDateRange';
 
 interface FilterDrawerProps {
     open: boolean;
@@ -33,6 +34,9 @@ export default function FilterDrawer({ open, onClose }: FilterDrawerProps) {
                     </Grid2>
                     <Grid2 size={12}>
                         <BusinessCustomerFilter />
+                    </Grid2>
+                    <Grid2 size={12}>
+                        <CreateInvoicesPDFByDateRange />
                     </Grid2>
                 </Grid2>
             </Box>
