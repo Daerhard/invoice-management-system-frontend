@@ -8,16 +8,14 @@ import {
     startDateSelectAtom, endDateSelectAtom, businessCustomerSelectAtom,
 } from '../../store/Global'
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { Box, Grid2, List, Pagination, Stack, Typography } from '@mui/material'
-import CustomerFilter from '../../components/cardmarketOrders/filters/CustomerFilter'
-import CardmarketOrderFilter from '../../components/cardmarketOrders/filters/CardmarketOrderFilter'
-import DateRangeFilter from '../../components/cardmarketOrders/filters/DateRangeFilter'
+import { Box, Grid2, IconButton, List, Pagination, Stack, Typography } from '@mui/material'
+import FilterListIcon from '@mui/icons-material/FilterList'
 import CreateInvoicesPDFByDateRange from '../../components/invoices/CreateInvoicesPDFByDateRange'
+import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 import useCustomers from '../../api/hooks/useCustomers'
 import Statistic from '../../components/statistic/Statistic'
-import BusinessCustomerFilter from '../../components/cardmarketOrders/filters/BusinessCustomerFilter'
 
 export default function CardmarketOrders() {
     useCardmarketOrders()
@@ -49,6 +47,7 @@ export default function CardmarketOrders() {
 
     const [page, setPage] = useState(1)
     const itemsPerPage = 15
+    const [drawerOpen, setDrawerOpen] = useState(false)
 
     const handlePageChange = (value: number) => {
         setPage(value)
@@ -61,37 +60,35 @@ export default function CardmarketOrders() {
 
     return (
         <Box style={{ width:'100%' }}>
+            <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
             <Stack spacing={4} width="100%">
-                <Stack direction="row" spacing={4}>
-                    <Stack spacing={2}>
-                        <CustomerFilter/>
-                        <CardmarketOrderFilter/>
-                        <BusinessCustomerFilter/>
-                    </Stack>
-                    <DateRangeFilter/>
-                    <CreateInvoicesPDFByDateRange/>
-                </Stack>
-                    <List dense>
-                        <Grid2 container direction='row' justifyContent='space-between' marginBottom='0.5rem' >
+                <List dense>
+                    <Grid2 container direction='row' justifyContent='space-between' alignItems='center' marginBottom='0.5rem' >
+                        <Stack direction="row" alignItems="center" spacing={1}>
                             <Typography variant="h6">Bestellungen</Typography>
-                            <Statistic cardmarketOrders={filteredCardmarketOrders || []} ></Statistic>
-                            <Pagination
-                                count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
-                                page={page}
-                                onChange={(_, newValue) => handlePageChange(newValue)}
-                                shape="rounded"
-                            />
-                        </Grid2>
-                        {paginatedOrders.length > 0 ? (
-                            paginatedOrders.map((order) => (
-                                <OrderItem key={order.order_id} cardmarketOrder={order} />
-                            ))
-                        ) : (
-                            <Typography variant="body2" color="textSecondary">
-                                Keine Bestellungen vorhanden.
-                            </Typography>
-                        )}
-                    </List>
+                            <IconButton onClick={() => setDrawerOpen(true)} aria-label="Filter öffnen" size="small">
+                                <FilterListIcon />
+                            </IconButton>
+                        </Stack>
+                        <Statistic cardmarketOrders={filteredCardmarketOrders || []} ></Statistic>
+                        <CreateInvoicesPDFByDateRange/>
+                        <Pagination
+                            count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
+                            page={page}
+                            onChange={(_, newValue) => handlePageChange(newValue)}
+                            shape="rounded"
+                        />
+                    </Grid2>
+                    {paginatedOrders.length > 0 ? (
+                        paginatedOrders.map((order) => (
+                            <OrderItem key={order.order_id} cardmarketOrder={order} />
+                        ))
+                    ) : (
+                        <Typography variant="body2" color="textSecondary">
+                            Keine Bestellungen vorhanden.
+                        </Typography>
+                    )}
+                </List>
             </Stack>
         </Box>
     );
