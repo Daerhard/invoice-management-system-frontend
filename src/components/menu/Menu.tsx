@@ -17,6 +17,9 @@ export default function Menu() {
                 <Link to="/bestellungen" style={{ textDecoration: 'none' }}>
                     <MenuItem title={'Bestellungen'} />
                 </Link>
+                <Link to="/statistik" style={{ textDecoration: 'none' }}>
+                    <MenuItem title={'Statistik'} />
+                </Link>
                 <Link to="/import" style={{ textDecoration: 'none' }}>
                     <MenuItem title={'Import'} />
                 </Link>
