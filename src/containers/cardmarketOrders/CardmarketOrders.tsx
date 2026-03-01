@@ -14,7 +14,6 @@ import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 import useCustomers from '../../api/hooks/useCustomers'
-import Statistic from '../../components/statistic/Statistic'
 
 export default function CardmarketOrders() {
     useCardmarketOrders()
@@ -69,7 +68,6 @@ export default function CardmarketOrders() {
                                 <FilterListIcon />
                             </IconButton>
                         </Stack>
-                        <Statistic cardmarketOrders={filteredCardmarketOrders || []} ></Statistic>
                         <Pagination
                             count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
                             page={page}
