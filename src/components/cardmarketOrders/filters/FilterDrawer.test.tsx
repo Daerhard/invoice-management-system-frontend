@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
 import FilterDrawer from './FilterDrawer';
 
+jest.mock('../../invoices/CreateInvoicesPDFByDateRange', () => () => <div data-testid="create-invoices-button" />);
+
 const renderWithProvider = (ui: React.ReactElement) => {
     const store = createStore();
     return render(<Provider store={store}>{ui}</Provider>);
@@ -34,5 +36,10 @@ describe('FilterDrawer', () => {
     it('renders BusinessCustomerFilter inside the drawer when open', () => {
         renderWithProvider(<FilterDrawer open={true} onClose={jest.fn()} />);
         expect(screen.getByText('nur gewerbliche Händler')).toBeInTheDocument();
+    });
+
+    it('renders CreateInvoicesPDFByDateRange inside the drawer when open', () => {
+        renderWithProvider(<FilterDrawer open={true} onClose={jest.fn()} />);
+        expect(screen.getByTestId('create-invoices-button')).toBeInTheDocument();
     });
 });

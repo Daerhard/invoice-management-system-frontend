@@ -10,7 +10,6 @@ import {
 import { CardmarketOrder } from '../../api/generated/Schemas'
 import { Box, Grid2, IconButton, List, Pagination, Stack, Typography } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
-import CreateInvoicesPDFByDateRange from '../../components/invoices/CreateInvoicesPDFByDateRange'
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
@@ -71,7 +70,6 @@ export default function CardmarketOrders() {
                             </IconButton>
                         </Stack>
                         <Statistic cardmarketOrders={filteredCardmarketOrders || []} ></Statistic>
-                        <CreateInvoicesPDFByDateRange/>
                         <Pagination
                             count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
                             page={page}
