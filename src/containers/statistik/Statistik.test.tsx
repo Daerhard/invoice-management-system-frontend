@@ -19,8 +19,8 @@ const mockOrders = [
         currency: 'EUR',
         customer: { user_name: 'buyer1', is_professional: false },
         orderItems: [
-            { id: 1, price: 10.00, count: 1, condition: 'NM', orderId: 1001, card: { product_name: 'Magic: The Gathering', name: 'Black Lotus', language: 'EN', rarity: 'R', product_id: 1, id: { id: 'a1', idMethod: 'x', idValue: 'v' } } },
-            { id: 2, price: 8.50, count: 1, condition: 'NM', orderId: 1001, card: { product_name: 'Pokemon TCG', name: 'Charizard', language: 'EN', rarity: 'R', product_id: 2, id: { id: 'a2', idMethod: 'x', idValue: 'v' } } },
+            { id: 1, price: 10.00, count: 1, condition: 'NM', orderId: 1001, card: { product_name: 'Yu-Gi-Oh!', name: 'Black Luster Soldier', language: 'EN', rarity: 'R', product_id: 1, id: { konamiSet: 'Darkwing Blast', number: 'DABL-EN001' } } },
+            { id: 2, price: 8.50, count: 1, condition: 'NM', orderId: 1001, card: { product_name: 'Yu-Gi-Oh!', name: 'Ash Blossom', language: 'EN', rarity: 'R', product_id: 2, id: { konamiSet: 'Phantom Rage', number: 'PHRA-EN020' } } },
         ],
     },
     {
@@ -34,7 +34,7 @@ const mockOrders = [
         currency: 'EUR',
         customer: { user_name: 'buyer2', is_professional: false },
         orderItems: [
-            { id: 3, price: 12.70, count: 1, condition: 'NM', orderId: 1002, card: { product_name: 'Yu-Gi-Oh!', name: 'Blue-Eyes White Dragon', language: 'EN', rarity: 'UR', product_id: 3, id: { id: 'a3', idMethod: 'x', idValue: 'v' } } },
+            { id: 3, price: 12.70, count: 1, condition: 'NM', orderId: 1002, card: { product_name: 'Yu-Gi-Oh!', name: 'Blue-Eyes White Dragon', language: 'EN', rarity: 'UR', product_id: 3, id: { konamiSet: 'Legend of Blue Eyes', number: 'LOB-EN001' } } },
         ],
     },
 ];
@@ -61,16 +61,16 @@ describe('Statistik', () => {
 
     it('product details are hidden before expansion', () => {
         renderWithStore();
-        expect(screen.queryByText('Magic: The Gathering')).not.toBeInTheDocument();
-        expect(screen.queryByText('Pokemon TCG')).not.toBeInTheDocument();
+        expect(screen.queryByText('Darkwing Blast')).not.toBeInTheDocument();
+        expect(screen.queryByText('Phantom Rage')).not.toBeInTheDocument();
     });
 
     it('expands month to show product breakdown', () => {
         renderWithStore();
         const expandButtons = screen.getAllByLabelText('Ausklappen');
         fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Magic: The Gathering')).toBeInTheDocument();
-        expect(screen.getByText('Pokemon TCG')).toBeInTheDocument();
+        expect(screen.getByText('Darkwing Blast')).toBeInTheDocument();
+        expect(screen.getByText('Phantom Rage')).toBeInTheDocument();
     });
 
     it('collapses month to hide product details', () => {
@@ -93,19 +93,19 @@ describe('Statistik', () => {
         expect(gebührenHeaders).toHaveLength(1);
     });
 
-    it('shows product sub-table headers: Produkt, Gesamtwert, Versandkosten, Warenwert', () => {
+    it('shows product sub-table headers: Set, Gesamtwert, Versandkosten, Warenwert', () => {
         renderWithStore();
         const expandButtons = screen.getAllByLabelText('Ausklappen');
         fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Produkt')).toBeInTheDocument();
+        expect(screen.getByText('Set')).toBeInTheDocument();
     });
 
     it('expanding one month does not expand other months', () => {
         renderWithStore();
         const expandButtons = screen.getAllByLabelText('Ausklappen');
         fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Magic: The Gathering')).toBeInTheDocument();
-        expect(screen.queryByText('Yu-Gi-Oh!')).not.toBeInTheDocument();
+        expect(screen.getByText('Darkwing Blast')).toBeInTheDocument();
+        expect(screen.queryByText('Legend of Blue Eyes')).not.toBeInTheDocument();
     });
 
     it('shows no data message when orders list is empty', () => {
