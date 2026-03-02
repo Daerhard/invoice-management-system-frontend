@@ -87,30 +87,30 @@ export default function Statistik() {
         return Array.from(ordersByMonthMap.entries())
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([month, orders]) => {
-                const productMap = new Map<string, { totalValue: number; shipmentCost: number; merchandiseValue: number }>();
+                const setMap = new Map<string, { totalValue: number; shipmentCost: number; merchandiseValue: number }>();
 
                 orders.forEach((order) => {
                     const items = order.orderItems ?? [];
                     const itemsTotal = items.reduce((sum, item) => sum + item.price * item.count, 0);
 
                     items.forEach((item) => {
-                        const productName = item.card.product_name;
+                        const konamiSet = item.card.id.konamiSet;
                         const itemMerch = item.price * item.count;
                         const proportion = itemsTotal > 0 ? itemMerch / itemsTotal : 1 / items.length;
                         const itemShipment = order.shipment_cost * proportion;
 
-                        if (!productMap.has(productName)) {
-                            productMap.set(productName, { totalValue: 0, shipmentCost: 0, merchandiseValue: 0 });
+                        if (!setMap.has(konamiSet)) {
+                            setMap.set(konamiSet, { totalValue: 0, shipmentCost: 0, merchandiseValue: 0 });
                         }
-                        const existing = productMap.get(productName)!;
+                        const existing = setMap.get(konamiSet)!;
                         existing.merchandiseValue += itemMerch;
                         existing.shipmentCost += itemShipment;
                         existing.totalValue += itemMerch + itemShipment;
                     });
                 });
 
-                const products = Array.from(productMap.entries()).map(([productName, values]) => ({
-                    productName,
+                const products = Array.from(setMap.entries()).map(([konamiSet, values]) => ({
+                    konamiSet,
                     totalValue: Math.round(values.totalValue * 100) / 100,
                     shipmentCost: Math.round(values.shipmentCost * 100) / 100,
                     merchandiseValue: Math.round(values.merchandiseValue * 100) / 100,
@@ -181,7 +181,7 @@ export default function Statistik() {
                                                         <Table size="small">
                                                             <TableHead>
                                                                 <TableRow>
-                                                                    <TableCell><strong>Produkt</strong></TableCell>
+                                                                    <TableCell><strong>Set</strong></TableCell>
                                                                     <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
                                                                     <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
                                                                     <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
@@ -190,8 +190,8 @@ export default function Statistik() {
                                                             <TableBody>
                                                                 {stat.products.length > 0 ? (
                                                                     stat.products.map((product, index) => (
-                                                                        <TableRow key={`${product.productName}-${index}`}>
-                                                                            <TableCell>{product.productName}</TableCell>
+                                                                        <TableRow key={`${product.konamiSet}-${index}`}>
+                                                                            <TableCell>{product.konamiSet}</TableCell>
                                                                             <TableCell align="right">{product.totalValue}</TableCell>
                                                                             <TableCell align="right">{product.shipmentCost}</TableCell>
                                                                             <TableCell align="right">{product.merchandiseValue}</TableCell>
