@@ -11,22 +11,22 @@ import {
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
     Box,
-    Collapse,
     Grid2,
     IconButton,
     Paper,
     Stack,
+    Tab,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
+    Tabs,
+    TextField,
     Typography,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
 import dayjs from 'dayjs';
 
@@ -45,19 +45,8 @@ export default function Statistik() {
 
     const [filteredOrders, setFilteredOrders] = useState<CardmarketOrder[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
-
-    const toggleMonth = (month: string) => {
-        setExpandedMonths((prev) => {
-            const next = new Set(prev);
-            if (next.has(month)) {
-                next.delete(month);
-            } else {
-                next.add(month);
-            }
-            return next;
-        });
-    };
+    const [activeTab, setActiveTab] = useState(0);
+    const [setFilter, setSetFilter] = useState('');
 
     useEffect(() => {
         const filtered = cardmarketOrders
@@ -86,46 +75,42 @@ export default function Statistik() {
 
         return Array.from(ordersByMonthMap.entries())
             .sort(([a], [b]) => a.localeCompare(b))
-            .map(([month, orders]) => {
-                const setMap = new Map<string, { totalValue: number; shipmentCost: number; merchandiseValue: number }>();
-
-                orders.forEach((order) => {
-                    const items = order.orderItems ?? [];
-                    const itemsTotal = items.reduce((sum, item) => sum + item.price * item.count, 0);
-
-                    items.forEach((item) => {
-                        const konamiSet = item.card.id.konamiSet;
-                        const itemMerch = item.price * item.count;
-                        const proportion = itemsTotal > 0 ? itemMerch / itemsTotal : 1 / items.length;
-                        const itemShipment = order.shipment_cost * proportion;
-
-                        if (!setMap.has(konamiSet)) {
-                            setMap.set(konamiSet, { totalValue: 0, shipmentCost: 0, merchandiseValue: 0 });
-                        }
-                        const existing = setMap.get(konamiSet)!;
-                        existing.merchandiseValue += itemMerch;
-                        existing.shipmentCost += itemShipment;
-                        existing.totalValue += itemMerch + itemShipment;
-                    });
-                });
-
-                const products = Array.from(setMap.entries()).map(([konamiSet, values]) => ({
-                    konamiSet,
-                    totalValue: Math.round(values.totalValue * 100) / 100,
-                    shipmentCost: Math.round(values.shipmentCost * 100) / 100,
-                    merchandiseValue: Math.round(values.merchandiseValue * 100) / 100,
-                }));
-
-                return {
-                    month,
-                    totalValue: sumAndRound(orders.map((o) => o.total_value)),
-                    shipmentCost: sumAndRound(orders.map((o) => o.shipment_cost)),
-                    commission: sumAndRound(orders.map((o) => o.commission)),
-                    merchandiseValue: sumAndRound(orders.map((o) => o.merchandise_value)),
-                    products,
-                };
-            });
+            .map(([month, orders]) => ({
+                month,
+                totalValue: sumAndRound(orders.map((o) => o.total_value)),
+                shipmentCost: sumAndRound(orders.map((o) => o.shipment_cost)),
+                commission: sumAndRound(orders.map((o) => o.commission)),
+                merchandiseValue: sumAndRound(orders.map((o) => o.merchandise_value)),
+            }));
     }, [filteredOrders]);
+
+    const setStats = useMemo(() => {
+        const setMap = new Map<string, number>();
+        filteredOrders.forEach((order) => {
+            const items = order.orderItems ?? [];
+            items.forEach((item) => {
+                const konamiSet = item.card.id.konamiSet;
+                const itemMerch = item.price * item.count;
+                setMap.set(konamiSet, (setMap.get(konamiSet) ?? 0) + itemMerch);
+            });
+        });
+        return Array.from(setMap.entries())
+            .map(([konamiSet, merchandiseValue]) => ({
+                konamiSet,
+                merchandiseValue: Math.round(merchandiseValue * 100) / 100,
+            }))
+            .sort((a, b) => a.konamiSet.localeCompare(b.konamiSet));
+    }, [filteredOrders]);
+
+    const filteredSetStats = useMemo(
+        () =>
+            setFilter.trim() === ''
+                ? setStats
+                : setStats.filter((s) =>
+                      s.konamiSet.toLowerCase().includes(setFilter.trim().toLowerCase())
+                  ),
+        [setStats, setFilter]
+    );
 
     return (
         <Box style={{ width: '100%' }}>
@@ -139,93 +124,85 @@ export default function Statistik() {
                         </IconButton>
                     </Stack>
                 </Grid2>
-                <TableContainer component={Paper}>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><strong>Monat</strong></TableCell>
-                                <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
-                                <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
-                                <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
-                                <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {monthlyStats.length > 0 ? (
-                                monthlyStats.map((stat) => (
-                                    <React.Fragment key={stat.month}>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Stack direction="row" alignItems="center" spacing={0.5}>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => toggleMonth(stat.month)}
-                                                        aria-label={expandedMonths.has(stat.month) ? 'Einklappen' : 'Ausklappen'}
-                                                    >
-                                                        {expandedMonths.has(stat.month)
-                                                            ? <KeyboardArrowUpIcon fontSize="small" />
-                                                            : <KeyboardArrowDownIcon fontSize="small" />}
-                                                    </IconButton>
-                                                    {stat.month}
-                                                </Stack>
-                                            </TableCell>
+                <Tabs value={activeTab} onChange={(_e, val) => setActiveTab(val)} aria-label="Statistik Tabs">
+                    <Tab label="Monatsübersicht" />
+                    <Tab label="Set-Statistik" />
+                </Tabs>
+                {activeTab === 0 && (
+                    <TableContainer component={Paper}>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><strong>Monat</strong></TableCell>
+                                    <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
+                                    <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
+                                    <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
+                                    <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {monthlyStats.length > 0 ? (
+                                    monthlyStats.map((stat) => (
+                                        <TableRow key={stat.month}>
+                                            <TableCell>{stat.month}</TableCell>
                                             <TableCell align="right">{stat.totalValue}</TableCell>
                                             <TableCell align="right">{stat.shipmentCost}</TableCell>
                                             <TableCell align="right">{stat.commission}</TableCell>
                                             <TableCell align="right">{stat.merchandiseValue}</TableCell>
                                         </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={5}>
+                                            <Typography variant="body2" color="textSecondary">
+                                                Keine Daten vorhanden.
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+                {activeTab === 1 && (
+                    <Stack spacing={2}>
+                        <TextField
+                            label="Set filtern"
+                            value={setFilter}
+                            onChange={(e) => setSetFilter(e.target.value)}
+                            size="small"
+                            inputProps={{ 'aria-label': 'Set filtern' }}
+                        />
+                        <TableContainer component={Paper}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell><strong>Set</strong></TableCell>
+                                        <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredSetStats.length > 0 ? (
+                                        filteredSetStats.map((s) => (
+                                            <TableRow key={s.konamiSet}>
+                                                <TableCell>{s.konamiSet}</TableCell>
+                                                <TableCell align="right">{s.merchandiseValue}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} sx={{ py: 0 }}>
-                                                <Collapse in={expandedMonths.has(stat.month)} timeout="auto" unmountOnExit>
-                                                    <Box sx={{ margin: 1 }}>
-                                                        <Table size="small">
-                                                            <TableHead>
-                                                                <TableRow>
-                                                                    <TableCell><strong>Set</strong></TableCell>
-                                                                    <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
-                                                                    <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
-                                                                    <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
-                                                                </TableRow>
-                                                            </TableHead>
-                                                            <TableBody>
-                                                                {stat.products.length > 0 ? (
-                                                                    stat.products.map((product, index) => (
-                                                                        <TableRow key={`${product.konamiSet}-${index}`}>
-                                                                            <TableCell>{product.konamiSet}</TableCell>
-                                                                            <TableCell align="right">{product.totalValue}</TableCell>
-                                                                            <TableCell align="right">{product.shipmentCost}</TableCell>
-                                                                            <TableCell align="right">{product.merchandiseValue}</TableCell>
-                                                                        </TableRow>
-                                                                    ))
-                                                                ) : (
-                                                                    <TableRow>
-                                                                        <TableCell colSpan={4}>
-                                                                            <Typography variant="body2" color="textSecondary">
-                                                                                Keine Produktdaten vorhanden.
-                                                                            </Typography>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                )}
-                                                            </TableBody>
-                                                        </Table>
-                                                    </Box>
-                                                </Collapse>
+                                            <TableCell colSpan={2}>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Keine Daten vorhanden.
+                                                </Typography>
                                             </TableCell>
                                         </TableRow>
-                                    </React.Fragment>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={5}>
-                                        <Typography variant="body2" color="textSecondary">
-                                            Keine Daten vorhanden.
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Stack>
+                )}
             </Stack>
         </Box>
     );
