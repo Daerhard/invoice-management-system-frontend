@@ -8,8 +8,9 @@ import {
     startDateSelectAtom, endDateSelectAtom, businessCustomerSelectAtom,
 } from '../../store/Global'
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { Box, Chip, Divider, IconButton, List, Pagination, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Divider, List, Pagination, Stack, Typography } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import ListAltIcon from '@mui/icons-material/ListAlt'
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
@@ -63,6 +64,7 @@ export default function CardmarketOrders() {
                 <Box>
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                         <Stack direction="row" alignItems="center" spacing={1.5}>
+                            <ListAltIcon sx={{ color: 'primary.main', fontSize: 28 }} />
                             <Typography variant="h5">Bestellungen</Typography>
                             {filteredCardmarketOrders && filteredCardmarketOrders.length > 0 && (
                                 <Chip
@@ -72,22 +74,26 @@ export default function CardmarketOrders() {
                                     sx={{ fontWeight: 600, borderRadius: 1 }}
                                 />
                             )}
-                            <IconButton
+                        </Stack>
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                            <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                startIcon={<FilterListIcon />}
                                 onClick={() => setDrawerOpen(true)}
                                 aria-label="Filter öffnen"
-                                size="small"
-                                sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
                             >
-                                <FilterListIcon />
-                            </IconButton>
+                                Filter
+                            </Button>
+                            <Pagination
+                                count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
+                                page={page}
+                                onChange={(_, newValue) => handlePageChange(newValue)}
+                                shape="rounded"
+                                color="primary"
+                            />
                         </Stack>
-                        <Pagination
-                            count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
-                            page={page}
-                            onChange={(_, newValue) => handlePageChange(newValue)}
-                            shape="rounded"
-                            color="primary"
-                        />
                     </Stack>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                         Übersicht aller Cardmarket-Bestellungen

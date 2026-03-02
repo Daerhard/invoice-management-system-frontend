@@ -52,72 +52,88 @@ const renderWithStore = (orders = mockOrders) => {
 };
 
 describe('Statistik', () => {
-    it('renders monthly rows with expand toggle buttons', () => {
+    it('renders both tabs', () => {
+        renderWithStore();
+        expect(screen.getByRole('tab', { name: 'Monatsübersicht' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Set-Statistik' })).toBeInTheDocument();
+    });
+
+    it('shows monthly rows in Monatsübersicht tab by default', () => {
         renderWithStore();
         expect(screen.getByText('2024-01')).toBeInTheDocument();
         expect(screen.getByText('2024-02')).toBeInTheDocument();
-        expect(screen.getAllByLabelText('Ausklappen')).toHaveLength(2);
     });
 
-    it('product details are hidden before expansion', () => {
+    it('monthly tab no longer has expand/collapse buttons', () => {
         renderWithStore();
-        expect(screen.queryByText('Darkwing Blast')).not.toBeInTheDocument();
-        expect(screen.queryByText('Phantom Rage')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Ausklappen')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Einklappen')).not.toBeInTheDocument();
     });
 
-    it('expands month to show product breakdown', () => {
-        renderWithStore();
-        const expandButtons = screen.getAllByLabelText('Ausklappen');
-        fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Darkwing Blast')).toBeInTheDocument();
-        expect(screen.getByText('Phantom Rage')).toBeInTheDocument();
-    });
-
-    it('collapses month to hide product details', () => {
-        renderWithStore();
-        const expandButtons = screen.getAllByLabelText('Ausklappen');
-        fireEvent.click(expandButtons[0]);
-        // After expanding, button label changes to Einklappen
-        expect(screen.getByLabelText('Einklappen')).toBeInTheDocument();
-        fireEvent.click(screen.getByLabelText('Einklappen'));
-        // After collapsing, button label returns to Ausklappen
-        expect(screen.getAllByLabelText('Ausklappen')).toHaveLength(2);
-    });
-
-    it('product sub-table does not show Cardmarket Gebühren column', () => {
-        renderWithStore();
-        const expandButtons = screen.getAllByLabelText('Ausklappen');
-        fireEvent.click(expandButtons[0]);
-        const gebührenHeaders = screen.getAllByText(/Cardmarket Geb/i);
-        // Only the main table header should show it, not the product sub-table
-        expect(gebührenHeaders).toHaveLength(1);
-    });
-
-    it('shows product sub-table headers: Set, Gesamtwert, Versandkosten, Warenwert', () => {
-        renderWithStore();
-        const expandButtons = screen.getAllByLabelText('Ausklappen');
-        fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Set')).toBeInTheDocument();
-    });
-
-    it('expanding one month does not expand other months', () => {
-        renderWithStore();
-        const expandButtons = screen.getAllByLabelText('Ausklappen');
-        fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Darkwing Blast')).toBeInTheDocument();
-        expect(screen.queryByText('Legend of Blue Eyes')).not.toBeInTheDocument();
-    });
-
-    it('shows no data message when orders list is empty', () => {
+    it('shows no data message when orders list is empty on Monatsübersicht tab', () => {
         renderWithStore([]);
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
     });
 
-    it('shows no product data message when order has no items', () => {
-        const ordersWithNoItems = [{ ...mockOrders[0], orderItems: undefined }];
-        renderWithStore(ordersWithNoItems as any);
-        const expandButtons = screen.getAllByLabelText('Ausklappen');
-        fireEvent.click(expandButtons[0]);
-        expect(screen.getByText('Keine Produktdaten vorhanden.')).toBeInTheDocument();
+    it('switches to Set-Statistik tab and shows set filter input', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        expect(screen.getByLabelText('Set filtern')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab shows sets with aggregated Warenwert', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        expect(screen.getByText('Darkwing Blast')).toBeInTheDocument();
+        expect(screen.getByText('Phantom Rage')).toBeInTheDocument();
+        expect(screen.getByText('Legend of Blue Eyes')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab only shows Warenwert column (no Gesamtwert or Versandkosten)', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        expect(screen.queryByText('Gesamtwert (€)')).not.toBeInTheDocument();
+        expect(screen.queryByText('Versandkosten (€)')).not.toBeInTheDocument();
+        expect(screen.getByText('Warenwert (€)')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab filter narrows the set list', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        const filterInput = screen.getByLabelText('Set filtern');
+        fireEvent.change(filterInput, { target: { value: 'Darkwing' } });
+        expect(screen.getByText('Darkwing Blast')).toBeInTheDocument();
+        expect(screen.queryByText('Phantom Rage')).not.toBeInTheDocument();
+        expect(screen.queryByText('Legend of Blue Eyes')).not.toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab filter is case-insensitive', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        const filterInput = screen.getByLabelText('Set filtern');
+        fireEvent.change(filterInput, { target: { value: 'phantom' } });
+        expect(screen.getByText('Phantom Rage')).toBeInTheDocument();
+        expect(screen.queryByText('Darkwing Blast')).not.toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab shows no data message when filter matches nothing', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        const filterInput = screen.getByLabelText('Set filtern');
+        fireEvent.change(filterInput, { target: { value: 'zzznomatch' } });
+        expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab shows no data message when orders list is empty', () => {
+        renderWithStore([]);
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik aggregates Warenwert correctly for Darkwing Blast', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        // Darkwing Blast: 10.00 * 1 = 10
+        expect(screen.getByText('10')).toBeInTheDocument();
     });
 });
