@@ -12,7 +12,7 @@ import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
     Box,
     Collapse,
-    Grid2,
+    Divider,
     IconButton,
     Paper,
     Stack,
@@ -130,16 +130,25 @@ export default function Statistik() {
     return (
         <Box style={{ width: '100%' }}>
             <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-            <Stack spacing={4} width="100%">
-                <Grid2 container direction="row" justifyContent="space-between" alignItems="center" marginBottom="0.5rem">
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="h6">Statistik</Typography>
-                        <IconButton onClick={() => setDrawerOpen(true)} aria-label="Filter öffnen" size="small">
+            <Stack spacing={3} width="100%">
+                <Box>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <Typography variant="h5">Statistik</Typography>
+                        <IconButton
+                            onClick={() => setDrawerOpen(true)}
+                            aria-label="Filter öffnen"
+                            size="small"
+                            sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                        >
                             <FilterListIcon />
                         </IconButton>
                     </Stack>
-                </Grid2>
-                <TableContainer component={Paper}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Monatliche Umsatzübersicht nach Cardmarket-Bestellungen
+                    </Typography>
+                    <Divider sx={{ mt: 2 }} />
+                </Box>
+                <TableContainer component={Paper} elevation={0}>
                     <Table size="small">
                         <TableHead>
                             <TableRow>
@@ -175,9 +184,9 @@ export default function Statistik() {
                                             <TableCell align="right">{stat.merchandiseValue}</TableCell>
                                         </TableRow>
                                         <TableRow>
-                                            <TableCell colSpan={5} sx={{ py: 0 }}>
+                                            <TableCell colSpan={5} sx={{ py: 0, borderBottom: 0 }}>
                                                 <Collapse in={expandedMonths.has(stat.month)} timeout="auto" unmountOnExit>
-                                                    <Box sx={{ margin: 1 }}>
+                                                    <Box sx={{ mx: 1, my: 1.5 }}>
                                                         <Table size="small">
                                                             <TableHead>
                                                                 <TableRow>
@@ -200,7 +209,7 @@ export default function Statistik() {
                                                                 ) : (
                                                                     <TableRow>
                                                                         <TableCell colSpan={4}>
-                                                                            <Typography variant="body2" color="textSecondary">
+                                                                            <Typography variant="body2" color="text.secondary">
                                                                                 Keine Produktdaten vorhanden.
                                                                             </Typography>
                                                                         </TableCell>
@@ -217,7 +226,7 @@ export default function Statistik() {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={5}>
-                                        <Typography variant="body2" color="textSecondary">
+                                        <Typography variant="body2" color="text.secondary">
                                             Keine Daten vorhanden.
                                         </Typography>
                                     </TableCell>
