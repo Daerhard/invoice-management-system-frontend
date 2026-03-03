@@ -137,3 +137,4 @@ describe('Statistik', () => {
         expect(screen.getByText('10')).toBeInTheDocument();
     });
 });
+
