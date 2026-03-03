@@ -13,6 +13,9 @@ module.exports = {
             operations: {
                 getPDFInvoices: {
                     responseType: 'blob',
+                },
+                getPurchaseInvoicePdf: {
+                    responseType: 'blob',
                 }
             }
         }
