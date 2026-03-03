@@ -13,11 +13,9 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
 import dayjs from 'dayjs'
-import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 import useCustomers from '../../api/hooks/useCustomers'
 
 export default function CardmarketOrders() {
-    useCardmarketOrders()
     useCustomers()
 
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)

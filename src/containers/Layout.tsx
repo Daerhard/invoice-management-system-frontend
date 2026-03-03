@@ -5,6 +5,7 @@ import CardmarketOrders from './cardmarketOrders/CardmarketOrders'
 import Import from './import/Import'
 import Statistik from './statistik/Statistik'
 import Einkaeufe from './einkaeufe/Einkaeufe'
+import Home from './home/Home'
 import { Route, Routes } from 'react-router-dom'
 
 export default function Layout() {
@@ -14,6 +15,7 @@ export default function Layout() {
             <Menu />
             <Container maxWidth={false} sx={{ py: 4, flex: 1, maxWidth: '1400px !important' }}>
                 <Routes>
+                    <Route path="/" element={<Home />} />
                     <Route path="/bestellungen" element={<CardmarketOrders/>} />
                     <Route path="/einkaeufe" element={<Einkaeufe/>} />
                     <Route path="/statistik" element={<Statistik/>} />
