@@ -1,23 +1,85 @@
 import React, { useState } from 'react';
 import {
+    Alert,
     Box,
     Button,
+    CircularProgress,
     Divider,
     Stack,
     TextField,
     Typography,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { createPurchaseInvoice } from '../../api/generated/purchase-invoices';
+import { CreatePurchaseInvoiceBody } from '../../api/generated/Schemas';
 
 export default function Einkaeufe() {
     const [produktname, setProduktname] = useState('');
     const [menge, setMenge] = useState('');
     const [preis, setPreis] = useState('');
     const [datum, setDatum] = useState('');
+    const [pdfFile, setPdfFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selected = e.target.files?.[0] ?? null;
+        if (selected && selected.type === 'application/pdf') {
+            setPdfFile(selected);
+            setError('');
+        } else {
+            setError('Bitte eine gültige PDF-Datei auswählen.');
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Placeholder: backend integration not yet implemented
+        if (!pdfFile) {
+            setError('Bitte eine PDF-Datei auswählen.');
+            return;
+        }
+        const parsedAmount = parseInt(menge, 10);
+        const parsedPrice = parseFloat(preis);
+        if (isNaN(parsedAmount) || parsedAmount < 1) {
+            setError('Bitte eine gültige Menge eingeben.');
+            return;
+        }
+        if (isNaN(parsedPrice) || parsedPrice < 0) {
+            setError('Bitte einen gültigen Preis eingeben.');
+            return;
+        }
+        setMessage('');
+        setError('');
+        setLoading(true);
+        const body: CreatePurchaseInvoiceBody = {
+            productName: produktname,
+            amount: parsedAmount,
+            price: parsedPrice,
+            invoiceDate: datum,
+            pdf: pdfFile,
+        };
+        try {
+            await createPurchaseInvoice(body);
+            setMessage('Einkauf erfolgreich gespeichert!');
+            setProduktname('');
+            setMenge('');
+            setPreis('');
+            setDatum('');
+            setPdfFile(null);
+        } catch (err: unknown) {
+            const msg =
+                typeof err === 'object' &&
+                err !== null &&
+                'response' in err &&
+                typeof (err as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+                    ? (err as { response: { data: { message: string } } }).response.data.message
+                    : '';
+            setError(`Speichern fehlgeschlagen.${msg ? ` ${msg}` : ''}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -41,6 +103,7 @@ export default function Einkaeufe() {
                             onChange={(e) => setProduktname(e.target.value)}
                             size="small"
                             fullWidth
+                            required
                         />
                         <TextField
                             label="Menge"
@@ -49,6 +112,7 @@ export default function Einkaeufe() {
                             onChange={(e) => setMenge(e.target.value)}
                             size="small"
                             fullWidth
+                            required
                             inputProps={{ min: '1', step: '1' }}
                         />
                         <TextField
@@ -58,6 +122,7 @@ export default function Einkaeufe() {
                             onChange={(e) => setPreis(e.target.value)}
                             size="small"
                             fullWidth
+                            required
                             inputProps={{ min: '0', step: '0.01' }}
                         />
                         <TextField
@@ -67,13 +132,66 @@ export default function Einkaeufe() {
                             onChange={(e) => setDatum(e.target.value)}
                             size="small"
                             fullWidth
+                            required
                             InputLabelProps={{ shrink: true }}
                         />
-                        <Button type="submit" variant="contained" color="primary">
-                            Hinzufügen
+                        <Box
+                            component="label"
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                border: '2px dashed',
+                                borderColor: pdfFile ? 'primary.main' : 'divider',
+                                borderRadius: 1,
+                                p: 2,
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                bgcolor: pdfFile ? 'action.hover' : 'background.default',
+                                '&:hover': { borderColor: 'primary.main' },
+                            }}
+                        >
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                            />
+                            <UploadFileIcon
+                                sx={{
+                                    fontSize: 32,
+                                    color: pdfFile ? 'primary.main' : 'text.disabled',
+                                    mb: 0.5,
+                                }}
+                            />
+                            <Typography variant="body2" color={pdfFile ? 'primary.main' : 'text.secondary'}>
+                                {pdfFile ? pdfFile.name : 'PDF-Rechnung auswählen'}
+                            </Typography>
+                            <Typography variant="caption" color="text.disabled">
+                                Nur PDF-Dateien werden unterstützt
+                            </Typography>
+                        </Box>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={loading}
+                            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : undefined}
+                        >
+                            {loading ? 'Speichern…' : 'Hinzufügen'}
                         </Button>
                     </Stack>
                 </Box>
+                {message && (
+                    <Alert severity="success" onClose={() => setMessage('')}>
+                        {message}
+                    </Alert>
+                )}
+                {error && (
+                    <Alert severity="error" onClose={() => setError('')}>
+                        {error}
+                    </Alert>
+                )}
             </Stack>
         </Box>
     );
