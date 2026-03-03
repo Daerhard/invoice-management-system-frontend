@@ -15,6 +15,9 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Dayjs } from 'dayjs';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useAtom } from 'jotai';
 import { einkaeufeAtom, Einkauf } from '../../store/Global';
@@ -25,13 +28,13 @@ export default function Einkaeufe() {
     const [produktname, setProduktname] = useState('');
     const [anzahlDisplays, setAnzahlDisplays] = useState('');
     const [preis, setPreis] = useState('');
-    const [datum, setDatum] = useState('');
+    const [datum, setDatum] = useState<Dayjs | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const parsedAnzahl = parseInt(anzahlDisplays, 10);
         const parsedPreis = parseFloat(preis);
-        if (!Number.isFinite(parsedAnzahl) || !Number.isFinite(parsedPreis)) {
+        if (!Number.isFinite(parsedAnzahl) || !Number.isFinite(parsedPreis) || !datum) {
             return;
         }
         const neuerEinkauf: Einkauf = {
@@ -39,13 +42,13 @@ export default function Einkaeufe() {
             produktname,
             anzahlDisplays: parsedAnzahl,
             preis: parsedPreis,
-            datum,
+            datum: datum.format('YYYY-MM-DD'),
         };
         setEinkaeufe((prev) => [...prev, neuerEinkauf]);
         setProduktname('');
         setAnzahlDisplays('');
         setPreis('');
-        setDatum('');
+        setDatum(null);
     };
 
     return (
@@ -62,52 +65,57 @@ export default function Einkaeufe() {
                     <Divider sx={{ mt: 2 }} />
                 </Box>
                 <Box component="form" onSubmit={handleSubmit}>
-                    <Stack spacing={2} maxWidth={400}>
-                        <TextField
-                            label="Produktname"
-                            value={produktname}
-                            onChange={(e) => setProduktname(e.target.value)}
-                            size="small"
-                            fullWidth
-                            required
-                        />
-                        <TextField
-                            label="Anzahl Displays"
-                            type="number"
-                            value={anzahlDisplays}
-                            onChange={(e) => setAnzahlDisplays(e.target.value)}
-                            size="small"
-                            fullWidth
-                            required
-                            inputProps={{ min: '1', step: '1' }}
-                        />
-                        <TextField
-                            label="Preis"
-                            type="number"
-                            value={preis}
-                            onChange={(e) => setPreis(e.target.value)}
-                            size="small"
-                            fullWidth
-                            required
-                            inputProps={{ min: '0', step: '0.01' }}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start">€</InputAdornment>,
-                            }}
-                        />
-                        <TextField
-                            label="Datum"
-                            type="date"
-                            value={datum}
-                            onChange={(e) => setDatum(e.target.value)}
-                            size="small"
-                            fullWidth
-                            required
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <Button type="submit" variant="contained" color="primary">
-                            Hinzufügen
-                        </Button>
-                    </Stack>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <Stack spacing={2} maxWidth={400}>
+                            <TextField
+                                label="Produktname"
+                                value={produktname}
+                                onChange={(e) => setProduktname(e.target.value)}
+                                size="small"
+                                fullWidth
+                                required
+                            />
+                            <TextField
+                                label="Anzahl Displays"
+                                type="number"
+                                value={anzahlDisplays}
+                                onChange={(e) => setAnzahlDisplays(e.target.value)}
+                                size="small"
+                                fullWidth
+                                required
+                                inputProps={{ min: '1', step: '1' }}
+                            />
+                            <TextField
+                                label="Preis"
+                                type="number"
+                                value={preis}
+                                onChange={(e) => setPreis(e.target.value)}
+                                size="small"
+                                fullWidth
+                                required
+                                inputProps={{ min: '0', step: '0.01' }}
+                                InputProps={{
+                                    startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                                }}
+                            />
+                            <DatePicker
+                                label="Datum"
+                                value={datum}
+                                onChange={(newValue) => setDatum(newValue)}
+                                format="DD.MM.YYYY"
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        fullWidth: true,
+                                        required: true,
+                                    },
+                                }}
+                            />
+                            <Button type="submit" variant="contained" color="primary">
+                                Hinzufügen
+                            </Button>
+                        </Stack>
+                    </LocalizationProvider>
                 </Box>
                 {einkaeufe.length > 0 && (
                     <Box>

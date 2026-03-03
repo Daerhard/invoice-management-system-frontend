@@ -2,6 +2,31 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
 import Einkaeufe from './Einkaeufe';
+import dayjs from 'dayjs';
+
+jest.mock('@mui/x-date-pickers', () => {
+    const React = require('react');
+    const dayjs = require('dayjs');
+    return {
+        LocalizationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+        DatePicker: ({ value, onChange, label, slotProps }: any) => {
+            const { size, fullWidth, required, ...rest } = slotProps?.textField ?? {};
+            return (
+                <input
+                    aria-label={label}
+                    value={value ? value.format('YYYY-MM-DD') : ''}
+                    onChange={(e) => onChange(e.target.value ? dayjs(e.target.value) : null)}
+                    required={required}
+                    {...rest}
+                />
+            );
+        },
+    };
+});
+
+jest.mock('@mui/x-date-pickers/AdapterDayjs', () => ({
+    AdapterDayjs: class {},
+}));
 
 const renderWithProvider = () => {
     const store = createStore();
@@ -50,6 +75,7 @@ describe('Einkaeufe', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
 
         expect(produktnameInput.value).toBe('');
+        expect((screen.getByLabelText(/Datum/) as HTMLInputElement).value).toBe('');
     });
 
     it('does not show the list when no Einkäufe have been added', () => {
