@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-    Card, CardContent, CardHeader, Collapse, Stack, Typography,
+    Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Typography,
 } from '@mui/material';
 import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,11 +23,15 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
 
 
     return (
-        <Card sx={{ width: '100%', marginBottom: '0.2rem' }}>
+        <Card sx={{ width: '100%', marginBottom: '0.4rem' }}>
             <CardHeader
-                avatar={<FontAwesomeIcon icon={faFileLines} size="2x" />}
+                avatar={
+                    <Box sx={{ color: 'primary.main' }}>
+                        <FontAwesomeIcon icon={faFileLines} size="lg" />
+                    </Box>
+                }
                 action={
-                    <Stack direction="row" sx={{ justifyContent: 'left' }}>
+                    <Stack direction="row" alignItems="center" sx={{ justifyContent: 'left' }}>
                         <CustomIconButton
                             title="Öffne Bestelldetails"
                             titleVariant="body2"
@@ -56,19 +60,35 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                     </Stack>
                 }
                 title={
-                    <Typography variant="body2">
-                        {`Kunde: ${cardmarketOrder.customer.user_name} ${cardmarketOrder.customer.is_professional ? ' - gewerblich' : ''}`}
-                    </Typography>
-                }
-                subheader={
-                    <Stack direction="row" spacing={6}>
-                        <Typography variant="body2">{`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}</Typography>
-                        <Typography variant="body2">{`Bestellnummer: ${cardmarketOrder.order_id}`}</Typography>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography variant="body2" fontWeight={600}>
+                            {`Kunde: ${cardmarketOrder.customer.user_name}`}
+                        </Typography>
+                        {cardmarketOrder.customer.is_professional && (
+                            <Chip
+                                label="Gewerblich"
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                sx={{ height: 18, fontSize: '0.65rem', borderRadius: 1 }}
+                            />
+                        )}
                     </Stack>
                 }
+                subheader={
+                    <Stack direction="row" spacing={3} sx={{ mt: 0.25 }}>
+                        <Typography variant="body2" color="text.secondary">
+                            {`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {`Bestellnummer: ${cardmarketOrder.order_id}`}
+                        </Typography>
+                    </Stack>
+                }
+                sx={{ pb: open ? 0 : undefined }}
             />
             <Collapse in={open} timeout="auto" unmountOnExit>
-                <CardContent>
+                <CardContent sx={{ pt: 0 }}>
                     <OrderItemContent cardmarketOrder={cardmarketOrder} />
                 </CardContent>
             </Collapse>

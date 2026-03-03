@@ -11,6 +11,8 @@ import {
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
     Box,
+    Button,
+    Divider,
     Grid2,
     IconButton,
     Paper,
@@ -27,6 +29,7 @@ import {
     Typography,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
 import dayjs from 'dayjs';
 
@@ -115,21 +118,40 @@ export default function Statistik() {
     return (
         <Box style={{ width: '100%' }}>
             <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-            <Stack spacing={4} width="100%">
-                <Grid2 container direction="row" justifyContent="space-between" alignItems="center" marginBottom="0.5rem">
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="h6">Statistik</Typography>
-                        <IconButton onClick={() => setDrawerOpen(true)} aria-label="Filter öffnen" size="small">
-                            <FilterListIcon />
-                        </IconButton>
+            <Stack spacing={3} width="100%">
+                <Box>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Stack direction="row" alignItems="center" spacing={1.5}>
+                            <BarChartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                            <Typography variant="h5">Statistik</Typography>
+                        </Stack>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            startIcon={<FilterListIcon />}
+                            onClick={() => setDrawerOpen(true)}
+                            aria-label="Filter öffnen"
+                        >
+                            Filter
+                        </Button>
                     </Stack>
-                </Grid2>
-                <Tabs value={activeTab} onChange={(_e, val) => setActiveTab(val)} aria-label="Statistik Tabs">
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Monatliche Umsatzübersicht nach Cardmarket-Bestellungen
+                    </Typography>
+                    <Divider sx={{ mt: 2 }} />
+                </Box>
+                <Tabs
+                    value={activeTab}
+                    onChange={(_e, val) => setActiveTab(val)}
+                    aria-label="Statistik Tabs"
+                    sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 40 }}
+                >
                     <Tab label="Monatsübersicht" />
                     <Tab label="Set-Statistik" />
                 </Tabs>
                 {activeTab === 0 && (
-                    <TableContainer component={Paper}>
+                    <TableContainer component={Paper} elevation={0}>
                         <Table size="small">
                             <TableHead>
                                 <TableRow>
@@ -154,7 +176,7 @@ export default function Statistik() {
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={5}>
-                                            <Typography variant="body2" color="textSecondary">
+                                            <Typography variant="body2" color="text.secondary">
                                                 Keine Daten vorhanden.
                                             </Typography>
                                         </TableCell>
@@ -173,7 +195,7 @@ export default function Statistik() {
                             size="small"
                             inputProps={{ 'aria-label': 'Set filtern' }}
                         />
-                        <TableContainer component={Paper}>
+                        <TableContainer component={Paper} elevation={0}>
                             <Table size="small">
                                 <TableHead>
                                     <TableRow>
@@ -192,7 +214,7 @@ export default function Statistik() {
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={2}>
-                                                <Typography variant="body2" color="textSecondary">
+                                                <Typography variant="body2" color="text.secondary">
                                                     Keine Daten vorhanden.
                                                 </Typography>
                                             </TableCell>

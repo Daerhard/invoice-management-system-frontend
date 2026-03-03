@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import {
     Box,
     Button,
-    Grid2,
+    Divider,
     Stack,
     TextField,
     Typography,
 } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 export default function Einkaeufe() {
     const [produktname, setProduktname] = useState('');
@@ -21,10 +22,17 @@ export default function Einkaeufe() {
 
     return (
         <Box style={{ width: '100%' }}>
-            <Stack spacing={4} width="100%">
-                <Grid2 container direction="row" justifyContent="space-between" alignItems="center" marginBottom="0.5rem">
-                    <Typography variant="h6">Einkäufe</Typography>
-                </Grid2>
+            <Stack spacing={3} width="100%">
+                <Box>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <ShoppingCartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                        <Typography variant="h5">Einkäufe</Typography>
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Einkäufe manuell erfassen und verwalten
+                    </Typography>
+                    <Divider sx={{ mt: 2 }} />
+                </Box>
                 <Box component="form" onSubmit={handleSubmit}>
                     <Stack spacing={2} maxWidth={400}>
                         <TextField
@@ -61,7 +69,7 @@ export default function Einkaeufe() {
                             fullWidth
                             InputLabelProps={{ shrink: true }}
                         />
-                        <Button type="submit" variant="contained" sx={{ backgroundColor: '#C28840' }}>
+                        <Button type="submit" variant="contained" color="primary">
                             Hinzufügen
                         </Button>
                     </Stack>

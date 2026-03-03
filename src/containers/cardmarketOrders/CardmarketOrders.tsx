@@ -8,8 +8,9 @@ import {
     startDateSelectAtom, endDateSelectAtom, businessCustomerSelectAtom,
 } from '../../store/Global'
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { Box, Grid2, IconButton, List, Pagination, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Divider, List, Pagination, Stack, Typography } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import ListAltIcon from '@mui/icons-material/ListAlt'
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
 import dayjs from 'dayjs'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
@@ -59,28 +60,53 @@ export default function CardmarketOrders() {
     return (
         <Box style={{ width:'100%' }}>
             <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-            <Stack spacing={4} width="100%">
-                <List dense>
-                    <Grid2 container direction='row' justifyContent='space-between' alignItems='center' marginBottom='0.5rem' >
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                            <Typography variant="h6">Bestellungen</Typography>
-                            <IconButton onClick={() => setDrawerOpen(true)} aria-label="Filter öffnen" size="small">
-                                <FilterListIcon />
-                            </IconButton>
+            <Stack spacing={3} width="100%">
+                <Box>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Stack direction="row" alignItems="center" spacing={1.5}>
+                            <ListAltIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                            <Typography variant="h5">Bestellungen</Typography>
+                            {filteredCardmarketOrders && filteredCardmarketOrders.length > 0 && (
+                                <Chip
+                                    label={filteredCardmarketOrders.length}
+                                    size="small"
+                                    color="primary"
+                                    sx={{ fontWeight: 600, borderRadius: 1 }}
+                                />
+                            )}
                         </Stack>
-                        <Pagination
-                            count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
-                            page={page}
-                            onChange={(_, newValue) => handlePageChange(newValue)}
-                            shape="rounded"
-                        />
-                    </Grid2>
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                            <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                startIcon={<FilterListIcon />}
+                                onClick={() => setDrawerOpen(true)}
+                                aria-label="Filter öffnen"
+                            >
+                                Filter
+                            </Button>
+                            <Pagination
+                                count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
+                                page={page}
+                                onChange={(_, newValue) => handlePageChange(newValue)}
+                                shape="rounded"
+                                color="primary"
+                            />
+                        </Stack>
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Übersicht aller Cardmarket-Bestellungen
+                    </Typography>
+                    <Divider sx={{ mt: 2 }} />
+                </Box>
+                <List dense disablePadding>
                     {paginatedOrders.length > 0 ? (
                         paginatedOrders.map((order) => (
                             <OrderItem key={order.order_id} cardmarketOrder={order} />
                         ))
                     ) : (
-                        <Typography variant="body2" color="textSecondary">
+                        <Typography variant="body2" color="text.secondary">
                             Keine Bestellungen vorhanden.
                         </Typography>
                     )}
