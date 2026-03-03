@@ -1,22 +1,42 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
+    Autocomplete,
     Box,
     Button,
     CircularProgress,
     Divider,
+    InputAdornment,
     Stack,
     TextField,
     Typography,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { useAtom } from 'jotai';
 import { createPurchaseInvoice } from '../../api/generated/purchase-invoices';
 import { CreatePurchaseInvoiceBody } from '../../api/generated/Schemas';
+import { cardmarketOrdersAtom } from '../../store/Global';
+import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
 
 export default function Einkaeufe() {
-    const [produktname, setProduktname] = useState('');
-    const [menge, setMenge] = useState('');
+    useCardmarketOrders();
+
+    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
+
+    const konamiSets = useMemo(() => {
+        const sets = new Set<string>();
+        cardmarketOrders.forEach((order) =>
+            order.orderItems?.forEach((item) => {
+                const konamiSet = item.card?.id?.konamiSet;
+                if (konamiSet) sets.add(konamiSet);
+            })
+        );
+        return Array.from(sets).sort();
+    }, [cardmarketOrders]);
+
+    const [produktname, setProduktname] = useState<string | null>(null);
+    const [anzahlDisplays, setAnzahlDisplays] = useState('');
     const [preis, setPreis] = useState('');
     const [datum, setDatum] = useState('');
     const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -36,14 +56,18 @@ export default function Einkaeufe() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!produktname) {
+            setError('Bitte einen Produktnamen auswählen.');
+            return;
+        }
         if (!pdfFile) {
             setError('Bitte eine PDF-Datei auswählen.');
             return;
         }
-        const parsedAmount = parseInt(menge, 10);
+        const parsedAmount = parseInt(anzahlDisplays, 10);
         const parsedPrice = parseFloat(preis);
         if (isNaN(parsedAmount) || parsedAmount < 1) {
-            setError('Bitte eine gültige Menge eingeben.');
+            setError('Bitte eine gültige Anzahl Displays eingeben.');
             return;
         }
         if (isNaN(parsedPrice) || parsedPrice < 0) {
@@ -63,8 +87,8 @@ export default function Einkaeufe() {
         try {
             await createPurchaseInvoice(body);
             setMessage('Einkauf erfolgreich gespeichert!');
-            setProduktname('');
-            setMenge('');
+            setProduktname(null);
+            setAnzahlDisplays('');
             setPreis('');
             setDatum('');
             setPdfFile(null);
@@ -97,19 +121,24 @@ export default function Einkaeufe() {
                 </Box>
                 <Box component="form" onSubmit={handleSubmit}>
                     <Stack spacing={2} maxWidth={400}>
-                        <TextField
-                            label="Produktname"
+                        <Autocomplete
+                            options={konamiSets}
                             value={produktname}
-                            onChange={(e) => setProduktname(e.target.value)}
-                            size="small"
-                            fullWidth
-                            required
+                            onChange={(_, value) => setProduktname(value)}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Produktname"
+                                    size="small"
+                                    required
+                                />
+                            )}
                         />
                         <TextField
-                            label="Menge"
+                            label="Anzahl Displays"
                             type="number"
-                            value={menge}
-                            onChange={(e) => setMenge(e.target.value)}
+                            value={anzahlDisplays}
+                            onChange={(e) => setAnzahlDisplays(e.target.value)}
                             size="small"
                             fullWidth
                             required
@@ -124,6 +153,9 @@ export default function Einkaeufe() {
                             fullWidth
                             required
                             inputProps={{ min: '0', step: '0.01' }}
+                            InputProps={{
+                                endAdornment: <InputAdornment position="end">€</InputAdornment>,
+                            }}
                         />
                         <TextField
                             label="Datum"
