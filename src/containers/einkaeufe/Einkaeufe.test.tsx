@@ -1,31 +1,25 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
 import Einkaeufe from './Einkaeufe';
-import dayjs from 'dayjs';
 
-jest.mock('@mui/x-date-pickers', () => {
-    const React = require('react');
-    const dayjs = require('dayjs');
+jest.mock('@mui/material', () => {
+    const actual = jest.requireActual('@mui/material');
     return {
-        LocalizationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-        DatePicker: ({ value, onChange, label, slotProps }: any) => {
-            const { size, fullWidth, required, ...rest } = slotProps?.textField ?? {};
-            return (
-                <input
-                    aria-label={label}
-                    value={value ? value.format('YYYY-MM-DD') : ''}
-                    onChange={(e) => onChange(e.target.value ? dayjs(e.target.value) : null)}
-                    required={required}
-                    {...rest}
-                />
-            );
-        },
+        ...actual,
+        Autocomplete: ({ value, onChange }: any) =>
+            React.createElement('input', {
+                'aria-label': 'Produktname',
+                value: value ?? '',
+                onChange: (e: any) => onChange(null, e.target.value),
+            }),
     };
 });
 
-jest.mock('@mui/x-date-pickers/AdapterDayjs', () => ({
-    AdapterDayjs: class {},
+jest.mock('../../api/hooks/useCardmarketOrders', () => () => {});
+
+jest.mock('../../api/generated/purchase-invoices', () => ({
+    createPurchaseInvoice: jest.fn().mockResolvedValue({}),
 }));
 
 const renderWithProvider = () => {
@@ -47,7 +41,19 @@ describe('Einkaeufe', () => {
         expect(screen.getByRole('button', { name: 'Hinzufügen' })).toBeInTheDocument();
     });
 
-    it('saves an Einkauf and shows it in the list', () => {
+    it('shows error when produktname is missing on submit', async () => {
+        renderWithProvider();
+
+        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
+        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
+        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
+
+        expect(await screen.findByText('Bitte einen Produktnamen auswählen.')).toBeInTheDocument();
+    });
+
+    it('shows error when PDF is missing on submit', async () => {
         renderWithProvider();
 
         fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
@@ -57,42 +63,69 @@ describe('Einkaeufe', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
 
-        expect(screen.getByText('Supreme Darkness')).toBeInTheDocument();
-        expect(screen.getByText('24')).toBeInTheDocument();
-        expect(screen.getByText('1319.76')).toBeInTheDocument();
-        expect(screen.getByText('22.01.2025')).toBeInTheDocument();
+        expect(await screen.findByText('Bitte eine PDF-Datei auswählen.')).toBeInTheDocument();
     });
 
-    it('resets the form after submission', () => {
+    it('shows success message after successful submission', async () => {
+        const { createPurchaseInvoice } = require('../../api/generated/purchase-invoices');
+        createPurchaseInvoice.mockResolvedValue({});
+
         renderWithProvider();
 
-        const produktnameInput = screen.getByLabelText(/Produktname/) as HTMLInputElement;
-        fireEvent.change(produktnameInput, { target: { value: 'Supreme Darkness' } });
+        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
         fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
         fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
         fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
-
-        expect(produktnameInput.value).toBe('');
-        expect((screen.getByLabelText(/Datum/) as HTMLInputElement).value).toBe('');
-    });
-
-    it('does not show the list when no Einkäufe have been added', () => {
-        renderWithProvider();
-        expect(screen.queryByText('Erfasste Einkäufe')).not.toBeInTheDocument();
-    });
-
-    it('shows the list heading once an Einkauf is added', () => {
-        renderWithProvider();
-
-        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Test Produkt' } });
-        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '1' } });
-        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '10' } });
-        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-01' } });
+        const file = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        fireEvent.change(fileInput, { target: { files: [file] } });
 
         fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
 
-        expect(screen.getByText('Erfasste Einkäufe')).toBeInTheDocument();
+        expect(await screen.findByText('Einkauf erfolgreich gespeichert!')).toBeInTheDocument();
+    });
+
+    it('resets the form after successful submission', async () => {
+        const { createPurchaseInvoice } = require('../../api/generated/purchase-invoices');
+        createPurchaseInvoice.mockResolvedValue({});
+
+        renderWithProvider();
+
+        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
+        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
+        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
+        const datumInput = screen.getByLabelText(/Datum/) as HTMLInputElement;
+        fireEvent.change(datumInput, { target: { value: '2025-01-22' } });
+
+        const file = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        fireEvent.change(fileInput, { target: { files: [file] } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
+
+        await waitFor(() => {
+            expect(datumInput.value).toBe('');
+        });
+    });
+
+    it('shows an error message when the API call fails', async () => {
+        const { createPurchaseInvoice } = require('../../api/generated/purchase-invoices');
+        createPurchaseInvoice.mockRejectedValue({ response: { data: { message: 'Server error' } } });
+
+        renderWithProvider();
+
+        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
+        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
+        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
+        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
+
+        const file = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        fireEvent.change(fileInput, { target: { files: [file] } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
+
+        expect(await screen.findByText('Speichern fehlgeschlagen. Server error')).toBeInTheDocument();
     });
 });
