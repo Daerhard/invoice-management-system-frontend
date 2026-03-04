@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
     Alert,
     Autocomplete,
@@ -15,11 +15,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { useAtom } from 'jotai';
-import { cardmarketOrdersAtom, purchaseInvoicesAtom } from '../../store/Global';
-import { createPurchaseInvoice } from '../../api/generated/purchase-invoices';
-import { CreatePurchaseInvoiceBody, PurchaseInvoice } from '../../api/generated/Schemas';
-import { AxiosResponse } from 'axios';
+import usePurchaseInvoiceForm from '../../api/hooks/usePurchaseInvoiceForm';
 
 interface AddPurchaseInvoiceDrawerProps {
     open: boolean;
@@ -27,104 +23,25 @@ interface AddPurchaseInvoiceDrawerProps {
 }
 
 export default function AddPurchaseInvoiceDrawer({ open, onClose }: AddPurchaseInvoiceDrawerProps) {
-    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
-    const [, setPurchaseInvoices] = useAtom(purchaseInvoicesAtom);
-
-    const konamiSets = useMemo(() => {
-        const sets = new Set<string>();
-        cardmarketOrders.forEach((order) =>
-            order.orderItems?.forEach((item) => {
-                const konamiSet = item.card?.id?.konamiSet;
-                if (konamiSet) sets.add(konamiSet);
-            })
-        );
-        return Array.from(sets).sort();
-    }, [cardmarketOrders]);
-
-    const [produktname, setProduktname] = useState<string | null>(null);
-    const [anzahlDisplays, setAnzahlDisplays] = useState('');
-    const [preis, setPreis] = useState('');
-    const [datum, setDatum] = useState('');
-    const [pdfFile, setPdfFile] = useState<File | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
-
-    const resetForm = () => {
-        setProduktname(null);
-        setAnzahlDisplays('');
-        setPreis('');
-        setDatum('');
-        setPdfFile(null);
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selected = e.target.files?.[0] ?? null;
-        if (selected && selected.type === 'application/pdf') {
-            setPdfFile(selected);
-            setError('');
-        } else {
-            setError('Bitte eine gültige PDF-Datei auswählen.');
-        }
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!produktname) {
-            setError('Bitte einen Produktnamen auswählen.');
-            return;
-        }
-        if (!pdfFile) {
-            setError('Bitte eine PDF-Datei auswählen.');
-            return;
-        }
-        const parsedAmount = parseInt(anzahlDisplays, 10);
-        const parsedPrice = parseFloat(preis);
-        if (isNaN(parsedAmount) || parsedAmount < 1) {
-            setError('Bitte eine gültige Anzahl Displays eingeben.');
-            return;
-        }
-        if (isNaN(parsedPrice) || parsedPrice < 0) {
-            setError('Bitte einen gültigen Preis eingeben.');
-            return;
-        }
-        setMessage('');
-        setError('');
-        setLoading(true);
-
-        const body: CreatePurchaseInvoiceBody = {
-            invoiceData: {
-                id: 0,
-                productName: produktname,
-                amount: parsedAmount,
-                price: parsedPrice,
-                invoiceDate: datum,
-            },
-            pdf: pdfFile,
-        };
-        try {
-            const response = await createPurchaseInvoice<AxiosResponse<PurchaseInvoice>>(body);
-            setPurchaseInvoices((prev) => {
-                const updated = [...prev, response.data];
-                return updated.sort((a, b) =>
-                    new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()
-                );
-            });
-            setMessage('Einkauf erfolgreich gespeichert!');
-            resetForm();
-        } catch (err: unknown) {
-            const msg =
-                typeof err === 'object' &&
-                err !== null &&
-                'response' in err &&
-                typeof (err as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
-                    ? (err as { response: { data: { message: string } } }).response.data.message
-                    : '';
-            setError(`Speichern fehlgeschlagen.${msg ? ` ${msg}` : ''}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        konamiSets,
+        produktname,
+        setProduktname,
+        anzahlDisplays,
+        setAnzahlDisplays,
+        preis,
+        setPreis,
+        datum,
+        setDatum,
+        pdfFile,
+        loading,
+        message,
+        setMessage,
+        error,
+        setError,
+        handleFileChange,
+        handleSubmit,
+    } = usePurchaseInvoiceForm();
 
     return (
         <Drawer anchor="right" open={open} onClose={onClose}>

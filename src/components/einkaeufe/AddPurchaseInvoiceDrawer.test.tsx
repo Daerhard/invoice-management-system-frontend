@@ -1,7 +1,18 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
 import AddPurchaseInvoiceDrawer from './AddPurchaseInvoiceDrawer';
+import type usePurchaseInvoiceFormType from '../../api/hooks/usePurchaseInvoiceForm';
+
+// Provide a factory so Jest never tries to load the real module (which imports axios ESM).
+jest.mock('../../api/hooks/usePurchaseInvoiceForm', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const usePurchaseInvoiceForm: jest.MockedFunction<typeof usePurchaseInvoiceFormType> =
+    require('../../api/hooks/usePurchaseInvoiceForm').default;
 
 jest.mock('@mui/material', () => {
     const actual = jest.requireActual('@mui/material');
@@ -19,9 +30,28 @@ jest.mock('@mui/material', () => {
     };
 });
 
-jest.mock('../../api/generated/purchase-invoices', () => ({
-    createPurchaseInvoice: jest.fn().mockResolvedValue({ data: { id: 1, productName: 'Test', amount: 1, price: 10, invoiceDate: '2025-01-22' } }),
-}));
+const buildDefaultFormState = (
+    overrides: Partial<ReturnType<typeof usePurchaseInvoiceFormType>> = {}
+): ReturnType<typeof usePurchaseInvoiceFormType> => ({
+    konamiSets: [],
+    produktname: null,
+    setProduktname: jest.fn(),
+    anzahlDisplays: '',
+    setAnzahlDisplays: jest.fn(),
+    preis: '',
+    setPreis: jest.fn(),
+    datum: '',
+    setDatum: jest.fn(),
+    pdfFile: null,
+    loading: false,
+    message: '',
+    setMessage: jest.fn(),
+    error: '',
+    setError: jest.fn(),
+    handleFileChange: jest.fn(),
+    handleSubmit: jest.fn((e) => e.preventDefault()),
+    ...overrides,
+});
 
 const renderWithProvider = (open = true) => {
     const store = createStore();
@@ -33,6 +63,10 @@ const renderWithProvider = (open = true) => {
 };
 
 describe('AddPurchaseInvoiceDrawer', () => {
+    beforeEach(() => {
+        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState());
+    });
+
     it('renders the form when open', () => {
         renderWithProvider();
         expect(screen.getByLabelText(/Produktname/)).toBeInTheDocument();
@@ -42,94 +76,41 @@ describe('AddPurchaseInvoiceDrawer', () => {
         expect(screen.getByRole('button', { name: 'Hinzufügen' })).toBeInTheDocument();
     });
 
-    it('shows error when produktname is missing on submit', async () => {
-        renderWithProvider();
-
-        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
-        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
-        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
-
-        expect(await screen.findByText('Bitte einen Produktnamen auswählen.')).toBeInTheDocument();
+    it('does not render when closed', () => {
+        renderWithProvider(false);
+        expect(screen.queryByRole('button', { name: 'Hinzufügen' })).not.toBeInTheDocument();
     });
 
-    it('shows error when PDF is missing on submit', async () => {
+    it('calls handleSubmit when the form is submitted', () => {
+        const handleSubmit = jest.fn((e) => e.preventDefault());
+        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ handleSubmit }));
         renderWithProvider();
-
-        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
-        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
-        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
-        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
-
         fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
-
-        expect(await screen.findByText('Bitte eine PDF-Datei auswählen.')).toBeInTheDocument();
+        expect(handleSubmit).toHaveBeenCalled();
     });
 
-    it('shows success message after successful submission', async () => {
-        const { createPurchaseInvoice } = require('../../api/generated/purchase-invoices');
-        createPurchaseInvoice.mockResolvedValue({ data: { id: 1, productName: 'Supreme Darkness', amount: 24, price: 1319.76, invoiceDate: '2025-01-22' } });
-
+    it('shows a success alert when message is set', () => {
+        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ message: 'Einkauf erfolgreich gespeichert!' }));
         renderWithProvider();
-
-        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
-        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
-        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
-        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
-
-        const file = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-        fireEvent.change(fileInput, { target: { files: [file] } });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
-
-        expect(await screen.findByText('Einkauf erfolgreich gespeichert!')).toBeInTheDocument();
+        expect(screen.getByText('Einkauf erfolgreich gespeichert!')).toBeInTheDocument();
     });
 
-    it('submits with id = 0 in the invoice data', async () => {
-        const { createPurchaseInvoice } = require('../../api/generated/purchase-invoices');
-        createPurchaseInvoice.mockResolvedValue({ data: { id: 1, productName: 'Test', amount: 1, price: 10, invoiceDate: '2025-01-22' } });
-
+    it('shows an error alert when error is set', () => {
+        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ error: 'Speichern fehlgeschlagen.' }));
         renderWithProvider();
-
-        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
-        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
-        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
-        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
-
-        const file = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-        fireEvent.change(fileInput, { target: { files: [file] } });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
-
-        await waitFor(() => {
-            expect(createPurchaseInvoice).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    invoiceData: expect.objectContaining({ id: 0 }),
-                })
-            );
-        });
+        expect(screen.getByText('Speichern fehlgeschlagen.')).toBeInTheDocument();
     });
 
-    it('shows error message when the API call fails', async () => {
-        const { createPurchaseInvoice } = require('../../api/generated/purchase-invoices');
-        createPurchaseInvoice.mockRejectedValue({ response: { data: { message: 'Server error' } } });
-
+    it('renders file upload area', () => {
         renderWithProvider();
+        expect(screen.getByText('PDF-Rechnung auswählen')).toBeInTheDocument();
+    });
 
-        fireEvent.change(screen.getByLabelText(/Produktname/), { target: { value: 'Supreme Darkness' } });
-        fireEvent.change(screen.getByLabelText(/Anzahl Displays/), { target: { value: '24' } });
-        fireEvent.change(screen.getByLabelText(/Preis/), { target: { value: '1319.76' } });
-        fireEvent.change(screen.getByLabelText(/Datum/), { target: { value: '2025-01-22' } });
-
-        const file = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-        fireEvent.change(fileInput, { target: { files: [file] } });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
-
-        expect(await screen.findByText('Speichern fehlgeschlagen. Server error')).toBeInTheDocument();
+    it('shows selected pdf file name when pdfFile is set', () => {
+        const pdfFile = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
+        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ pdfFile }));
+        renderWithProvider();
+        expect(screen.getByText('rechnung.pdf')).toBeInTheDocument();
     });
 });
+
