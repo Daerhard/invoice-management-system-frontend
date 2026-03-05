@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
-import { cardmarketOrdersAtom, startDateSelectAtom, endDateSelectAtom } from '../../store/Global';
+import { cardmarketOrdersAtom, startDateSelectAtom, endDateSelectAtom, purchaseInvoicesAtom } from '../../store/Global';
 import Statistik from './Statistik';
 import dayjs from 'dayjs';
 
@@ -39,11 +39,16 @@ const mockOrders = [
     },
 ];
 
-const renderWithStore = (orders = mockOrders) => {
+const mockPurchaseInvoices = [
+    { id: 1, productName: 'Darkwing Blast', amount: 1, price: 7.50, invoiceDate: '2024-01-10' },
+];
+
+const renderWithStore = (orders = mockOrders, purchaseInvoices = mockPurchaseInvoices) => {
     const store = createStore();
     store.set(cardmarketOrdersAtom, orders as any);
     store.set(startDateSelectAtom, dayjs('2024-01-01'));
     store.set(endDateSelectAtom, dayjs('2024-12-31'));
+    store.set(purchaseInvoicesAtom, purchaseInvoices as any);
     return render(
         <Provider store={store}>
             <Statistik />
@@ -95,6 +100,8 @@ describe('Statistik', () => {
         expect(screen.queryByText('Gesamtwert (€)')).not.toBeInTheDocument();
         expect(screen.queryByText('Versandkosten (€)')).not.toBeInTheDocument();
         expect(screen.getByText('Warenwert (€)')).toBeInTheDocument();
+        expect(screen.getByText('Einkaufspreis (€)')).toBeInTheDocument();
+        expect(screen.getByText('Profit (€)')).toBeInTheDocument();
     });
 
     it('Set-Statistik tab filter narrows the set list', () => {
@@ -135,6 +142,45 @@ describe('Statistik', () => {
         fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
         // Darkwing Blast: 10.00 * 1 = 10
         expect(screen.getByText('10')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab shows Einkaufspreis for sets with a matching purchase invoice', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        // Darkwing Blast has a purchase invoice with price 7.50
+        expect(screen.getByText('7.5')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab calculates Profit correctly for sets with a purchase invoice', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        // Darkwing Blast: Warenwert 10 - Einkaufspreis 7.50 = 2.50
+        expect(screen.getByText('2.5')).toBeInTheDocument();
+    });
+
+    it('Set-Statistik tab shows "-" for Einkaufspreis and Profit when no purchase invoice matches', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        // Phantom Rage and Legend of Blue Eyes have no matching invoices → "-"
+        const dashes = screen.getAllByText('-');
+        // 2 sets without invoices × 2 columns each = 4 dashes
+        expect(dashes.length).toBe(4);
+    });
+
+    it('Set-Statistik tab shows "-" for both columns when no purchase invoices exist at all', () => {
+        renderWithStore(mockOrders, []);
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        // All 3 sets without invoices → 6 dashes
+        const dashes = screen.getAllByText('-');
+        expect(dashes.length).toBe(6);
+    });
+
+    it('Set-Statistik tab shows negative profit when einkaufspreis exceeds Warenwert', () => {
+        const invoicesWithHighPrice = [{ id: 2, productName: 'Darkwing Blast', amount: 1, price: 15.00, invoiceDate: '2024-01-10' }];
+        renderWithStore(mockOrders, invoicesWithHighPrice);
+        fireEvent.click(screen.getByRole('tab', { name: 'Set-Statistik' }));
+        // Darkwing Blast: Warenwert 10 - Einkaufspreis 15 = -5
+        expect(screen.getByText('-5')).toBeInTheDocument();
     });
 });
 
