@@ -11,7 +11,6 @@ export interface PieEntry {
 interface ProfitPieChartProps {
     title: string;
     entries: PieEntry[];
-    total: number;
     disabled?: boolean;
 }
 
@@ -39,7 +38,7 @@ function buildArcPath(cx: number, cy: number, r: number, startDeg: number, endDe
     return `M ${cx} ${cy} L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${r} ${r} 0 ${largeArc} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z`;
 }
 
-export default function ProfitPieChart({ title, entries, total, disabled = false }: ProfitPieChartProps) {
+export default function ProfitPieChart({ title, entries, disabled = false }: ProfitPieChartProps) {
     const validEntries = entries.filter((e) => e.value > 0);
     const isDisabled = disabled || validEntries.length === 0;
 
@@ -139,9 +138,6 @@ export default function ProfitPieChart({ title, entries, total, disabled = false
                             </Stack>
                         ))}
                     </Stack>
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                        Gesamt: {total.toFixed(2)} €
-                    </Typography>
                 </>
             )}
         </Box>

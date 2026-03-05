@@ -9,42 +9,37 @@ const twoEntries = [
 
 describe('ProfitPieChart', () => {
     it('renders the title', () => {
-        render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
+        render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
         expect(screen.getByText('Best Sets')).toBeInTheDocument();
     });
 
     it('renders legend entries with correct percentages', () => {
-        render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
+        render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
         expect(screen.getByText(/Set A \(60\.0 %\)/)).toBeInTheDocument();
         expect(screen.getByText(/Set B \(40\.0 %\)/)).toBeInTheDocument();
     });
 
-    it('renders total value below the chart', () => {
-        render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
-        expect(screen.getByText('Gesamt: 100.00 €')).toBeInTheDocument();
-    });
-
     it('renders SVG element with correct accessible name', () => {
-        render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
+        render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
         expect(screen.getByRole('img', { name: 'Best Sets' })).toBeInTheDocument();
     });
 
     it('renders a full circle for a single-entry pie chart', () => {
         const { container } = render(
-            <ProfitPieChart title="Best Sets" entries={[{ label: 'Only Set', value: 100 }]} total={100} />
+            <ProfitPieChart title="Best Sets" entries={[{ label: 'Only Set', value: 100 }]} />
         );
         expect(container.querySelector('circle')).toBeInTheDocument();
         expect(container.querySelector('path')).not.toBeInTheDocument();
     });
 
     it('renders arc paths for multiple entries', () => {
-        const { container } = render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
+        const { container } = render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
         const paths = container.querySelectorAll('path');
         expect(paths.length).toBe(2);
     });
 
     it('renders set name labels inside SVG segments for entries with pct >= 5%', () => {
-        const { container } = render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
+        const { container } = render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
         const texts = container.querySelectorAll('svg text');
         // Both entries are >= 5% so both get a label
         expect(texts.length).toBe(2);
@@ -60,7 +55,6 @@ describe('ProfitPieChart', () => {
                     { label: 'VeryLongSetName', value: 60 },
                     { label: 'Short', value: 40 },
                 ]}
-                total={100}
             />
         );
         const texts = container.querySelectorAll('svg text');
@@ -69,7 +63,7 @@ describe('ProfitPieChart', () => {
 
     it('renders a label inside the circle for single-entry pie chart', () => {
         const { container } = render(
-            <ProfitPieChart title="Best Sets" entries={[{ label: 'Only Set', value: 100 }]} total={100} />
+            <ProfitPieChart title="Best Sets" entries={[{ label: 'Only Set', value: 100 }]} />
         );
         const texts = container.querySelectorAll('svg text');
         expect(texts.length).toBe(1);
@@ -77,25 +71,14 @@ describe('ProfitPieChart', () => {
     });
 
     it('shows disabled state when entries array is empty', () => {
-        render(<ProfitPieChart title="Best Sets" entries={[]} total={0} />);
+        render(<ProfitPieChart title="Best Sets" entries={[]} />);
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
         expect(screen.getByRole('img', { name: 'Best Sets' })).toBeInTheDocument();
     });
 
     it('shows disabled state when disabled prop is true', () => {
-        render(<ProfitPieChart title="Worst Sets" entries={twoEntries} total={100} disabled />);
+        render(<ProfitPieChart title="Worst Sets" entries={twoEntries} disabled />);
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
         expect(screen.getByRole('img', { name: 'Worst Sets' })).toBeInTheDocument();
-    });
-
-    it('renders correct total for negative values', () => {
-        render(
-            <ProfitPieChart
-                title="Worst Sets"
-                entries={[{ label: 'Bad Set', value: 5 }]}
-                total={-5}
-            />
-        );
-        expect(screen.getByText('Gesamt: -5.00 €')).toBeInTheDocument();
     });
 });

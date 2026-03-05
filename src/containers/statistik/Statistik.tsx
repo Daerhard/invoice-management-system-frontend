@@ -2,18 +2,13 @@ import React, { useMemo, useState } from 'react';
 import { useAtom } from 'jotai';
 import {
     cardmarketOrdersAtom,
-    customerSelectAtom,
-    cardmarketOrderSelectAtom,
-    startDateSelectAtom,
-    endDateSelectAtom,
-    businessCustomerSelectAtom,
     purchaseInvoicesAtom,
 } from '../../store/Global';
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
     Box,
-    Button,
     Divider,
+    MenuItem,
     Paper,
     Stack,
     Tab,
@@ -27,13 +22,10 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
 import ProfitPieChart from '../../components/statistic/ProfitPieChart';
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
 import usePurchaseInvoices from '../../api/hooks/usePurchaseInvoices';
-import dayjs from 'dayjs';
 
 const PROFIT_CHART_LIMIT = 5;
 
@@ -47,38 +39,15 @@ export default function Statistik() {
     usePurchaseInvoices();
 
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
-    const [customerSelect] = useAtom(customerSelectAtom);
-    const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom);
-    const [startDateSelect] = useAtom(startDateSelectAtom);
-    const [endDateSelect] = useAtom(endDateSelectAtom);
-    const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom);
     const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
 
-    const [drawerOpen, setDrawerOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
     const [setFilter, setSetFilter] = useState('');
-
-    const filteredOrders = useMemo(() => {
-        const filtered = cardmarketOrders
-            .filter((order) => !customerSelect || order.customer.user_name === customerSelect.user_name)
-            .filter((order) => !cardmarketOrderSelect || order.order_id === cardmarketOrderSelect?.order_id)
-            .filter((order) => !startDateSelect || dayjs(order.payment_date) >= startDateSelect)
-            .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect);
-        return onlyBusinessCustomers
-            ? filtered.filter((order) => order.customer.is_professional)
-            : filtered;
-    }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
-
-    const monthlyTotals = useMemo(() => ({
-        totalValue: sumAndRound(filteredOrders.map((o) => o.total_value)),
-        shipmentCost: sumAndRound(filteredOrders.map((o) => o.shipment_cost)),
-        commission: sumAndRound(filteredOrders.map((o) => o.commission)),
-        merchandiseValue: sumAndRound(filteredOrders.map((o) => o.merchandise_value)),
-    }), [filteredOrders]);
+    const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 
     const monthlyStats = useMemo(() => {
         const ordersByMonthMap = new Map<string, CardmarketOrder[]>();
-        filteredOrders.forEach((order) => {
+        cardmarketOrders.forEach((order) => {
             const date = new Date(order.payment_date);
             const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             if (!ordersByMonthMap.has(key)) {
@@ -96,7 +65,28 @@ export default function Statistik() {
                 commission: sumAndRound(orders.map((o) => o.commission)),
                 merchandiseValue: sumAndRound(orders.map((o) => o.merchandise_value)),
             }));
-    }, [filteredOrders]);
+    }, [cardmarketOrders]);
+
+    const availableYears = useMemo(() => {
+        const years = new Set<number>();
+        cardmarketOrders.forEach((o) => years.add(new Date(o.payment_date).getFullYear()));
+        return Array.from(years).sort((a, b) => b - a);
+    }, [cardmarketOrders]);
+
+    const filteredMonthlyStats = useMemo(
+        () =>
+            selectedYear === 'all'
+                ? monthlyStats
+                : monthlyStats.filter((s) => s.month.startsWith(String(selectedYear))),
+        [monthlyStats, selectedYear]
+    );
+
+    const filteredMonthlyTotals = useMemo(() => ({
+        totalValue: sumAndRound(filteredMonthlyStats.map((s) => s.totalValue)),
+        shipmentCost: sumAndRound(filteredMonthlyStats.map((s) => s.shipmentCost)),
+        commission: sumAndRound(filteredMonthlyStats.map((s) => s.commission)),
+        merchandiseValue: sumAndRound(filteredMonthlyStats.map((s) => s.merchandiseValue)),
+    }), [filteredMonthlyStats]);
 
     const purchaseMap = useMemo(() => {
         const map = new Map<string, number>();
@@ -109,7 +99,7 @@ export default function Statistik() {
 
     const setStats = useMemo(() => {
         const setMap = new Map<string, number>();
-        filteredOrders.forEach((order) => {
+        cardmarketOrders.forEach((order) => {
             const items = order.orderItems ?? [];
             items.forEach((item) => {
                 const konamiSet = item.card.id.konamiSet;
@@ -131,7 +121,7 @@ export default function Statistik() {
                 };
             })
             .sort((a, b) => a.konamiSet.localeCompare(b.konamiSet));
-    }, [filteredOrders, purchaseMap]);
+    }, [cardmarketOrders, purchaseMap]);
 
     const filteredSetStats = useMemo(
         () =>
@@ -178,24 +168,11 @@ export default function Statistik() {
 
     return (
         <Box style={{ width: '100%' }}>
-            <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
             <Stack spacing={3} width="100%">
                 <Box>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Stack direction="row" alignItems="center" spacing={1.5}>
-                            <BarChartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-                            <Typography variant="h5">Statistik</Typography>
-                        </Stack>
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                            startIcon={<FilterListIcon />}
-                            onClick={() => setDrawerOpen(true)}
-                            aria-label="Filter öffnen"
-                        >
-                            Filter
-                        </Button>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <BarChartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                        <Typography variant="h5">Statistik</Typography>
                     </Stack>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                         Monatliche Umsatzübersicht nach Cardmarket-Bestellungen
@@ -215,63 +192,81 @@ export default function Statistik() {
                 {activeTab === 0 && (
                     <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">
                         <ProfitPieChart
-                            title="Best Sets"
+                            title={`Beste Konami Sets – Gesamtgewinn: ${bestSetsTotal.toFixed(2)} €`}
                             entries={bestSets.map((s) => ({ label: s.konamiSet, value: s.profit }))}
-                            total={bestSetsTotal}
                             disabled={bestSets.length === 0}
                         />
                         <ProfitPieChart
-                            title="Worst Sets"
+                            title={`Schlechteste Konami Sets – Gesamtgewinn: ${worstSetsTotal.toFixed(2)} €`}
                             entries={worstSets.map((s) => ({ label: s.konamiSet, value: Math.abs(s.profit) }))}
-                            total={worstSetsTotal}
                             disabled={worstSets.length === 0}
                         />
                     </Stack>
                 )}
                 {activeTab === 1 && (
-                    <TableContainer component={Paper} elevation={0}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell><strong>Monat</strong></TableCell>
-                                    <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
-                                    <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
-                                    <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
-                                    <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {monthlyStats.length > 0 ? (
-                                    <>
-                                        {monthlyStats.map((stat) => (
-                                            <TableRow key={stat.month}>
-                                                <TableCell>{stat.month}</TableCell>
-                                                <TableCell align="right">{stat.totalValue}</TableCell>
-                                                <TableCell align="right">{stat.shipmentCost}</TableCell>
-                                                <TableCell align="right">{stat.commission}</TableCell>
-                                                <TableCell align="right">{stat.merchandiseValue}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                        <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid', borderColor: 'divider' } }}>
-                                            <TableCell>Gesamt</TableCell>
-                                            <TableCell align="right">{monthlyTotals.totalValue}</TableCell>
-                                            <TableCell align="right">{monthlyTotals.shipmentCost}</TableCell>
-                                            <TableCell align="right">{monthlyTotals.commission}</TableCell>
-                                            <TableCell align="right">{monthlyTotals.merchandiseValue}</TableCell>
-                                        </TableRow>
-                                    </>
-                                ) : (
+                    <Stack spacing={2}>
+                        <TextField
+                            select
+                            size="small"
+                            label="Jahr"
+                            value={selectedYear}
+                            onChange={(e) =>
+                                setSelectedYear(
+                                    e.target.value === 'all' ? 'all' : Number(e.target.value)
+                                )
+                            }
+                            sx={{ maxWidth: 160 }}
+                            inputProps={{ 'aria-label': 'Jahr filtern' }}
+                        >
+                            <MenuItem value="all">Alle Jahre</MenuItem>
+                            {availableYears.map((year) => (
+                                <MenuItem key={year} value={year}>{year}</MenuItem>
+                            ))}
+                        </TextField>
+                        <TableContainer component={Paper} elevation={0}>
+                            <Table size="small">
+                                <TableHead>
                                     <TableRow>
-                                        <TableCell colSpan={5}>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Keine Daten vorhanden.
-                                            </Typography>
-                                        </TableCell>
+                                        <TableCell><strong>Monat</strong></TableCell>
+                                        <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredMonthlyStats.length > 0 ? (
+                                        <>
+                                            {filteredMonthlyStats.map((stat) => (
+                                                <TableRow key={stat.month}>
+                                                    <TableCell>{stat.month}</TableCell>
+                                                    <TableCell align="right">{stat.totalValue}</TableCell>
+                                                    <TableCell align="right">{stat.shipmentCost}</TableCell>
+                                                    <TableCell align="right">{stat.commission}</TableCell>
+                                                    <TableCell align="right">{stat.merchandiseValue}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid', borderColor: 'divider' } }}>
+                                                <TableCell>Gesamt</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.totalValue}</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.shipmentCost}</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.commission}</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.merchandiseValue}</TableCell>
+                                            </TableRow>
+                                        </>
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5}>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Keine Daten vorhanden.
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Stack>
                 )}
                 {activeTab === 2 && (
                     <Stack spacing={2}>
