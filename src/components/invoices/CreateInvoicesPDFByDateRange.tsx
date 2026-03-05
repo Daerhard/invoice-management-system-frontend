@@ -19,7 +19,12 @@ export default function CreateInvoicesPDFByDateRange() {
             const response = await getInvoicesPDF(formattedStartDate, formattedEndDate, {
                 responseType: 'blob',
             });
-            setPdfInvoices(response.data);
+
+            const blob = new Blob([response.data], {
+                type: 'application/zip',
+            });
+
+            setPdfInvoices(blob);
         } catch (err) {
             console.error('Error downloading invoices:', err);
         }
