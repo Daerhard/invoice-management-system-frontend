@@ -6,6 +6,8 @@ import Statistik from './Statistik';
 import dayjs from 'dayjs';
 
 jest.mock('../../components/cardmarketOrders/filters/FilterDrawer', () => () => <div data-testid="filter-drawer" />);
+jest.mock('../../api/hooks/useCardmarketOrders', () => ({ __esModule: true, default: () => {} }));
+jest.mock('../../api/hooks/usePurchaseInvoices', () => ({ __esModule: true, default: () => {} }));
 
 const mockOrders = [
     {

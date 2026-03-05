@@ -15,6 +15,18 @@ interface ProfitPieChartProps {
     disabled?: boolean;
 }
 
+const SVG_SIZE = 300;
+const CX = SVG_SIZE / 2;
+const CY = SVG_SIZE / 2;
+const R = 120;
+const LABEL_RADIUS_RATIO = 0.62;
+const MIN_PCT_FOR_LABEL = 5;
+const MAX_LABEL_CHARS = 10;
+
+function truncateLabel(label: string): string {
+    return label.length > MAX_LABEL_CHARS ? label.slice(0, MAX_LABEL_CHARS) + '\u2026' : label;
+}
+
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
     const rad = ((angleDeg - 90) * Math.PI) / 180;
     return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
@@ -31,8 +43,6 @@ export default function ProfitPieChart({ title, entries, total, disabled = false
     const validEntries = entries.filter((e) => e.value > 0);
     const isDisabled = disabled || validEntries.length === 0;
 
-    const cx = 100, cy = 100, r = 80;
-
     const totalValue = validEntries.reduce((sum, e) => sum + e.value, 0);
     let currentAngle = 0;
     const segments = validEntries.map((entry, i) => {
@@ -45,30 +55,64 @@ export default function ProfitPieChart({ title, entries, total, disabled = false
     });
 
     return (
-        <Box sx={{ textAlign: 'center', p: 1, minWidth: 220 }}>
+        <Box sx={{ textAlign: 'center', p: 1, minWidth: SVG_SIZE }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 {title}
             </Typography>
             <svg
-                viewBox="0 0 200 200"
-                width="200"
-                height="200"
+                viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
+                width={SVG_SIZE}
+                height={SVG_SIZE}
                 aria-label={title}
                 role="img"
                 style={{ opacity: isDisabled ? 0.25 : 1 }}
             >
                 {isDisabled ? (
-                    <circle cx={cx} cy={cy} r={r} fill="#9e9e9e" />
+                    <circle cx={CX} cy={CY} r={R} fill="#9e9e9e" />
                 ) : validEntries.length === 1 ? (
-                    <circle cx={cx} cy={cy} r={r} fill={PIE_COLORS[0]} />
+                    <>
+                        <circle cx={CX} cy={CY} r={R} fill={PIE_COLORS[0]} />
+                        <text
+                            x={CX}
+                            y={CY}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fontSize="10"
+                            fill="white"
+                            fontWeight="bold"
+                        >
+                            {truncateLabel(validEntries[0].label)}
+                        </text>
+                    </>
                 ) : (
-                    segments.map((seg, i) => (
-                        <path
-                            key={i}
-                            d={buildArcPath(cx, cy, r, seg.startAngle, seg.endAngle)}
-                            fill={seg.color}
-                        />
-                    ))
+                    segments.map((seg, i) => {
+                        const labelPos = polarToCartesian(
+                            CX, CY, R * LABEL_RADIUS_RATIO,
+                            (seg.startAngle + seg.endAngle) / 2
+                        );
+                        return (
+                            <g key={i}>
+                                <path
+                                    d={buildArcPath(CX, CY, R, seg.startAngle, seg.endAngle)}
+                                    fill={seg.color}
+                                />
+                                {seg.pct >= MIN_PCT_FOR_LABEL && (
+                                    <text
+                                        x={labelPos.x}
+                                        y={labelPos.y}
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        fontSize="9"
+                                        fill="white"
+                                        fontWeight="bold"
+                                        style={{ pointerEvents: 'none' }}
+                                    >
+                                        {truncateLabel(seg.label)}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })
                 )}
             </svg>
             {isDisabled ? (

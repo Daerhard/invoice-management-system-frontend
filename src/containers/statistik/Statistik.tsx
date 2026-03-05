@@ -31,6 +31,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
 import ProfitPieChart from '../../components/statistic/ProfitPieChart';
+import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
+import usePurchaseInvoices from '../../api/hooks/usePurchaseInvoices';
 import dayjs from 'dayjs';
 
 const PROFIT_CHART_LIMIT = 5;
@@ -41,6 +43,9 @@ function sumAndRound(values: number[]): number {
 }
 
 export default function Statistik() {
+    useCardmarketOrders();
+    usePurchaseInvoices();
+
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
     const [customerSelect] = useAtom(customerSelectAtom);
     const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom);

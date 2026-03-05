@@ -43,6 +43,39 @@ describe('ProfitPieChart', () => {
         expect(paths.length).toBe(2);
     });
 
+    it('renders set name labels inside SVG segments for entries with pct >= 5%', () => {
+        const { container } = render(<ProfitPieChart title="Best Sets" entries={twoEntries} total={100} />);
+        const texts = container.querySelectorAll('svg text');
+        // Both entries are >= 5% so both get a label
+        expect(texts.length).toBe(2);
+        expect(texts[0].textContent).toBe('Set A');
+        expect(texts[1].textContent).toBe('Set B');
+    });
+
+    it('truncates long set names inside SVG segments', () => {
+        const { container } = render(
+            <ProfitPieChart
+                title="Best Sets"
+                entries={[
+                    { label: 'VeryLongSetName', value: 60 },
+                    { label: 'Short', value: 40 },
+                ]}
+                total={100}
+            />
+        );
+        const texts = container.querySelectorAll('svg text');
+        expect(texts[0].textContent).toBe('VeryLongSe\u2026');
+    });
+
+    it('renders a label inside the circle for single-entry pie chart', () => {
+        const { container } = render(
+            <ProfitPieChart title="Best Sets" entries={[{ label: 'Only Set', value: 100 }]} total={100} />
+        );
+        const texts = container.querySelectorAll('svg text');
+        expect(texts.length).toBe(1);
+        expect(texts[0].textContent).toBe('Only Set');
+    });
+
     it('shows disabled state when entries array is empty', () => {
         render(<ProfitPieChart title="Best Sets" entries={[]} total={0} />);
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
