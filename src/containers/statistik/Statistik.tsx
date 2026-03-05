@@ -1,19 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAtom } from 'jotai';
 import {
     cardmarketOrdersAtom,
-    customerSelectAtom,
-    cardmarketOrderSelectAtom,
-    startDateSelectAtom,
-    endDateSelectAtom,
-    businessCustomerSelectAtom,
     purchaseInvoicesAtom,
 } from '../../store/Global';
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
     Box,
-    Button,
     Divider,
+    MenuItem,
     Paper,
     Stack,
     Tab,
@@ -27,10 +22,12 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
-import dayjs from 'dayjs';
+import ProfitPieChart from '../../components/statistic/ProfitPieChart';
+import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
+import usePurchaseInvoices from '../../api/hooks/usePurchaseInvoices';
+
+const PROFIT_CHART_LIMIT = 5;
 
 function sumAndRound(values: number[]): number {
     const total = values.reduce((sum, value) => sum + value, 0);
@@ -38,43 +35,19 @@ function sumAndRound(values: number[]): number {
 }
 
 export default function Statistik() {
+    useCardmarketOrders();
+    usePurchaseInvoices();
+
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
-    const [customerSelect] = useAtom(customerSelectAtom);
-    const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom);
-    const [startDateSelect] = useAtom(startDateSelectAtom);
-    const [endDateSelect] = useAtom(endDateSelectAtom);
-    const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom);
     const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
 
-    const [filteredOrders, setFilteredOrders] = useState<CardmarketOrder[]>([]);
-    const [drawerOpen, setDrawerOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
     const [setFilter, setSetFilter] = useState('');
-
-    useEffect(() => {
-        const filtered = cardmarketOrders
-            .filter((order) => !customerSelect || order.customer.user_name === customerSelect.user_name)
-            .filter((order) => !cardmarketOrderSelect || order.order_id === cardmarketOrderSelect?.order_id)
-            .filter((order) => !startDateSelect || dayjs(order.payment_date) >= startDateSelect)
-            .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect);
-
-        setFilteredOrders(
-            onlyBusinessCustomers
-                ? filtered.filter((order) => order.customer.is_professional)
-                : filtered
-        );
-    }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
-
-    const monthlyTotals = useMemo(() => ({
-        totalValue: sumAndRound(filteredOrders.map((o) => o.total_value)),
-        shipmentCost: sumAndRound(filteredOrders.map((o) => o.shipment_cost)),
-        commission: sumAndRound(filteredOrders.map((o) => o.commission)),
-        merchandiseValue: sumAndRound(filteredOrders.map((o) => o.merchandise_value)),
-    }), [filteredOrders]);
+    const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 
     const monthlyStats = useMemo(() => {
         const ordersByMonthMap = new Map<string, CardmarketOrder[]>();
-        filteredOrders.forEach((order) => {
+        cardmarketOrders.forEach((order) => {
             const date = new Date(order.payment_date);
             const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             if (!ordersByMonthMap.has(key)) {
@@ -92,7 +65,28 @@ export default function Statistik() {
                 commission: sumAndRound(orders.map((o) => o.commission)),
                 merchandiseValue: sumAndRound(orders.map((o) => o.merchandise_value)),
             }));
-    }, [filteredOrders]);
+    }, [cardmarketOrders]);
+
+    const availableYears = useMemo(() => {
+        const years = new Set<number>();
+        cardmarketOrders.forEach((o) => years.add(new Date(o.payment_date).getFullYear()));
+        return Array.from(years).sort((a, b) => b - a);
+    }, [cardmarketOrders]);
+
+    const filteredMonthlyStats = useMemo(
+        () =>
+            selectedYear === 'all'
+                ? monthlyStats
+                : monthlyStats.filter((s) => s.month.startsWith(String(selectedYear))),
+        [monthlyStats, selectedYear]
+    );
+
+    const filteredMonthlyTotals = useMemo(() => ({
+        totalValue: sumAndRound(filteredMonthlyStats.map((s) => s.totalValue)),
+        shipmentCost: sumAndRound(filteredMonthlyStats.map((s) => s.shipmentCost)),
+        commission: sumAndRound(filteredMonthlyStats.map((s) => s.commission)),
+        merchandiseValue: sumAndRound(filteredMonthlyStats.map((s) => s.merchandiseValue)),
+    }), [filteredMonthlyStats]);
 
     const purchaseMap = useMemo(() => {
         const map = new Map<string, number>();
@@ -105,7 +99,7 @@ export default function Statistik() {
 
     const setStats = useMemo(() => {
         const setMap = new Map<string, number>();
-        filteredOrders.forEach((order) => {
+        cardmarketOrders.forEach((order) => {
             const items = order.orderItems ?? [];
             items.forEach((item) => {
                 const konamiSet = item.card.id.konamiSet;
@@ -127,7 +121,7 @@ export default function Statistik() {
                 };
             })
             .sort((a, b) => a.konamiSet.localeCompare(b.konamiSet));
-    }, [filteredOrders, purchaseMap]);
+    }, [cardmarketOrders, purchaseMap]);
 
     const filteredSetStats = useMemo(
         () =>
@@ -139,26 +133,46 @@ export default function Statistik() {
         [setStats, setFilter]
     );
 
+    const setsWithKnownProfit = useMemo(
+        () => setStats.filter((s): s is typeof setStats[0] & { profit: number } => s.profit !== null),
+        [setStats]
+    );
+
+    const bestSets = useMemo(
+        () =>
+            setsWithKnownProfit
+                .filter((s) => s.profit > 0)
+                .sort((a, b) => b.profit - a.profit)
+                .slice(0, PROFIT_CHART_LIMIT),
+        [setsWithKnownProfit]
+    );
+
+    const worstSets = useMemo(
+        () =>
+            setsWithKnownProfit
+                .filter((s) => s.profit < 0)
+                .sort((a, b) => a.profit - b.profit)
+                .slice(0, PROFIT_CHART_LIMIT),
+        [setsWithKnownProfit]
+    );
+
+    const bestSetsTotal = useMemo(
+        () => Math.round(bestSets.reduce((sum, s) => sum + s.profit, 0) * 100) / 100,
+        [bestSets]
+    );
+
+    const worstSetsTotal = useMemo(
+        () => Math.round(worstSets.reduce((sum, s) => sum + s.profit, 0) * 100) / 100,
+        [worstSets]
+    );
+
     return (
         <Box style={{ width: '100%' }}>
-            <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
             <Stack spacing={3} width="100%">
                 <Box>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Stack direction="row" alignItems="center" spacing={1.5}>
-                            <BarChartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-                            <Typography variant="h5">Statistik</Typography>
-                        </Stack>
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                            startIcon={<FilterListIcon />}
-                            onClick={() => setDrawerOpen(true)}
-                            aria-label="Filter öffnen"
-                        >
-                            Filter
-                        </Button>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <BarChartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                        <Typography variant="h5">Statistik</Typography>
                     </Stack>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                         Monatliche Umsatzübersicht nach Cardmarket-Bestellungen
@@ -171,55 +185,92 @@ export default function Statistik() {
                     aria-label="Statistik Tabs"
                     sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 40 }}
                 >
+                    <Tab label="Profit Übersicht" />
                     <Tab label="Monatsübersicht" />
                     <Tab label="Set-Statistik" />
                 </Tabs>
                 {activeTab === 0 && (
-                    <TableContainer component={Paper} elevation={0}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell><strong>Monat</strong></TableCell>
-                                    <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
-                                    <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
-                                    <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
-                                    <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {monthlyStats.length > 0 ? (
-                                    <>
-                                        {monthlyStats.map((stat) => (
-                                            <TableRow key={stat.month}>
-                                                <TableCell>{stat.month}</TableCell>
-                                                <TableCell align="right">{stat.totalValue}</TableCell>
-                                                <TableCell align="right">{stat.shipmentCost}</TableCell>
-                                                <TableCell align="right">{stat.commission}</TableCell>
-                                                <TableCell align="right">{stat.merchandiseValue}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                        <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid', borderColor: 'divider' } }}>
-                                            <TableCell>Gesamt</TableCell>
-                                            <TableCell align="right">{monthlyTotals.totalValue}</TableCell>
-                                            <TableCell align="right">{monthlyTotals.shipmentCost}</TableCell>
-                                            <TableCell align="right">{monthlyTotals.commission}</TableCell>
-                                            <TableCell align="right">{monthlyTotals.merchandiseValue}</TableCell>
-                                        </TableRow>
-                                    </>
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5}>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Keine Daten vorhanden.
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                    <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">
+                        <ProfitPieChart
+                            title="Beste Konami Sets"
+                            subtitle={`Gesamtgewinn: ${bestSetsTotal.toFixed(2)} €`}
+                            entries={bestSets.map((s) => ({ label: s.konamiSet, value: s.profit }))}
+                            disabled={bestSets.length === 0}
+                        />
+                        <ProfitPieChart
+                            title="Schlechteste Konami Sets"
+                            subtitle={`Gesamtgewinn: ${worstSetsTotal.toFixed(2)} €`}
+                            entries={worstSets.map((s) => ({ label: s.konamiSet, value: Math.abs(s.profit) }))}
+                            disabled={worstSets.length === 0}
+                        />
+                    </Stack>
                 )}
                 {activeTab === 1 && (
+                    <Stack spacing={2}>
+                        <TextField
+                            select
+                            size="small"
+                            label="Jahr"
+                            value={selectedYear}
+                            onChange={(e) =>
+                                setSelectedYear(
+                                    e.target.value === 'all' ? 'all' : Number(e.target.value)
+                                )
+                            }
+                            sx={{ maxWidth: 160 }}
+                            inputProps={{ 'aria-label': 'Jahr filtern' }}
+                        >
+                            <MenuItem value="all">Alle Jahre</MenuItem>
+                            {availableYears.map((year) => (
+                                <MenuItem key={year} value={year}>{year}</MenuItem>
+                            ))}
+                        </TextField>
+                        <TableContainer component={Paper} elevation={0}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell><strong>Monat</strong></TableCell>
+                                        <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredMonthlyStats.length > 0 ? (
+                                        <>
+                                            {filteredMonthlyStats.map((stat) => (
+                                                <TableRow key={stat.month}>
+                                                    <TableCell>{stat.month}</TableCell>
+                                                    <TableCell align="right">{stat.totalValue}</TableCell>
+                                                    <TableCell align="right">{stat.shipmentCost}</TableCell>
+                                                    <TableCell align="right">{stat.commission}</TableCell>
+                                                    <TableCell align="right">{stat.merchandiseValue}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid', borderColor: 'divider' } }}>
+                                                <TableCell>Gesamt</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.totalValue}</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.shipmentCost}</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.commission}</TableCell>
+                                                <TableCell align="right">{filteredMonthlyTotals.merchandiseValue}</TableCell>
+                                            </TableRow>
+                                        </>
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5}>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Keine Daten vorhanden.
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Stack>
+                )}
+                {activeTab === 2 && (
                     <Stack spacing={2}>
                         <TextField
                             label="Set filtern"
