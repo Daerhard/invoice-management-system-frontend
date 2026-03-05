@@ -1,22 +1,19 @@
 import { useEffect } from 'react'
 import { useAtom } from 'jotai/index'
 import { cardmarketOrdersAtom } from '../../store/Global'
-import { useGenericRequest } from './useGenericRequest'
-import { getOrders } from '../generated/orders'
+import { useOrdersQuery } from '../../queries/useOrdersQuery'
 
 
 export default function useCardmarketOrders () {
     const [,setCardmarketOrders] = useAtom(cardmarketOrdersAtom)
 
-    const { data: fetchedOrders } = useGenericRequest(
-        'cardmarketOrders',
-        () => getOrders()
-    );
+    const query = useOrdersQuery();
 
     useEffect(() => {
-        if (fetchedOrders !== undefined && fetchedOrders.data.length > 0) {
-            setCardmarketOrders(fetchedOrders.data);
+        if (query.data !== undefined && query.data.data.length > 0) {
+            setCardmarketOrders(query.data.data);
         }
-    }, [fetchedOrders, setCardmarketOrders]);
+    }, [query.data, setCardmarketOrders]);
 
+    return query;
 }
