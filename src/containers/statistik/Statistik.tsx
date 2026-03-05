@@ -30,7 +30,10 @@ import {
 import FilterListIcon from '@mui/icons-material/FilterList';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
+import ProfitPieChart from '../../components/statistic/ProfitPieChart';
 import dayjs from 'dayjs';
+
+const PROFIT_CHART_LIMIT = 5;
 
 function sumAndRound(values: number[]): number {
     const total = values.reduce((sum, value) => sum + value, 0);
@@ -139,6 +142,39 @@ export default function Statistik() {
         [setStats, setFilter]
     );
 
+    const setsWithKnownProfit = useMemo(
+        () => setStats.filter((s): s is typeof setStats[0] & { profit: number } => s.profit !== null),
+        [setStats]
+    );
+
+    const bestSets = useMemo(
+        () =>
+            setsWithKnownProfit
+                .filter((s) => s.profit > 0)
+                .sort((a, b) => b.profit - a.profit)
+                .slice(0, PROFIT_CHART_LIMIT),
+        [setsWithKnownProfit]
+    );
+
+    const worstSets = useMemo(
+        () =>
+            setsWithKnownProfit
+                .filter((s) => s.profit < 0)
+                .sort((a, b) => a.profit - b.profit)
+                .slice(0, PROFIT_CHART_LIMIT),
+        [setsWithKnownProfit]
+    );
+
+    const bestSetsTotal = useMemo(
+        () => Math.round(bestSets.reduce((sum, s) => sum + s.profit, 0) * 100) / 100,
+        [bestSets]
+    );
+
+    const worstSetsTotal = useMemo(
+        () => Math.round(worstSets.reduce((sum, s) => sum + s.profit, 0) * 100) / 100,
+        [worstSets]
+    );
+
     return (
         <Box style={{ width: '100%' }}>
             <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
@@ -171,10 +207,27 @@ export default function Statistik() {
                     aria-label="Statistik Tabs"
                     sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 40 }}
                 >
+                    <Tab label="Profit Übersicht" />
                     <Tab label="Monatsübersicht" />
                     <Tab label="Set-Statistik" />
                 </Tabs>
                 {activeTab === 0 && (
+                    <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">
+                        <ProfitPieChart
+                            title="Best Sets"
+                            entries={bestSets.map((s) => ({ label: s.konamiSet, value: s.profit }))}
+                            total={bestSetsTotal}
+                            disabled={bestSets.length === 0}
+                        />
+                        <ProfitPieChart
+                            title="Worst Sets"
+                            entries={worstSets.map((s) => ({ label: s.konamiSet, value: Math.abs(s.profit) }))}
+                            total={worstSetsTotal}
+                            disabled={worstSets.length === 0}
+                        />
+                    </Stack>
+                )}
+                {activeTab === 1 && (
                     <TableContainer component={Paper} elevation={0}>
                         <Table size="small">
                             <TableHead>
@@ -219,7 +272,7 @@ export default function Statistik() {
                         </Table>
                     </TableContainer>
                 )}
-                {activeTab === 1 && (
+                {activeTab === 2 && (
                     <Stack spacing={2}>
                         <TextField
                             label="Set filtern"

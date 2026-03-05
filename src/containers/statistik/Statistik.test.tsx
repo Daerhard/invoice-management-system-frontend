@@ -57,48 +57,104 @@ const renderWithStore = (orders = mockOrders, purchaseInvoices = mockPurchaseInv
 };
 
 describe('Statistik', () => {
-    it('renders both tabs', () => {
+    it('renders all three tabs with Profit Übersicht first', () => {
         renderWithStore();
-        expect(screen.getByRole('tab', { name: 'Monatsübersicht' })).toBeInTheDocument();
-        expect(screen.getByRole('tab', { name: 'Set-Statistik' })).toBeInTheDocument();
+        const tabs = screen.getAllByRole('tab');
+        expect(tabs[0]).toHaveTextContent('Profit Übersicht');
+        expect(tabs[1]).toHaveTextContent('Monatsübersicht');
+        expect(tabs[2]).toHaveTextContent('Set-Statistik');
     });
 
-    it('shows monthly rows in Monatsübersicht tab by default', () => {
+    it('shows Profit Übersicht tab by default', () => {
         renderWithStore();
+        expect(screen.getByText('Best Sets')).toBeInTheDocument();
+        expect(screen.getByText('Worst Sets')).toBeInTheDocument();
+    });
+
+    it('Profit Übersicht shows Best Sets chart with data when profitable sets exist', () => {
+        renderWithStore();
+        // Darkwing Blast has profit 2.5 (> 0)
+        expect(screen.getByRole('img', { name: 'Best Sets' })).toBeInTheDocument();
+    });
+
+    it('Profit Übersicht shows Worst Sets as disabled when no loss-making sets exist', () => {
+        renderWithStore();
+        // No sets with negative profit in mockData
+        const noDataMessages = screen.getAllByText('Keine Daten vorhanden.');
+        expect(noDataMessages.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('Profit Übersicht shows correct total for best sets', () => {
+        renderWithStore();
+        // Darkwing Blast: profit 2.5
+        expect(screen.getByText('Gesamt: 2.50 €')).toBeInTheDocument();
+    });
+
+    it('Profit Übersicht shows both charts disabled when there are no orders', () => {
+        renderWithStore([]);
+        const noDataMessages = screen.getAllByText('Keine Daten vorhanden.');
+        expect(noDataMessages.length).toBe(2);
+    });
+
+    it('Profit Übersicht shows both charts disabled when no sets have known profit', () => {
+        renderWithStore(mockOrders, []);
+        const noDataMessages = screen.getAllByText('Keine Daten vorhanden.');
+        expect(noDataMessages.length).toBe(2);
+    });
+
+    it('Profit Übersicht shows Worst Sets chart with data for loss-making sets', () => {
+        const invoicesWithHighPrice = [
+            { id: 1, productName: 'Darkwing Blast', amount: 1, price: 15.00, invoiceDate: '2024-01-10' },
+        ];
+        renderWithStore(mockOrders, invoicesWithHighPrice);
+        // Darkwing Blast: profit = 10 - 15 = -5 (loss)
+        expect(screen.getByRole('img', { name: 'Worst Sets' })).toBeInTheDocument();
+        expect(screen.getByText('Gesamt: -5.00 €')).toBeInTheDocument();
+    });
+
+    it('shows monthly rows in Monatsübersicht tab after clicking it', () => {
+        renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         expect(screen.getByText('2024-01')).toBeInTheDocument();
         expect(screen.getByText('2024-02')).toBeInTheDocument();
     });
 
     it('shows a Gesamt totals row in Monatsübersicht tab', () => {
         renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         expect(screen.getByText('Gesamt')).toBeInTheDocument();
     });
 
     it('Gesamt row sums totalValue across all months', () => {
         renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         // order 1001: totalValue 22, order 1002: totalValue 15 → total 37
         expect(screen.getByText('37')).toBeInTheDocument();
     });
 
     it('Gesamt row sums merchandiseValue across all months', () => {
         renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         // order 1001: merchandiseValue 18.50, order 1002: 12.70 → total 31.20
         expect(screen.getByText('31.2')).toBeInTheDocument();
     });
 
     it('does not show Gesamt row when there are no orders', () => {
         renderWithStore([]);
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         expect(screen.queryByText('Gesamt')).not.toBeInTheDocument();
     });
 
     it('monthly tab no longer has expand/collapse buttons', () => {
         renderWithStore();
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         expect(screen.queryByLabelText('Ausklappen')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('Einklappen')).not.toBeInTheDocument();
     });
 
     it('shows no data message when orders list is empty on Monatsübersicht tab', () => {
         renderWithStore([]);
+        fireEvent.click(screen.getByRole('tab', { name: 'Monatsübersicht' }));
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
     });
 
