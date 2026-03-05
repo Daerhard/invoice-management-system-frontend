@@ -14,8 +14,6 @@ import {
     Box,
     Button,
     Divider,
-    Grid2,
-    IconButton,
     Paper,
     Stack,
     Tab,
@@ -66,6 +64,13 @@ export default function Statistik() {
                 : filtered
         );
     }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
+
+    const monthlyTotals = useMemo(() => ({
+        totalValue: sumAndRound(filteredOrders.map((o) => o.total_value)),
+        shipmentCost: sumAndRound(filteredOrders.map((o) => o.shipment_cost)),
+        commission: sumAndRound(filteredOrders.map((o) => o.commission)),
+        merchandiseValue: sumAndRound(filteredOrders.map((o) => o.merchandise_value)),
+    }), [filteredOrders]);
 
     const monthlyStats = useMemo(() => {
         const ordersByMonthMap = new Map<string, CardmarketOrder[]>();
@@ -183,15 +188,24 @@ export default function Statistik() {
                             </TableHead>
                             <TableBody>
                                 {monthlyStats.length > 0 ? (
-                                    monthlyStats.map((stat) => (
-                                        <TableRow key={stat.month}>
-                                            <TableCell>{stat.month}</TableCell>
-                                            <TableCell align="right">{stat.totalValue}</TableCell>
-                                            <TableCell align="right">{stat.shipmentCost}</TableCell>
-                                            <TableCell align="right">{stat.commission}</TableCell>
-                                            <TableCell align="right">{stat.merchandiseValue}</TableCell>
+                                    <>
+                                        {monthlyStats.map((stat) => (
+                                            <TableRow key={stat.month}>
+                                                <TableCell>{stat.month}</TableCell>
+                                                <TableCell align="right">{stat.totalValue}</TableCell>
+                                                <TableCell align="right">{stat.shipmentCost}</TableCell>
+                                                <TableCell align="right">{stat.commission}</TableCell>
+                                                <TableCell align="right">{stat.merchandiseValue}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                        <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid', borderColor: 'divider' } }}>
+                                            <TableCell>Gesamt</TableCell>
+                                            <TableCell align="right">{monthlyTotals.totalValue}</TableCell>
+                                            <TableCell align="right">{monthlyTotals.shipmentCost}</TableCell>
+                                            <TableCell align="right">{monthlyTotals.commission}</TableCell>
+                                            <TableCell align="right">{monthlyTotals.merchandiseValue}</TableCell>
                                         </TableRow>
-                                    ))
+                                    </>
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={5}>

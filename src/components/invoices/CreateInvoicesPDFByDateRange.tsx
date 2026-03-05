@@ -2,17 +2,29 @@ import React, { useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Tooltip } from '@mui/material'
 import { getInvoicesPDF } from '../../api/generated/invoice-generation-pd-f';
 import { useAtom } from 'jotai/index'
-import { endDateSelectAtom, startDateSelectAtom } from '../../store/Global'
+import { cardmarketOrdersAtom, endDateSelectAtom, startDateSelectAtom } from '../../store/Global'
 import { getGermanMonthName } from '../../helper/Utils'
+import dayjs from 'dayjs'
+import { useMemo } from 'react'
 
 export default function CreateInvoicesPDFByDateRange() {
     const [open, setOpen] = useState(false);
     const [pdfInvoices, setPdfInvoices] = useState<Blob | null>(null);
     const [startDate] = useAtom(startDateSelectAtom)
     const [endDate] = useAtom(endDateSelectAtom)
+    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
 
-    const formattedStartDate = startDate.format('YYYY-MM-DD').toString()
-    const formattedEndDate = endDate.format('YYYY-MM-DD').toString()
+    const firstOrderDate = useMemo(() => {
+        if (cardmarketOrders.length === 0) return dayjs()
+        const earliest = Math.min(...cardmarketOrders.map((o) => new Date(o.payment_date).getTime()))
+        return dayjs(earliest).startOf('day')
+    }, [cardmarketOrders])
+
+    const effectiveStartDate = startDate ?? firstOrderDate
+    const effectiveEndDate = endDate ?? dayjs().endOf('day')
+
+    const formattedStartDate = effectiveStartDate.format('YYYY-MM-DD').toString()
+    const formattedEndDate = effectiveEndDate.format('YYYY-MM-DD').toString()
 
     const downloadInvoices = async () => {
         try {
@@ -43,7 +55,7 @@ export default function CreateInvoicesPDFByDateRange() {
         if (!pdfInvoices) return
 
         const url = URL.createObjectURL(pdfInvoices)
-        const fileName = `Rechnungen ${startDate.format('DD-MM-YYYY').toString()} - ${endDate.format('DD-MM-YYYY').toString()}.zip`
+        const fileName = `Rechnungen ${effectiveStartDate.format('DD-MM-YYYY').toString()} - ${effectiveEndDate.format('DD-MM-YYYY').toString()}.zip`
         const a = document.createElement('a')
         a.href = url
         a.download = fileName
@@ -59,8 +71,8 @@ export default function CreateInvoicesPDFByDateRange() {
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
                 <DialogTitle>Rechnungen für folgenden Zeitraum downloaden.</DialogTitle>
                 <DialogContent>
-                    {`Zeitraum ${startDate.date()}. ${getGermanMonthName(startDate.month())} ${startDate.year()} 
-                    - ${endDate.date()}. ${getGermanMonthName(endDate.month())} ${endDate.year()}`}
+                    {`Zeitraum ${effectiveStartDate.date()}. ${getGermanMonthName(effectiveStartDate.month())} ${effectiveStartDate.year()} 
+                    - ${effectiveEndDate.date()}. ${getGermanMonthName(effectiveEndDate.month())} ${effectiveEndDate.year()}`}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="secondary">

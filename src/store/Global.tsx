@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import { CardmarketOrder, Customer, PurchaseInvoice } from '../api/generated/Schemas'
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
 
 export interface Einkauf {
     id: number;
@@ -17,6 +17,6 @@ export const purchaseInvoicesAtom = atom<PurchaseInvoice[]>([])
 
 export const customerSelectAtom = atom<Customer | null>(null)
 export const cardmarketOrderSelectAtom = atom<CardmarketOrder | null>(null)
-export const startDateSelectAtom = atom<Dayjs>(dayjs().startOf('year'))
-export const endDateSelectAtom = atom<Dayjs>(dayjs().endOf('year'))
+export const startDateSelectAtom = atom<Dayjs | null>(null)
+export const endDateSelectAtom = atom<Dayjs | null>(null)
 export const businessCustomerSelectAtom = atom<boolean>(false)
