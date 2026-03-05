@@ -49,7 +49,7 @@ const buildDefaultFormState = (
     error: '',
     setError: jest.fn(),
     handleFileChange: jest.fn(),
-    handleSubmit: jest.fn((e) => e.preventDefault()),
+    handleSubmit: jest.fn((e: React.FormEvent) => { e.preventDefault(); return Promise.resolve(); }),
     ...overrides,
 });
 
@@ -82,7 +82,7 @@ describe('AddPurchaseInvoiceDrawer', () => {
     });
 
     it('calls handleSubmit when the form is submitted', () => {
-        const handleSubmit = jest.fn((e) => e.preventDefault());
+        const handleSubmit = jest.fn((e: React.FormEvent) => { e.preventDefault(); return Promise.resolve(); });
         usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ handleSubmit }));
         renderWithProvider();
         fireEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }));
