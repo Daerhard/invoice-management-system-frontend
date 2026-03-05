@@ -12,18 +12,18 @@ const createWrapper = () => {
 }
 
 describe('useInvoiceFilters', () => {
-    it('initializes startDate to start of current month', () => {
+    it('initializes startDate to start of current year', () => {
         const { result } = renderHook(() => useInvoiceFilters(), { wrapper: createWrapper() })
-        expect(result.current.startDate.month()).toBe(dayjs().month())
         expect(result.current.startDate.year()).toBe(dayjs().year())
+        expect(result.current.startDate.month()).toBe(0)
         expect(result.current.startDate.date()).toBe(1)
     })
 
-    it('initializes endDate to end of current month', () => {
+    it('initializes endDate to end of current year', () => {
         const { result } = renderHook(() => useInvoiceFilters(), { wrapper: createWrapper() })
-        expect(result.current.endDate.month()).toBe(dayjs().month())
         expect(result.current.endDate.year()).toBe(dayjs().year())
-        expect(result.current.endDate.date()).toBe(dayjs().daysInMonth())
+        expect(result.current.endDate.month()).toBe(11)
+        expect(result.current.endDate.date()).toBe(31)
     })
 
     it('setMonth updates the period to the given month within the current year', () => {
