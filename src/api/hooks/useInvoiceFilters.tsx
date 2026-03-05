@@ -7,7 +7,7 @@ export function useInvoiceFilters() {
     const [endDate, setEndDate] = useAtom(endDateSelectAtom)
 
     const setMonth = (monthIndex: number) => {
-        const year = startDate.year()
+        const year = (startDate ?? dayjs()).year()
         setStartDate(dayjs().year(year).month(monthIndex).startOf('month'))
         setEndDate(dayjs().year(year).month(monthIndex).endOf('month'))
     }
@@ -17,5 +17,10 @@ export function useInvoiceFilters() {
         setEndDate(dayjs(year).endOf('year'))
     }
 
-    return { startDate, endDate, setStartDate, setEndDate, setMonth, setYear }
+    const resetToDefault = () => {
+        setStartDate(null)
+        setEndDate(null)
+    }
+
+    return { startDate, endDate, setStartDate, setEndDate, setMonth, setYear, resetToDefault }
 }

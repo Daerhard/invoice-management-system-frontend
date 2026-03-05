@@ -1,16 +1,26 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { TextField, Autocomplete, Stack } from '@mui/material';
+import { TextField, Autocomplete, Stack, Button } from '@mui/material';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useAtom } from 'jotai/index'
 import { cardmarketOrdersAtom } from '../../../store/Global'
 import { getGermanMonthName } from '../../../helper/Utils'
 import { useInvoiceFilters } from '../../../api/hooks/useInvoiceFilters'
 
 export default function DateRangeFilter() {
-    const { startDate, endDate, setStartDate, setEndDate, setMonth, setYear } = useInvoiceFilters()
+    const { startDate, endDate, setStartDate, setEndDate, setMonth, setYear, resetToDefault } = useInvoiceFilters()
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
+
+    const firstOrderDate = useMemo(() => {
+        if (cardmarketOrders.length === 0) return dayjs()
+        const earliest = Math.min(...cardmarketOrders.map((o) => new Date(o.payment_date).getTime()))
+        return dayjs(earliest).startOf('day')
+    }, [cardmarketOrders])
+
+    const effectiveStartDate = startDate ?? firstOrderDate
+    const effectiveEndDate = endDate ?? dayjs().endOf('day')
 
     const months = Array.from({ length: 12 }, (_, i) => ({
         monthName: dayjs().month(i).format('MMMM'),
@@ -23,10 +33,10 @@ export default function DateRangeFilter() {
             <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
                         <DatePicker
-                            value={startDate}
-                            onChange={(date) => date ? setStartDate(date) : startDate}
+                            value={effectiveStartDate}
+                            onChange={(date) => setStartDate(date)}
                             format="DD.MM.YYYY"
-                            maxDate={endDate}
+                            maxDate={effectiveEndDate}
                             slotProps={{
                                 textField: {
                                     sx: { width: 200 },
@@ -36,10 +46,10 @@ export default function DateRangeFilter() {
                             }}
                         />
                         <DatePicker
-                            value={endDate}
-                            onChange={(date) => date ? setEndDate(date) : endDate}
+                            value={effectiveEndDate}
+                            onChange={(date) => setEndDate(date)}
                             format="DD.MM.YYYY"
-                            minDate={startDate}
+                            minDate={effectiveStartDate}
                             slotProps={{
                                 textField: {
                                     sx: { width: 200 },
@@ -84,6 +94,16 @@ export default function DateRangeFilter() {
                             )}
                         />
                 </Stack>
+                <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<RestartAltIcon />}
+                    onClick={resetToDefault}
+                    aria-label="Filter zurücksetzen"
+                    sx={{ alignSelf: 'flex-start' }}
+                >
+                    Zurücksetzen
+                </Button>
             </Stack>
         </LocalizationProvider>
     );

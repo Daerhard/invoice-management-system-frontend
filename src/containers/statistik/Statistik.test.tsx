@@ -69,6 +69,28 @@ describe('Statistik', () => {
         expect(screen.getByText('2024-02')).toBeInTheDocument();
     });
 
+    it('shows a Gesamt totals row in Monatsübersicht tab', () => {
+        renderWithStore();
+        expect(screen.getByText('Gesamt')).toBeInTheDocument();
+    });
+
+    it('Gesamt row sums totalValue across all months', () => {
+        renderWithStore();
+        // order 1001: totalValue 22, order 1002: totalValue 15 → total 37
+        expect(screen.getByText('37')).toBeInTheDocument();
+    });
+
+    it('Gesamt row sums merchandiseValue across all months', () => {
+        renderWithStore();
+        // order 1001: merchandiseValue 18.50, order 1002: 12.70 → total 31.20
+        expect(screen.getByText('31.2')).toBeInTheDocument();
+    });
+
+    it('does not show Gesamt row when there are no orders', () => {
+        renderWithStore([]);
+        expect(screen.queryByText('Gesamt')).not.toBeInTheDocument();
+    });
+
     it('monthly tab no longer has expand/collapse buttons', () => {
         renderWithStore();
         expect(screen.queryByLabelText('Ausklappen')).not.toBeInTheDocument();
