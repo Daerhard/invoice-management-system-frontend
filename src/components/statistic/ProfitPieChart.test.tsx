@@ -46,13 +46,13 @@ describe('ProfitPieChart', () => {
     it('shows disabled state when entries array is empty', () => {
         render(<ProfitPieChart title="Best Sets" entries={[]} total={0} />);
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
-        expect(screen.queryByRole('img')).not.toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Best Sets' })).toBeInTheDocument();
     });
 
     it('shows disabled state when disabled prop is true', () => {
         render(<ProfitPieChart title="Worst Sets" entries={twoEntries} total={100} disabled />);
         expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
-        expect(screen.queryByRole('img')).not.toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Worst Sets' })).toBeInTheDocument();
     });
 
     it('renders correct total for negative values', () => {

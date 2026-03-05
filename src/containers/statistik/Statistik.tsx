@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAtom } from 'jotai';
 import {
     cardmarketOrdersAtom,
@@ -49,23 +49,19 @@ export default function Statistik() {
     const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom);
     const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
 
-    const [filteredOrders, setFilteredOrders] = useState<CardmarketOrder[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
     const [setFilter, setSetFilter] = useState('');
 
-    useEffect(() => {
+    const filteredOrders = useMemo(() => {
         const filtered = cardmarketOrders
             .filter((order) => !customerSelect || order.customer.user_name === customerSelect.user_name)
             .filter((order) => !cardmarketOrderSelect || order.order_id === cardmarketOrderSelect?.order_id)
             .filter((order) => !startDateSelect || dayjs(order.payment_date) >= startDateSelect)
             .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect);
-
-        setFilteredOrders(
-            onlyBusinessCustomers
-                ? filtered.filter((order) => order.customer.is_professional)
-                : filtered
-        );
+        return onlyBusinessCustomers
+            ? filtered.filter((order) => order.customer.is_professional)
+            : filtered;
     }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
 
     const monthlyTotals = useMemo(() => ({

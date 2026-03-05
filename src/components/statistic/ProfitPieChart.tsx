@@ -29,24 +29,12 @@ function buildArcPath(cx: number, cy: number, r: number, startDeg: number, endDe
 
 export default function ProfitPieChart({ title, entries, total, disabled = false }: ProfitPieChartProps) {
     const validEntries = entries.filter((e) => e.value > 0);
+    const isDisabled = disabled || validEntries.length === 0;
 
-    if (disabled || validEntries.length === 0) {
-        return (
-            <Box sx={{ textAlign: 'center', p: 2, minWidth: 220 }}>
-                <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                    {title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    Keine Daten vorhanden.
-                </Typography>
-            </Box>
-        );
-    }
+    const cx = 100, cy = 100, r = 80;
 
     const totalValue = validEntries.reduce((sum, e) => sum + e.value, 0);
-    const cx = 100, cy = 100, r = 80;
     let currentAngle = 0;
-
     const segments = validEntries.map((entry, i) => {
         const pct = totalValue > 0 ? (entry.value / totalValue) * 100 : 0;
         const angleSweep = (pct / 100) * 360;
@@ -67,8 +55,11 @@ export default function ProfitPieChart({ title, entries, total, disabled = false
                 height="200"
                 aria-label={title}
                 role="img"
+                style={{ opacity: isDisabled ? 0.25 : 1 }}
             >
-                {validEntries.length === 1 ? (
+                {isDisabled ? (
+                    <circle cx={cx} cy={cy} r={r} fill="#9e9e9e" />
+                ) : validEntries.length === 1 ? (
                     <circle cx={cx} cy={cy} r={r} fill={PIE_COLORS[0]} />
                 ) : (
                     segments.map((seg, i) => (
@@ -80,27 +71,35 @@ export default function ProfitPieChart({ title, entries, total, disabled = false
                     ))
                 )}
             </svg>
-            <Stack spacing={0.5} sx={{ mt: 1, textAlign: 'left', display: 'inline-flex' }}>
-                {segments.map((seg, i) => (
-                    <Stack key={i} direction="row" alignItems="center" spacing={1}>
-                        <Box
-                            sx={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: '50%',
-                                bgcolor: seg.color,
-                                flexShrink: 0,
-                            }}
-                        />
-                        <Typography variant="caption">
-                            {seg.label} ({seg.pct.toFixed(1)} %)
-                        </Typography>
+            {isDisabled ? (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Keine Daten vorhanden.
+                </Typography>
+            ) : (
+                <>
+                    <Stack spacing={0.5} sx={{ mt: 1, textAlign: 'left', display: 'inline-flex' }}>
+                        {segments.map((seg, i) => (
+                            <Stack key={i} direction="row" alignItems="center" spacing={1}>
+                                <Box
+                                    sx={{
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: '50%',
+                                        bgcolor: seg.color,
+                                        flexShrink: 0,
+                                    }}
+                                />
+                                <Typography variant="caption">
+                                    {seg.label} ({seg.pct.toFixed(1)} %)
+                                </Typography>
+                            </Stack>
+                        ))}
                     </Stack>
-                ))}
-            </Stack>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-                Gesamt: {total.toFixed(2)} €
-            </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                        Gesamt: {total.toFixed(2)} €
+                    </Typography>
+                </>
+            )}
         </Box>
     );
 }
