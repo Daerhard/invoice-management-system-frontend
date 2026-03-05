@@ -10,6 +10,7 @@ export interface PieEntry {
 
 interface ProfitPieChartProps {
     title: string;
+    subtitle?: string;
     entries: PieEntry[];
     disabled?: boolean;
 }
@@ -38,7 +39,7 @@ function buildArcPath(cx: number, cy: number, r: number, startDeg: number, endDe
     return `M ${cx} ${cy} L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${r} ${r} 0 ${largeArc} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z`;
 }
 
-export default function ProfitPieChart({ title, entries, disabled = false }: ProfitPieChartProps) {
+export default function ProfitPieChart({ title, subtitle, entries, disabled = false }: ProfitPieChartProps) {
     const validEntries = entries.filter((e) => e.value > 0);
     const isDisabled = disabled || validEntries.length === 0;
 
@@ -54,10 +55,15 @@ export default function ProfitPieChart({ title, entries, disabled = false }: Pro
     });
 
     return (
-        <Box sx={{ textAlign: 'center', p: 1, minWidth: SVG_SIZE }}>
-            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 1, minWidth: SVG_SIZE }}>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: subtitle ? 0 : 1 }}>
                 {title}
             </Typography>
+            {subtitle && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    {subtitle}
+                </Typography>
+            )}
             <svg
                 viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
                 width={SVG_SIZE}
@@ -119,26 +125,24 @@ export default function ProfitPieChart({ title, entries, disabled = false }: Pro
                     Keine Daten vorhanden.
                 </Typography>
             ) : (
-                <>
-                    <Stack spacing={0.5} sx={{ mt: 1, textAlign: 'left', display: 'inline-flex' }}>
-                        {segments.map((seg, i) => (
-                            <Stack key={i} direction="row" alignItems="center" spacing={1}>
-                                <Box
-                                    sx={{
-                                        width: 12,
-                                        height: 12,
-                                        borderRadius: '50%',
-                                        bgcolor: seg.color,
-                                        flexShrink: 0,
-                                    }}
-                                />
-                                <Typography variant="caption">
-                                    {seg.label} ({seg.pct.toFixed(1)} %)
-                                </Typography>
-                            </Stack>
-                        ))}
-                    </Stack>
-                </>
+                <Stack spacing={0.5} sx={{ mt: 1 }}>
+                    {segments.map((seg, i) => (
+                        <Stack key={i} direction="row" alignItems="center" spacing={1}>
+                            <Box
+                                sx={{
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: '50%',
+                                    bgcolor: seg.color,
+                                    flexShrink: 0,
+                                }}
+                            />
+                            <Typography variant="caption">
+                                {seg.label} ({seg.pct.toFixed(1)} %)
+                            </Typography>
+                        </Stack>
+                    ))}
+                </Stack>
             )}
         </Box>
     );

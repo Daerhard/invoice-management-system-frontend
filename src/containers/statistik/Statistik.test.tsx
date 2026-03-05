@@ -87,14 +87,15 @@ describe('Statistik', () => {
 
     it('Profit Übersicht chart titles include Gesamtgewinn', () => {
         renderWithStore();
-        expect(screen.getByText(/Beste Konami Sets – Gesamtgewinn:/)).toBeInTheDocument();
-        expect(screen.getByText(/Schlechteste Konami Sets – Gesamtgewinn:/)).toBeInTheDocument();
+        expect(screen.getByText('Beste Konami Sets')).toBeInTheDocument();
+        expect(screen.getByText('Schlechteste Konami Sets')).toBeInTheDocument();
+        expect(screen.getAllByText(/Gesamtgewinn:/).length).toBeGreaterThanOrEqual(1);
     });
 
     it('Profit Übersicht shows Beste Konami Sets chart with data when profitable sets exist', () => {
         renderWithStore();
         // Darkwing Blast has profit 2.5 (> 0)
-        expect(screen.getByRole('img', { name: /Beste Konami Sets/ })).toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Beste Konami Sets' })).toBeInTheDocument();
     });
 
     it('Profit Übersicht shows Schlechteste Konami Sets as disabled when no loss-making sets exist', () => {
@@ -104,10 +105,10 @@ describe('Statistik', () => {
         expect(noDataMessages.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('Profit Übersicht title shows correct Gesamtgewinn for best sets', () => {
+    it('Profit Übersicht subtitle shows correct Gesamtgewinn for best sets', () => {
         renderWithStore();
         // Darkwing Blast: profit 2.5
-        expect(screen.getByText(/Gesamtgewinn: 2\.50 €/)).toBeInTheDocument();
+        expect(screen.getByText('Gesamtgewinn: 2.50 €')).toBeInTheDocument();
     });
 
     it('Profit Übersicht shows both charts disabled when there are no orders', () => {
@@ -128,8 +129,8 @@ describe('Statistik', () => {
         ];
         renderWithStore(mockOrders, invoicesWithHighPrice);
         // Darkwing Blast: profit = 10 - 15 = -5 (loss)
-        expect(screen.getByRole('img', { name: /Schlechteste Konami Sets/ })).toBeInTheDocument();
-        expect(screen.getByText(/Gesamtgewinn: -5\.00 €/)).toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Schlechteste Konami Sets' })).toBeInTheDocument();
+        expect(screen.getByText('Gesamtgewinn: -5.00 €')).toBeInTheDocument();
     });
 
     it('does not show a FilterDrawer in Statistik', () => {

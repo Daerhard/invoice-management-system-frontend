@@ -192,12 +192,14 @@ export default function Statistik() {
                 {activeTab === 0 && (
                     <Stack direction="row" spacing={4} flexWrap="wrap" justifyContent="center">
                         <ProfitPieChart
-                            title={`Beste Konami Sets – Gesamtgewinn: ${bestSetsTotal.toFixed(2)} €`}
+                            title="Beste Konami Sets"
+                            subtitle={`Gesamtgewinn: ${bestSetsTotal.toFixed(2)} €`}
                             entries={bestSets.map((s) => ({ label: s.konamiSet, value: s.profit }))}
                             disabled={bestSets.length === 0}
                         />
                         <ProfitPieChart
-                            title={`Schlechteste Konami Sets – Gesamtgewinn: ${worstSetsTotal.toFixed(2)} €`}
+                            title="Schlechteste Konami Sets"
+                            subtitle={`Gesamtgewinn: ${worstSetsTotal.toFixed(2)} €`}
                             entries={worstSets.map((s) => ({ label: s.konamiSet, value: Math.abs(s.profit) }))}
                             disabled={worstSets.length === 0}
                         />

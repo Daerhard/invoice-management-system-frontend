@@ -13,6 +13,16 @@ describe('ProfitPieChart', () => {
         expect(screen.getByText('Best Sets')).toBeInTheDocument();
     });
 
+    it('renders an optional subtitle below the title', () => {
+        render(<ProfitPieChart title="Best Sets" subtitle="Gesamtgewinn: 2.50 €" entries={twoEntries} />);
+        expect(screen.getByText('Gesamtgewinn: 2.50 €')).toBeInTheDocument();
+    });
+
+    it('does not render a subtitle element when subtitle prop is omitted', () => {
+        render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
+        expect(screen.queryByText(/Gesamtgewinn/)).not.toBeInTheDocument();
+    });
+
     it('renders legend entries with correct percentages', () => {
         render(<ProfitPieChart title="Best Sets" entries={twoEntries} />);
         expect(screen.getByText(/Set A \(60\.0 %\)/)).toBeInTheDocument();
