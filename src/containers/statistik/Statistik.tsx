@@ -7,6 +7,7 @@ import {
     startDateSelectAtom,
     endDateSelectAtom,
     businessCustomerSelectAtom,
+    purchaseInvoicesAtom,
 } from '../../store/Global';
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
@@ -45,6 +46,7 @@ export default function Statistik() {
     const [startDateSelect] = useAtom(startDateSelectAtom);
     const [endDateSelect] = useAtom(endDateSelectAtom);
     const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom);
+    const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
 
     const [filteredOrders, setFilteredOrders] = useState<CardmarketOrder[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -87,6 +89,15 @@ export default function Statistik() {
             }));
     }, [filteredOrders]);
 
+    const purchaseMap = useMemo(() => {
+        const map = new Map<string, number>();
+        purchaseInvoices.forEach((invoice) => {
+            const key = invoice.productName.toLowerCase();
+            map.set(key, (map.get(key) ?? 0) + invoice.price);
+        });
+        return map;
+    }, [purchaseInvoices]);
+
     const setStats = useMemo(() => {
         const setMap = new Map<string, number>();
         filteredOrders.forEach((order) => {
@@ -98,12 +109,20 @@ export default function Statistik() {
             });
         });
         return Array.from(setMap.entries())
-            .map(([konamiSet, merchandiseValue]) => ({
-                konamiSet,
-                merchandiseValue: Math.round(merchandiseValue * 100) / 100,
-            }))
+            .map(([konamiSet, merchandiseValue]) => {
+                const roundedMerch = Math.round(merchandiseValue * 100) / 100;
+                const rawEinkauf = purchaseMap.get(konamiSet.toLowerCase());
+                const einkaufspreis = rawEinkauf !== undefined ? Math.round(rawEinkauf * 100) / 100 : null;
+                const profit = einkaufspreis !== null ? Math.round((roundedMerch - einkaufspreis) * 100) / 100 : null;
+                return {
+                    konamiSet,
+                    merchandiseValue: roundedMerch,
+                    einkaufspreis,
+                    profit,
+                };
+            })
             .sort((a, b) => a.konamiSet.localeCompare(b.konamiSet));
-    }, [filteredOrders]);
+    }, [filteredOrders, purchaseMap]);
 
     const filteredSetStats = useMemo(
         () =>
@@ -201,6 +220,8 @@ export default function Statistik() {
                                     <TableRow>
                                         <TableCell><strong>Set</strong></TableCell>
                                         <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Einkaufspreis (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Profit (€)</strong></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -209,11 +230,13 @@ export default function Statistik() {
                                             <TableRow key={s.konamiSet}>
                                                 <TableCell>{s.konamiSet}</TableCell>
                                                 <TableCell align="right">{s.merchandiseValue}</TableCell>
+                                                <TableCell align="right">{s.einkaufspreis !== null ? s.einkaufspreis : '-'}</TableCell>
+                                                <TableCell align="right">{s.profit !== null ? s.profit : '-'}</TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={2}>
+                                            <TableCell colSpan={4}>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Keine Daten vorhanden.
                                                 </Typography>
