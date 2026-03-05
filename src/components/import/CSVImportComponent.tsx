@@ -18,6 +18,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { ImportCSVDataBody } from '../../api/generated/Schemas'
 import { importCSVData } from '../../api/generated/csvimport'
+import { useQueryClient } from '@tanstack/react-query'
 
 
 const CSVImportComponent = () => {
@@ -25,6 +26,7 @@ const CSVImportComponent = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const queryClient = useQueryClient();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files ? e.target.files[0] : null;
@@ -52,6 +54,7 @@ const CSVImportComponent = () => {
         try {
             await importCSVData(formData);
 
+            await queryClient.invalidateQueries({ queryKey: ['cardmarketOrders'] });
             setLoading(false);
             setMessage('Datei erfolgreich importiert!');
         } catch (err) {
