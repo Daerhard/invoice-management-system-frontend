@@ -8,15 +8,18 @@ import {
     startDateSelectAtom, endDateSelectAtom, businessCustomerSelectAtom,
 } from '../../store/Global'
 import { CardmarketOrder } from '../../api/generated/Schemas'
-import { Box, Button, Chip, Divider, List, Pagination, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Divider, List, Pagination, Stack, Typography } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
 import dayjs from 'dayjs'
 import useCustomers from '../../api/hooks/useCustomers'
+import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
 
 export default function CardmarketOrders() {
     useCustomers()
+
+    const { isLoading, isError } = useCardmarketOrders()
 
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom)
     const [customerSelect] = useAtom(customerSelectAtom)
@@ -98,17 +101,30 @@ export default function CardmarketOrders() {
                     </Typography>
                     <Divider sx={{ mt: 2 }} />
                 </Box>
-                <List dense disablePadding>
-                    {paginatedOrders.length > 0 ? (
-                        paginatedOrders.map((order) => (
-                            <OrderItem key={order.order_id} cardmarketOrder={order} />
-                        ))
-                    ) : (
-                        <Typography variant="body2" color="text.secondary">
-                            Keine Bestellungen vorhanden.
-                        </Typography>
-                    )}
-                </List>
+                {isLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <>
+                        {isError && (
+                            <Alert severity="error">
+                                Bestellungen konnten nicht geladen werden.
+                            </Alert>
+                        )}
+                        <List dense disablePadding>
+                            {paginatedOrders.length > 0 ? (
+                                paginatedOrders.map((order) => (
+                                    <OrderItem key={order.order_id} cardmarketOrder={order} />
+                                ))
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                    Keine Bestellungen vorhanden.
+                                </Typography>
+                            )}
+                        </List>
+                    </>
+                )}
             </Stack>
         </Box>
     );

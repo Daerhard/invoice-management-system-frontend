@@ -16,17 +16,14 @@ import {
 } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { ImportCSVDataBody } from '../../api/generated/Schemas'
-import { importCSVData } from '../../api/generated/csvimport'
-import { useQueryClient } from '@tanstack/react-query'
+import { useImportOrdersMutation } from '../../queries/useImportOrdersMutation'
 
 
 const CSVImportComponent = () => {
     const [file, setFile] = useState<File | null>(null);
-    const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const queryClient = useQueryClient();
+    const importMutation = useImportOrdersMutation();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files ? e.target.files[0] : null;
@@ -46,23 +43,19 @@ const CSVImportComponent = () => {
 
         setMessage('');
         setError('');
-        setLoading(true);
-        const formData: ImportCSVDataBody = {
-            file: file
-        };
 
-        try {
-            await importCSVData(formData);
-
-            await queryClient.invalidateQueries({ queryKey: ['cardmarketOrders'] });
-            setLoading(false);
-            setMessage('Datei erfolgreich importiert!');
-        } catch (err) {
-            setLoading(false);
-
-            const errorMessage = extractErrorMessage(err);
-            setError(`Import fehlgeschlagen.${errorMessage ? ` ${errorMessage}` : ''}`);
-        }
+        importMutation.mutate(
+            { file },
+            {
+                onSuccess: () => {
+                    setMessage('Datei erfolgreich importiert!');
+                },
+                onError: (err) => {
+                    const errorMessage = extractErrorMessage(err);
+                    setError(`Import fehlgeschlagen.${errorMessage ? ` ${errorMessage}` : ''}`);
+                },
+            }
+        );
     };
 
     const extractErrorMessage = (err: any): string => {
@@ -143,10 +136,10 @@ const CSVImportComponent = () => {
                                 variant="contained"
                                 color="primary"
                                 onClick={handleImportCSV}
-                                disabled={loading || !file}
-                                startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <UploadFileIcon />}
+                                disabled={importMutation.isPending || !file}
+                                startIcon={importMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <UploadFileIcon />}
                             >
-                                {loading ? 'Importiere…' : 'CSV importieren'}
+                                {importMutation.isPending ? 'Importiere…' : 'CSV importieren'}
                             </Button>
                         </Stack>
                     </CardContent>
