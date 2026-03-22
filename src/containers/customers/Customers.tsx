@@ -22,13 +22,21 @@ import { useProfessionalCustomersQuery } from '../../queries/useProfessionalCust
 import { useUpdateCustomerEmailMutation } from '../../queries/useUpdateCustomerEmailMutation';
 import { Customer } from '../../api/generated/Schemas';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-function CustomerRow({ customer }: { customer: Customer }) {
+interface SnackbarState {
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+}
+
+interface CustomerRowProps {
+    customer: Customer;
+    onNotify: (message: string, severity: 'success' | 'error') => void;
+}
+
+function CustomerRow({ customer, onNotify }: CustomerRowProps) {
     const [emailInput, setEmailInput] = useState(customer.email ?? '');
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
     const mutation = useUpdateCustomerEmailMutation();
 
@@ -40,77 +48,59 @@ function CustomerRow({ customer }: { customer: Customer }) {
         mutation.mutate(
             { userName: customer.user_name, email: emailInput },
             {
-                onSuccess: () => {
-                    setSnackbarMessage('E-Mail erfolgreich gespeichert.');
-                    setSnackbarSeverity('success');
-                    setSnackbarOpen(true);
-                },
-                onError: () => {
-                    setSnackbarMessage('E-Mail konnte nicht gespeichert werden.');
-                    setSnackbarSeverity('error');
-                    setSnackbarOpen(true);
-                },
+                onSuccess: () => onNotify('E-Mail erfolgreich gespeichert.', 'success'),
+                onError: () => onNotify('E-Mail konnte nicht gespeichert werden.', 'error'),
             }
         );
     };
 
     return (
-        <>
-            <TableRow hover>
-                <TableCell>{customer.user_name}</TableCell>
-                <TableCell>
-                    {customer.is_professional ? (
-                        <Chip label="Ja" color="success" size="small" />
-                    ) : (
-                        <Chip label="Nein" size="small" />
-                    )}
-                </TableCell>
-                <TableCell>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <TextField
-                            size="small"
-                            type="email"
-                            placeholder="E-Mail hinzufügen"
-                            value={emailInput}
-                            onChange={(e) => setEmailInput(e.target.value)}
-                            error={emailInput.length > 0 && !isValidEmail}
-                            helperText={emailInput.length > 0 && !isValidEmail ? 'Ungültige E-Mail-Adresse' : ''}
-                            sx={{ minWidth: 240 }}
-                            inputProps={{ 'aria-label': `E-Mail für ${customer.user_name}` }}
-                        />
-                        <Button
-                            variant="contained"
-                            size="small"
-                            disabled={isSaveDisabled}
-                            onClick={handleSave}
-                            aria-label={`E-Mail für ${customer.user_name} speichern`}
-                        >
-                            {mutation.isPending ? <CircularProgress size={18} color="inherit" /> : 'Speichern'}
-                        </Button>
-                    </Stack>
-                </TableCell>
-            </TableRow>
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={4000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert
-                    onClose={() => setSnackbarOpen(false)}
-                    severity={snackbarSeverity}
-                    sx={{ width: '100%' }}
-                >
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </>
+        <TableRow hover>
+            <TableCell>{customer.user_name}</TableCell>
+            <TableCell>
+                {customer.is_professional ? (
+                    <Chip label="Ja" color="success" size="small" />
+                ) : (
+                    <Chip label="Nein" size="small" />
+                )}
+            </TableCell>
+            <TableCell>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <TextField
+                        size="small"
+                        type="email"
+                        placeholder="E-Mail hinzufügen"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        error={emailInput.length > 0 && !isValidEmail}
+                        helperText={emailInput.length > 0 && !isValidEmail ? 'Ungültige E-Mail-Adresse' : ''}
+                        sx={{ minWidth: 240 }}
+                        inputProps={{ 'aria-label': `E-Mail für ${customer.user_name}` }}
+                    />
+                    <Button
+                        variant="contained"
+                        size="small"
+                        disabled={isSaveDisabled}
+                        onClick={handleSave}
+                        aria-label={`E-Mail für ${customer.user_name} speichern`}
+                    >
+                        {mutation.isPending ? <CircularProgress size={18} color="inherit" /> : 'Speichern'}
+                    </Button>
+                </Stack>
+            </TableCell>
+        </TableRow>
     );
 }
 
 export default function Customers() {
     const { data, isLoading, isError } = useProfessionalCustomersQuery();
     const customers = data?.data ?? [];
+
+    const [snackbar, setSnackbar] = useState<SnackbarState>({ open: false, message: '', severity: 'success' });
+
+    const handleNotify = (message: string, severity: 'success' | 'error') => {
+        setSnackbar({ open: true, message, severity });
+    };
 
     return (
         <Box style={{ width: '100%' }}>
@@ -161,7 +151,11 @@ export default function Customers() {
                                     </TableHead>
                                     <TableBody>
                                         {customers.map((customer) => (
-                                            <CustomerRow key={customer.user_name} customer={customer} />
+                                            <CustomerRow
+                                                key={customer.user_name}
+                                                customer={customer}
+                                                onNotify={handleNotify}
+                                            />
                                         ))}
                                     </TableBody>
                                 </Table>
@@ -170,6 +164,21 @@ export default function Customers() {
                     </>
                 )}
             </Stack>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+                    severity={snackbar.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
