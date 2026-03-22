@@ -13,4 +13,9 @@ export interface Customer {
   user_name: string;
   /** status of the customer */
   is_professional: boolean;
+  /**
+   * email address of the customer
+   * @nullable
+   */
+  email?: string | null;
 }

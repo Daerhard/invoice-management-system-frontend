@@ -10,6 +10,7 @@ export * from './cardId';
 export * from './cardmarketOrder';
 export * from './createPurchaseInvoiceBody';
 export * from './customer';
+export * from './emailUpdate';
 export * from './getInvoicePDF500';
 export * from './getInvoiceZUGFeRD500';
 export * from './importCSVDataBody';

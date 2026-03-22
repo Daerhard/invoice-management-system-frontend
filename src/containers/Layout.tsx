@@ -5,6 +5,7 @@ import CardmarketOrders from './cardmarketOrders/CardmarketOrders'
 import Import from './import/Import'
 import Statistik from './statistik/Statistik'
 import Einkaeufe from './einkaeufe/Einkaeufe'
+import Customers from './customers/Customers'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 export default function Layout() {
@@ -17,6 +18,7 @@ export default function Layout() {
                     <Route path="/" element={<Navigate to="/bestellungen" replace />} />
                     <Route path="/bestellungen" element={<CardmarketOrders/>} />
                     <Route path="/einkaeufe" element={<Einkaeufe/>} />
+                    <Route path="/kunden" element={<Customers/>} />
                     <Route path="/statistik" element={<Statistik/>} />
                     <Route path="/import" element={<Import/>} />
                 </Routes>

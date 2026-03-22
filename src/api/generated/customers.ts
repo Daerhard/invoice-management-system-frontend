@@ -11,7 +11,8 @@ import type {
 } from 'axios';
 
 import type {
-  Customer
+  Customer,
+  EmailUpdate
 } from './Schemas';
 
 
@@ -29,4 +30,30 @@ export const getAllCustomers = (
       `/v1/customers`,options
     );
   }
+/**
+ * returns all customers where isProfessional is true
+ * @summary get all professional customers
+ */
+export const getProfessionalCustomers = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Customer[]>> => {
+    return axios.get(
+      `/v1/customers/professional`,options
+    );
+  }
+/**
+ * updates the email address of a specific customer
+ * @summary update customer email
+ */
+export const updateCustomerEmail = (
+    userName: string,
+    emailUpdate: EmailUpdate, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Customer>> => {
+    return axios.patch(
+      `/v1/customers/${userName}/email`,
+      emailUpdate,options
+    );
+  }
 export type GetAllCustomersResult = AxiosResponse<Customer[]>
+export type GetProfessionalCustomersResult = AxiosResponse<Customer[]>
+export type UpdateCustomerEmailResult = AxiosResponse<Customer>

@@ -1,0 +1,175 @@
+import React, { useState } from 'react';
+import {
+    Alert,
+    Box,
+    Button,
+    Chip,
+    CircularProgress,
+    Divider,
+    Snackbar,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Typography,
+} from '@mui/material';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { useProfessionalCustomersQuery } from '../../queries/useProfessionalCustomersQuery';
+import { useUpdateCustomerEmailMutation } from '../../queries/useUpdateCustomerEmailMutation';
+import { Customer } from '../../api/generated/Schemas';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function CustomerRow({ customer }: { customer: Customer }) {
+    const [emailInput, setEmailInput] = useState(customer.email ?? '');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
+    const mutation = useUpdateCustomerEmailMutation();
+
+    const isValidEmail = EMAIL_REGEX.test(emailInput);
+    const isUnchanged = emailInput === (customer.email ?? '');
+    const isSaveDisabled = !isValidEmail || isUnchanged || mutation.isPending;
+
+    const handleSave = () => {
+        mutation.mutate(
+            { userName: customer.user_name, email: emailInput },
+            {
+                onSuccess: () => {
+                    setSnackbarMessage('E-Mail erfolgreich gespeichert.');
+                    setSnackbarSeverity('success');
+                    setSnackbarOpen(true);
+                },
+                onError: () => {
+                    setSnackbarMessage('E-Mail konnte nicht gespeichert werden.');
+                    setSnackbarSeverity('error');
+                    setSnackbarOpen(true);
+                },
+            }
+        );
+    };
+
+    return (
+        <>
+            <TableRow hover>
+                <TableCell>{customer.user_name}</TableCell>
+                <TableCell>
+                    {customer.is_professional ? (
+                        <Chip label="Ja" color="success" size="small" />
+                    ) : (
+                        <Chip label="Nein" size="small" />
+                    )}
+                </TableCell>
+                <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <TextField
+                            size="small"
+                            type="email"
+                            placeholder="E-Mail hinzufügen"
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            error={emailInput.length > 0 && !isValidEmail}
+                            helperText={emailInput.length > 0 && !isValidEmail ? 'Ungültige E-Mail-Adresse' : ''}
+                            sx={{ minWidth: 240 }}
+                            inputProps={{ 'aria-label': `E-Mail für ${customer.user_name}` }}
+                        />
+                        <Button
+                            variant="contained"
+                            size="small"
+                            disabled={isSaveDisabled}
+                            onClick={handleSave}
+                            aria-label={`E-Mail für ${customer.user_name} speichern`}
+                        >
+                            {mutation.isPending ? <CircularProgress size={18} color="inherit" /> : 'Speichern'}
+                        </Button>
+                    </Stack>
+                </TableCell>
+            </TableRow>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity={snackbarSeverity}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+        </>
+    );
+}
+
+export default function Customers() {
+    const { data, isLoading, isError } = useProfessionalCustomersQuery();
+    const customers = data?.data ?? [];
+
+    return (
+        <Box style={{ width: '100%' }}>
+            <Stack spacing={3} width="100%">
+                <Box>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <PeopleAltIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                        <Typography variant="h5">Kunden</Typography>
+                        {customers.length > 0 && (
+                            <Chip
+                                label={customers.length}
+                                size="small"
+                                color="primary"
+                                sx={{ fontWeight: 600, borderRadius: 1 }}
+                            />
+                        )}
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Übersicht aller professionellen Kunden
+                    </Typography>
+                    <Divider sx={{ mt: 2 }} />
+                </Box>
+
+                {isLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <>
+                        {isError && (
+                            <Alert severity="error">
+                                Kundendaten konnten nicht geladen werden.
+                            </Alert>
+                        )}
+                        {customers.length === 0 && !isError ? (
+                            <Typography variant="body2" color="text.secondary">
+                                Keine Kunden vorhanden.
+                            </Typography>
+                        ) : (
+                            <TableContainer>
+                                <Table size="small" aria-label="Kundentabelle">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell><strong>Benutzername</strong></TableCell>
+                                            <TableCell><strong>Professionell</strong></TableCell>
+                                            <TableCell><strong>E-Mail</strong></TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {customers.map((customer) => (
+                                            <CustomerRow key={customer.user_name} customer={customer} />
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </>
+                )}
+            </Stack>
+        </Box>
+    );
+}
