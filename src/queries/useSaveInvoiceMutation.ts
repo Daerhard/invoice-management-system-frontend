@@ -1,13 +1,19 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { useSetAtom } from 'jotai';
 import { createInvoice } from '../api/generated/orders';
-import { ORDERS_QUERY_KEY } from './useOrdersQuery';
+import { cardmarketOrdersAtom } from '../store/Global';
 
 export function useSaveInvoiceMutation() {
-    const queryClient = useQueryClient();
+    const setCardmarketOrders = useSetAtom(cardmarketOrdersAtom);
     return useMutation({
         mutationFn: (orderId: number) => createInvoice(orderId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
+        onSuccess: (response, orderId) => {
+            const invoice = response.data;
+            setCardmarketOrders((prev) =>
+                prev.map((order) =>
+                    order.order_id === orderId ? { ...order, invoice } : order
+                )
+            );
         },
     });
 }

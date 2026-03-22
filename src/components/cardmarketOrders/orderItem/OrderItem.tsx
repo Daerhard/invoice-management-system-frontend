@@ -15,7 +15,7 @@ interface OrderItemProps {
     cardmarketOrder: CardmarketOrder
 }
 
-export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
+function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
     const [open, setOpen] = useState(false)
     const toggleDetails = () => setOpen(!open)
     const [showInvoicePreview, setShowInvoicePreview] = useState(false);
@@ -108,3 +108,5 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
         </Card>
     );
 }
+
+export default React.memo(OrderItem);
