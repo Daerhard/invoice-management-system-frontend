@@ -10,11 +10,11 @@ jest.mock('../../api/generated/invoice-generation-pd-f', () => ({
     getInvoicePDF: jest.fn(),
 }));
 
-jest.mock('../../api/generated/invoices', () => ({
+jest.mock('../../api/generated/orders', () => ({
     __esModule: true,
-    getInvoicePdf: jest.fn(),
-    saveInvoice: jest.fn(),
-    getInvoices: jest.fn(),
+    getOrders: jest.fn(),
+    getOrdersByUserName: jest.fn(),
+    createInvoice: jest.fn(),
 }));
 
 jest.mock('../../api/hooks/useGenericRequest', () => ({
@@ -32,7 +32,7 @@ const { useGenericRequest } = require('../../api/hooks/useGenericRequest');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { useSaveInvoiceMutation } = require('../../queries/useSaveInvoiceMutation');
 
-const mockOrder: CardmarketOrder = {
+const mockOrderUnsaved: CardmarketOrder = {
     customer: { user_name: 'TestUser', is_professional: false },
     order_id: 12345,
     payment_date: '2025-01-15',
@@ -42,6 +42,17 @@ const mockOrder: CardmarketOrder = {
     total_value: 12,
     commission: 1,
     currency: 'EUR',
+    invoice: null,
+};
+
+const mockOrderSaved: CardmarketOrder = {
+    ...mockOrderUnsaved,
+    invoice: {
+        id: 1,
+        orderId: 12345,
+        createdAt: '2025-01-15T10:00:00Z',
+        invoicePdf: null,
+    },
 };
 
 const renderWithProviders = (props: React.ComponentProps<typeof PDFInvoicePreview>) => {
@@ -64,26 +75,26 @@ describe('PDFInvoicePreview', () => {
 
     it('renders the dialog title', () => {
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
         expect(screen.getByText('Rechnungsvorschau')).toBeInTheDocument();
     });
 
     it('shows "Rechnung speichern" button when invoice is not saved', () => {
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
         expect(screen.getByRole('button', { name: /rechnung speichern/i })).toBeInTheDocument();
     });
 
     it('disables save button when invoice is already saved', () => {
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: true });
+        renderWithProviders({ cardmarketOrder: mockOrderSaved, open: true, onClose: jest.fn() });
         const saveButton = screen.getByRole('button', { name: /rechnung gespeichert/i });
         expect(saveButton).toBeDisabled();
     });
 
     it('disables save button while save is pending', () => {
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: true, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
         const saveButton = screen.getByRole('button', { name: /rechnung speichern/i });
         expect(saveButton).toBeDisabled();
     });
@@ -91,7 +102,7 @@ describe('PDFInvoicePreview', () => {
     it('shows success message after saving', async () => {
         const mutateAsync = jest.fn().mockResolvedValue({});
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync, isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
 
         fireEvent.click(screen.getByRole('button', { name: /rechnung speichern/i }));
 
@@ -103,7 +114,7 @@ describe('PDFInvoicePreview', () => {
     it('shows error message when save fails', async () => {
         const mutateAsync = jest.fn().mockRejectedValue(new Error('Server error'));
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync, isPending: false, isError: true });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
 
         fireEvent.click(screen.getByRole('button', { name: /rechnung speichern/i }));
 
@@ -114,21 +125,21 @@ describe('PDFInvoicePreview', () => {
 
     it('shows unavailable message when no invoice data', () => {
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
         expect(screen.getByText('Vorschau ist im Moment nicht verfügbar')).toBeInTheDocument();
     });
 
-    it('shows PDF viewer when invoice data is available', () => {
+    it('shows PDF viewer when generated invoice data is available', () => {
         useGenericRequest.mockReturnValue({ data: { data: new Blob(['pdf'], { type: 'application/pdf' }) } });
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose: jest.fn(), invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
         expect(screen.getByTestId('pdf-invoice')).toBeInTheDocument();
     });
 
     it('calls onClose when Schließen is clicked', () => {
         const onClose = jest.fn();
         useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrder, open: true, onClose, invoiceSaved: false });
+        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose });
         fireEvent.click(screen.getByRole('button', { name: /schließen/i }));
         expect(onClose).toHaveBeenCalled();
     });

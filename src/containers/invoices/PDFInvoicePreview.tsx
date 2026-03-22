@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Button, CircularProgress, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { getInvoicePDF } from '../../api/generated/invoice-generation-pd-f';
-import { getInvoicePdf } from '../../api/generated/invoices';
 import { useGenericRequest } from '../../api/hooks/useGenericRequest';
 import { useSaveInvoiceMutation } from '../../queries/useSaveInvoiceMutation';
 import PDFInvoice from '../../components/invoices/InvoicePDF';
@@ -12,23 +11,33 @@ interface PDFInvoicePreviewProps {
     cardmarketOrder: CardmarketOrder;
     open: boolean;
     onClose: () => void;
-    invoiceSaved: boolean;
 }
 
-export default function PDFInvoicePreview({ cardmarketOrder, open, onClose, invoiceSaved }: Readonly<PDFInvoicePreviewProps>) {
+export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Readonly<PDFInvoicePreviewProps>) {
+    const invoiceSaved = !!cardmarketOrder.invoice;
+
     const { data: fetchedGeneratedPDF } = useGenericRequest(
         `getPDFInvoice-${cardmarketOrder.order_id}`,
         () => getInvoicePDF(cardmarketOrder.order_id),
         { enabled: !invoiceSaved },
     );
 
-    const { data: fetchedSavedPDF } = useGenericRequest(
-        `getSavedInvoicePdf-${cardmarketOrder.order_id}`,
-        () => getInvoicePdf(cardmarketOrder.order_id),
-        { enabled: invoiceSaved },
-    );
+    const savedPdfBlob = useMemo(() => {
+        const base64 = cardmarketOrder.invoice?.invoicePdf;
+        if (!base64) return null;
+        try {
+            const binaryStr = atob(base64);
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let i = 0; i < binaryStr.length; i++) {
+                bytes[i] = binaryStr.charCodeAt(i);
+            }
+            return new Blob([bytes], { type: 'application/pdf' });
+        } catch {
+            return null;
+        }
+    }, [cardmarketOrder.invoice?.invoicePdf]);
 
-    const invoice = invoiceSaved ? fetchedSavedPDF?.data : fetchedGeneratedPDF?.data;
+    const invoice = invoiceSaved ? savedPdfBlob : fetchedGeneratedPDF?.data;
 
     const saveInvoiceMutation = useSaveInvoiceMutation();
     const [saveSuccess, setSaveSuccess] = useState(false);

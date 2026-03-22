@@ -15,11 +15,9 @@ import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer
 import dayjs from 'dayjs'
 import useCustomers from '../../api/hooks/useCustomers'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
-import useSavedInvoices from '../../api/hooks/useSavedInvoices'
 
 export default function CardmarketOrders() {
     useCustomers()
-    useSavedInvoices()
 
     const { isLoading, isError } = useCardmarketOrders()
 

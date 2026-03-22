@@ -10,8 +10,6 @@ import OrderItemContent from './OrderItemContent';
 import { formatStringToDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
 import PDFInvoicePreview from '../../../containers/invoices/PDFInvoicePreview'
-import { useAtom } from 'jotai';
-import { savedInvoicesAtom } from '../../../store/Global';
 
 interface OrderItemProps {
     cardmarketOrder: CardmarketOrder
@@ -24,8 +22,7 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
     const openInvoicePreview = () => setShowInvoicePreview(true);
     const closeInvoicePreview = () => setShowInvoicePreview(false);
 
-    const [savedInvoices] = useAtom(savedInvoicesAtom);
-    const invoiceSaved = savedInvoices.some((inv) => inv.orderId === cardmarketOrder.order_id);
+    const invoiceSaved = !!cardmarketOrder.invoice;
 
 
     return (
@@ -56,7 +53,6 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                             cardmarketOrder={cardmarketOrder}
                             open={showInvoicePreview}
                             onClose={closeInvoicePreview}
-                            invoiceSaved={invoiceSaved}
                         />}
                         <CustomIconButton
                             title="Erstelle Rechnung (E)"

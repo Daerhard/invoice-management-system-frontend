@@ -268,84 +268,6 @@ paths:
         '404':
           description: PDF not found
 
-  /v1/invoices:
-    get:
-      tags:
-        - Invoices
-      summary: Get all saved invoices
-      description: Returns metadata for all invoices that have been persisted in the database.
-      operationId: getInvoices
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/invoice'
-
-  /v1/invoices/{orderId}:
-    post:
-      tags:
-        - Invoices
-      summary: Save invoice for an order
-      description: Generates and persists the invoice for the given order in the database.
-      operationId: saveInvoice
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          description: The external order id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '201':
-          description: Invoice saved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/invoice'
-        '409':
-          description: Invoice already exists for this order.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-        '500':
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-
-  /v1/invoices/{orderId}/pdf:
-    get:
-      tags:
-        - Invoices
-      summary: Download saved invoice PDF
-      description: Returns the persisted invoice PDF for the given order.
-      operationId: getInvoicePdf
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          description: The external order id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: PDF file
-          content:
-            application/pdf:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: Invoice not found for this order.
-
   /v1/orders/{userName}:
     get:
       tags:
@@ -374,6 +296,33 @@ paths:
         '401':
           description: not authenticated
 
+  /v1/orders/{externalOrderId}/invoice:
+    post:
+      tags:
+        - orders
+      summary: Create and persist an invoice for an order
+      description: Generates a PDF invoice for the given order, persists it in the database, and returns the invoice data. Returns 409 if an invoice already exists for this order.
+      operationId: createInvoice
+      parameters:
+        - name: externalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Invoice created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/invoice'
+        '404':
+          description: Order not found.
+        '409':
+          description: Invoice already exists for this order.
+
 components:
   schemas:
     customer:
@@ -385,9 +334,9 @@ components:
           description: user name of the customer
           example: "FakeJohnny"
         is_professional:
-          type: boolean
-          description: status of the customer
-          example: true
+            type: boolean
+            description: status of the customer
+            example: true
       required:
         - user_name
         - is_professional
@@ -435,6 +384,9 @@ components:
           description: List of items associated with the purchase.
           items:
             $ref: '#/components/schemas/orderItem'
+        invoice:
+          $ref: '#/components/schemas/invoice'
+          nullable: true
       required:
         - customer
         - order_id
@@ -551,27 +503,6 @@ components:
         - price
         - invoiceDate
 
-    invoice:
-      type: object
-      description: Metadata for a persisted invoice.
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: Unique identifier for the saved invoice.
-        orderId:
-          type: integer
-          format: int64
-          description: The Cardmarket external order id this invoice belongs to.
-        createdAt:
-          type: string
-          format: date-time
-          description: Timestamp when the invoice was saved.
-      required:
-        - id
-        - orderId
-        - createdAt
-
     responseMessage:
       type: object
       properties:
@@ -579,5 +510,28 @@ components:
           type: string
           example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
 
-
-
+    invoice:
+      type: object
+      description: Invoice associated with an order.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the invoice.
+        orderId:
+          type: integer
+          format: int64
+          description: External order id this invoice belongs to.
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the invoice was created.
+        invoicePdf:
+          type: string
+          format: byte
+          nullable: true
+          description: PDF content of the invoice as a base64-encoded byte array.
+      required:
+        - id
+        - orderId
+        - createdAt
