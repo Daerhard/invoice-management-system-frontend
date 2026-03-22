@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import OrderItem from '../../components/cardmarketOrders/orderItem/OrderItem';
 import { useAtom } from 'jotai';
 import {
@@ -7,7 +7,6 @@ import {
     cardmarketOrderSelectAtom,
     startDateSelectAtom, endDateSelectAtom, businessCustomerSelectAtom,
 } from '../../store/Global'
-import { CardmarketOrder } from '../../api/generated/Schemas'
 import { Alert, Box, Button, Chip, CircularProgress, Divider, List, Pagination, Stack, Typography } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import ListAltIcon from '@mui/icons-material/ListAlt'
@@ -28,20 +27,16 @@ export default function CardmarketOrders() {
     const [endDateSelect] = useAtom(endDateSelectAtom)
     const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom)
 
-    const [filteredCardmarketOrders, setFilteredCardmarketOrders] = useState<CardmarketOrder[]>();
-
-    useEffect(() => {
-        const filteredOrders = cardmarketOrders
+    const filteredCardmarketOrders = useMemo(() => {
+        const filtered = cardmarketOrders
             .filter((order) => !customerSelect || order.customer.user_name === customerSelect.user_name)
             .filter((order) => !cardmarketOrderSelect || order.order_id === cardmarketOrderSelect?.order_id)
             .filter((order) => !startDateSelect || dayjs(order.payment_date) >= startDateSelect)
             .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect);
 
-        const finalFilteredOrders = onlyBusinessCustomers
-            ? filteredOrders.filter((order) => order.customer.is_professional)
-            : filteredOrders;
-
-        setFilteredCardmarketOrders(finalFilteredOrders);
+        return onlyBusinessCustomers
+            ? filtered.filter((order) => order.customer.is_professional)
+            : filtered;
     }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
 
 
@@ -53,10 +48,10 @@ export default function CardmarketOrders() {
         setPage(value)
     }
 
-    const paginatedOrders = filteredCardmarketOrders ? filteredCardmarketOrders.slice(
+    const paginatedOrders = filteredCardmarketOrders.slice(
         (page - 1) * itemsPerPage,
         page * itemsPerPage
-    ) : []
+    )
 
     return (
         <Box style={{ width:'100%' }}>
@@ -67,7 +62,7 @@ export default function CardmarketOrders() {
                         <Stack direction="row" alignItems="center" spacing={1.5}>
                             <ListAltIcon sx={{ color: 'primary.main', fontSize: 28 }} />
                             <Typography variant="h5">Bestellungen</Typography>
-                            {filteredCardmarketOrders && filteredCardmarketOrders.length > 0 && (
+                            {filteredCardmarketOrders.length > 0 && (
                                 <Chip
                                     label={filteredCardmarketOrders.length}
                                     size="small"
@@ -88,7 +83,7 @@ export default function CardmarketOrders() {
                                 Filter
                             </Button>
                             <Pagination
-                                count={Math.ceil(filteredCardmarketOrders ? filteredCardmarketOrders.length / itemsPerPage : 0)}
+                                count={Math.ceil(filteredCardmarketOrders.length / itemsPerPage)}
                                 page={page}
                                 onChange={(_, newValue) => handlePageChange(newValue)}
                                 shape="rounded"

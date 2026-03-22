@@ -17,7 +17,7 @@ export default function PurchaseInvoiceItem({ purchaseInvoice }: Readonly<Purcha
     const handleOpenPdf = async () => {
         setPdfError(false);
         try {
-            const response = await getPurchaseInvoicePdf<{ data: Blob }>(purchaseInvoice.id);
+            const response = await getPurchaseInvoicePdf(purchaseInvoice.id);
             const url = URL.createObjectURL(response.data);
             window.open(url, '_blank');
         } catch {

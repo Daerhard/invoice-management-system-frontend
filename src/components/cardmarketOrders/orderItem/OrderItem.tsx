@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-    Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Typography,
+    Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Tooltip, Typography,
 } from '@mui/material';
 import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CustomIconButton from '../../../customComponents/CustomIconButton';
 import OrderItemContent from './OrderItemContent';
 import { formatStringToDate } from '../../../helper/Utils';
@@ -14,12 +15,14 @@ interface OrderItemProps {
     cardmarketOrder: CardmarketOrder
 }
 
-export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
+function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
     const [open, setOpen] = useState(false)
     const toggleDetails = () => setOpen(!open)
     const [showInvoicePreview, setShowInvoicePreview] = useState(false);
     const openInvoicePreview = () => setShowInvoicePreview(true);
     const closeInvoicePreview = () => setShowInvoicePreview(false);
+
+    const invoiceSaved = !!cardmarketOrder.invoice;
 
 
     return (
@@ -83,6 +86,16 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
                         <Typography variant="body2" color="text.secondary">
                             {`Bestellnummer: ${cardmarketOrder.order_id}`}
                         </Typography>
+                        {invoiceSaved && (
+                            <Tooltip title="Rechnung gespeichert">
+                                <Stack direction="row" alignItems="center" spacing={0.5}>
+                                    <CheckCircleOutlineIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                                    <Typography variant="body2" color="success.main">
+                                        Rechnung gespeichert
+                                    </Typography>
+                                </Stack>
+                            </Tooltip>
+                        )}
                     </Stack>
                 }
                 sx={{ pb: open ? 0 : undefined }}
@@ -95,3 +108,5 @@ export default function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>)
         </Card>
     );
 }
+
+export default React.memo(OrderItem);
