@@ -60,9 +60,6 @@ function CustomerRow({ customer, onNotify }: CustomerRowProps) {
     return (
         <TableRow hover>
             <TableCell>{customer.user_name}</TableCell>
-            <TableCell>{customer.street ?? '—'}</TableCell>
-            <TableCell>{customer.city ?? '—'}</TableCell>
-            <TableCell>{customer.country ?? '—'}</TableCell>
             <TableCell>
                 {customer.is_professional ? (
                     <Chip label="Ja" color="success" size="small" />
@@ -70,7 +67,6 @@ function CustomerRow({ customer, onNotify }: CustomerRowProps) {
                     <Chip label="Nein" size="small" />
                 )}
             </TableCell>
-            <TableCell>{customer.vat_number ?? '—'}</TableCell>
             <TableCell>
                 <Stack direction="row" spacing={0.5} alignItems="flex-start">
                     <TextField
@@ -163,11 +159,7 @@ export default function Customers() {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell><strong>Benutzername</strong></TableCell>
-                                            <TableCell><strong>Straße</strong></TableCell>
-                                            <TableCell><strong>Stadt</strong></TableCell>
-                                            <TableCell><strong>Land</strong></TableCell>
                                             <TableCell><strong>Professionell</strong></TableCell>
-                                            <TableCell><strong>USt-IdNr.</strong></TableCell>
                                             <TableCell><strong>E-Mail</strong></TableCell>
                                         </TableRow>
                                     </TableHead>

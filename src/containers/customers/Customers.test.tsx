@@ -62,8 +62,8 @@ describe('Customers', () => {
 
     it('renders a table row for each customer', () => {
         const customers = [
-            { user_name: 'Alice', is_professional: true, email: 'alice@example.com', street: 'Main St', city: 'Berlin', country: 'Germany', vat_number: 'DE123' },
-            { user_name: 'Bob', is_professional: true, email: null, street: null, city: null, country: null, vat_number: null },
+            { user_name: 'Alice', is_professional: true, email: 'alice@example.com' },
+            { user_name: 'Bob', is_professional: true, email: null },
         ];
         mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
         renderWithProviders();
@@ -76,12 +76,12 @@ describe('Customers', () => {
         mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
         renderWithProviders();
         expect(screen.getByText('Benutzername')).toBeInTheDocument();
-        expect(screen.getByText('Straße')).toBeInTheDocument();
-        expect(screen.getByText('Stadt')).toBeInTheDocument();
-        expect(screen.getByText('Land')).toBeInTheDocument();
         expect(screen.getByText('Professionell')).toBeInTheDocument();
-        expect(screen.getByText('USt-IdNr.')).toBeInTheDocument();
         expect(screen.getByText('E-Mail')).toBeInTheDocument();
+        expect(screen.queryByText('Straße')).not.toBeInTheDocument();
+        expect(screen.queryByText('Stadt')).not.toBeInTheDocument();
+        expect(screen.queryByText('Land')).not.toBeInTheDocument();
+        expect(screen.queryByText('USt-IdNr.')).not.toBeInTheDocument();
     });
 
     it('displays existing email in the input field', () => {
@@ -141,15 +141,6 @@ describe('Customers', () => {
             { userName: 'Alice', email: 'newalice@example.com' },
             expect.any(Object)
         );
-    });
-
-    it('shows dash placeholders for null address fields', () => {
-        const customers = [{ user_name: 'Alice', is_professional: true, email: null, street: null, city: null, country: null, vat_number: null }];
-        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
-        renderWithProviders();
-        // There should be 4 dashes for: street, city, country, vat_number
-        const dashes = screen.getAllByText('—');
-        expect(dashes.length).toBeGreaterThanOrEqual(4);
     });
 });
 
