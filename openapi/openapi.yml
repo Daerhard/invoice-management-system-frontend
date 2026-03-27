@@ -386,10 +386,30 @@ components:
           type: string
           description: user name of the customer
           example: "FakeJohnny"
+        street:
+          type: string
+          nullable: true
+          description: street address of the customer
+          example: "Musterstraße 1"
+        city:
+          type: string
+          nullable: true
+          description: city of the customer
+          example: "Berlin"
+        country:
+          type: string
+          nullable: true
+          description: country of the customer
+          example: "Germany"
         is_professional:
             type: boolean
             description: status of the customer
             example: true
+        vat_number:
+          type: string
+          nullable: true
+          description: VAT number of the customer
+          example: "DE123456789"
         email:
           type: string
           nullable: true

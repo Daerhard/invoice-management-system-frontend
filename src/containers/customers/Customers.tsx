@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import {
     Alert,
     Box,
-    Button,
     Chip,
     CircularProgress,
     Divider,
+    IconButton,
     Snackbar,
     Stack,
     Table,
@@ -15,8 +15,10 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useProfessionalCustomersQuery } from '../../queries/useProfessionalCustomersQuery';
 import { useUpdateCustomerEmailMutation } from '../../queries/useUpdateCustomerEmailMutation';
@@ -41,10 +43,11 @@ function CustomerRow({ customer, onNotify }: CustomerRowProps) {
     const mutation = useUpdateCustomerEmailMutation();
 
     const isValidEmail = EMAIL_REGEX.test(emailInput);
-    const isUnchanged = emailInput === (customer.email ?? '');
-    const isSaveDisabled = !isValidEmail || isUnchanged || mutation.isPending;
+    const isChanged = emailInput !== (customer.email ?? '');
+    const showConfirm = isChanged && isValidEmail;
 
     const handleSave = () => {
+        if (!showConfirm) return;
         mutation.mutate(
             { userName: customer.user_name, email: emailInput },
             {
@@ -57,6 +60,9 @@ function CustomerRow({ customer, onNotify }: CustomerRowProps) {
     return (
         <TableRow hover>
             <TableCell>{customer.user_name}</TableCell>
+            <TableCell>{customer.street ?? '—'}</TableCell>
+            <TableCell>{customer.city ?? '—'}</TableCell>
+            <TableCell>{customer.country ?? '—'}</TableCell>
             <TableCell>
                 {customer.is_professional ? (
                     <Chip label="Ja" color="success" size="small" />
@@ -64,8 +70,9 @@ function CustomerRow({ customer, onNotify }: CustomerRowProps) {
                     <Chip label="Nein" size="small" />
                 )}
             </TableCell>
+            <TableCell>{customer.vat_number ?? '—'}</TableCell>
             <TableCell>
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack direction="row" spacing={0.5} alignItems="flex-start">
                     <TextField
                         size="small"
                         type="email"
@@ -74,18 +81,29 @@ function CustomerRow({ customer, onNotify }: CustomerRowProps) {
                         onChange={(e) => setEmailInput(e.target.value)}
                         error={emailInput.length > 0 && !isValidEmail}
                         helperText={emailInput.length > 0 && !isValidEmail ? 'Ungültige E-Mail-Adresse' : ''}
-                        sx={{ minWidth: 240 }}
+                        sx={{ minWidth: 220 }}
                         inputProps={{ 'aria-label': `E-Mail für ${customer.user_name}` }}
                     />
-                    <Button
-                        variant="contained"
-                        size="small"
-                        disabled={isSaveDisabled}
-                        onClick={handleSave}
-                        aria-label={`E-Mail für ${customer.user_name} speichern`}
-                    >
-                        {mutation.isPending ? <CircularProgress size={18} color="inherit" /> : 'Speichern'}
-                    </Button>
+                    {showConfirm && (
+                        <Tooltip title="E-Mail speichern">
+                            <span>
+                                <IconButton
+                                    color="success"
+                                    size="small"
+                                    onClick={handleSave}
+                                    disabled={mutation.isPending}
+                                    aria-label={`E-Mail für ${customer.user_name} speichern`}
+                                    sx={{ mt: 0.5 }}
+                                >
+                                    {mutation.isPending ? (
+                                        <CircularProgress size={18} color="inherit" />
+                                    ) : (
+                                        <CheckIcon fontSize="small" />
+                                    )}
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                    )}
                 </Stack>
             </TableCell>
         </TableRow>
@@ -145,7 +163,11 @@ export default function Customers() {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell><strong>Benutzername</strong></TableCell>
+                                            <TableCell><strong>Straße</strong></TableCell>
+                                            <TableCell><strong>Stadt</strong></TableCell>
+                                            <TableCell><strong>Land</strong></TableCell>
                                             <TableCell><strong>Professionell</strong></TableCell>
+                                            <TableCell><strong>USt-IdNr.</strong></TableCell>
                                             <TableCell><strong>E-Mail</strong></TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -182,3 +204,4 @@ export default function Customers() {
         </Box>
     );
 }
+

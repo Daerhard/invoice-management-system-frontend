@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Customers from './Customers';
 
@@ -16,9 +16,10 @@ jest.mock('../../queries/useProfessionalCustomersQuery', () => ({
     PROFESSIONAL_CUSTOMERS_QUERY_KEY: ['customers', 'professional'],
 }));
 
+const mockMutate = jest.fn();
 jest.mock('../../queries/useUpdateCustomerEmailMutation', () => ({
     __esModule: true,
-    useUpdateCustomerEmailMutation: () => ({ mutate: jest.fn(), isPending: false }),
+    useUpdateCustomerEmailMutation: () => ({ mutate: mockMutate, isPending: false }),
 }));
 
 const renderWithProviders = () => {
@@ -61,13 +62,26 @@ describe('Customers', () => {
 
     it('renders a table row for each customer', () => {
         const customers = [
-            { user_name: 'Alice', is_professional: true, email: 'alice@example.com' },
-            { user_name: 'Bob', is_professional: true, email: null },
+            { user_name: 'Alice', is_professional: true, email: 'alice@example.com', street: 'Main St', city: 'Berlin', country: 'Germany', vat_number: 'DE123' },
+            { user_name: 'Bob', is_professional: true, email: null, street: null, city: null, country: null, vat_number: null },
         ];
         mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
         renderWithProviders();
         expect(screen.getByText('Alice')).toBeInTheDocument();
         expect(screen.getByText('Bob')).toBeInTheDocument();
+    });
+
+    it('renders new column headers in the table', () => {
+        const customers = [{ user_name: 'Alice', is_professional: true, email: null }];
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
+        renderWithProviders();
+        expect(screen.getByText('Benutzername')).toBeInTheDocument();
+        expect(screen.getByText('Straße')).toBeInTheDocument();
+        expect(screen.getByText('Stadt')).toBeInTheDocument();
+        expect(screen.getByText('Land')).toBeInTheDocument();
+        expect(screen.getByText('Professionell')).toBeInTheDocument();
+        expect(screen.getByText('USt-IdNr.')).toBeInTheDocument();
+        expect(screen.getByText('E-Mail')).toBeInTheDocument();
     });
 
     it('displays existing email in the input field', () => {
@@ -83,4 +97,59 @@ describe('Customers', () => {
         renderWithProviders();
         expect(screen.getByText('1')).toBeInTheDocument();
     });
+
+    it('does not show the confirm icon button when email is unchanged', () => {
+        const customers = [{ user_name: 'Alice', is_professional: true, email: 'alice@example.com' }];
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
+        renderWithProviders();
+        expect(screen.queryByRole('button', { name: /E-Mail für Alice speichern/i })).not.toBeInTheDocument();
+    });
+
+    it('shows the confirm icon button when email is changed to a valid value', () => {
+        const customers = [{ user_name: 'Alice', is_professional: true, email: 'alice@example.com' }];
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
+        renderWithProviders();
+
+        const input = screen.getByLabelText('E-Mail für Alice');
+        fireEvent.change(input, { target: { value: 'newalice@example.com' } });
+
+        expect(screen.getByRole('button', { name: /E-Mail für Alice speichern/i })).toBeInTheDocument();
+    });
+
+    it('does not show the confirm button when email is changed to an invalid value', () => {
+        const customers = [{ user_name: 'Alice', is_professional: true, email: 'alice@example.com' }];
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
+        renderWithProviders();
+
+        const input = screen.getByLabelText('E-Mail für Alice');
+        fireEvent.change(input, { target: { value: 'not-an-email' } });
+
+        expect(screen.queryByRole('button', { name: /E-Mail für Alice speichern/i })).not.toBeInTheDocument();
+    });
+
+    it('calls mutate when the confirm icon button is clicked', () => {
+        const customers = [{ user_name: 'Alice', is_professional: true, email: 'alice@example.com' }];
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
+        renderWithProviders();
+
+        const input = screen.getByLabelText('E-Mail für Alice');
+        fireEvent.change(input, { target: { value: 'newalice@example.com' } });
+
+        fireEvent.click(screen.getByRole('button', { name: /E-Mail für Alice speichern/i }));
+
+        expect(mockMutate).toHaveBeenCalledWith(
+            { userName: 'Alice', email: 'newalice@example.com' },
+            expect.any(Object)
+        );
+    });
+
+    it('shows dash placeholders for null address fields', () => {
+        const customers = [{ user_name: 'Alice', is_professional: true, email: null, street: null, city: null, country: null, vat_number: null }];
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: customers } });
+        renderWithProviders();
+        // There should be 4 dashes for: street, city, country, vat_number
+        const dashes = screen.getAllByText('—');
+        expect(dashes.length).toBeGreaterThanOrEqual(4);
+    });
 });
+
