@@ -7,6 +7,7 @@ import { Link, useLocation } from 'react-router-dom'
 const navLinks = [
     { to: '/bestellungen', label: 'Bestellungen' },
     { to: '/einkaeufe', label: 'Einkäufe' },
+    { to: '/kunden', label: 'Kunden' },
     { to: '/statistik', label: 'Statistik' },
     { to: '/import', label: 'Import' },
     { to: '/einstellungen', label: 'Einstellungen' },
