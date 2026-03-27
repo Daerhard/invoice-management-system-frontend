@@ -73,7 +73,7 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
     const handleSendTestEmail = async () => {
         setTestEmailSuccess(false);
         try {
-            await sendTestEmailMutation.mutateAsync({ email: testEmail, orderId: cardmarketOrder.order_id });
+            await sendTestEmailMutation.mutateAsync({ testEmail: testEmail, bestellnummer: cardmarketOrder.order_id });
             setTestEmailSuccess(true);
         } catch {
             // error shown via sendTestEmailMutation.isError

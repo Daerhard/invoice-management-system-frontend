@@ -15,8 +15,12 @@ jest.mock('../../api/generated/orders', () => ({
     getOrders: jest.fn(),
     getOrdersByUserName: jest.fn(),
     createInvoice: jest.fn(),
+}));
+
+jest.mock('../../api/generated/invoice-email', () => ({
+    __esModule: true,
     sendInvoiceEmail: jest.fn(),
-    sendTestInvoiceEmail: jest.fn(),
+    testSendInvoiceEmail: jest.fn(),
 }));
 
 jest.mock('../../api/hooks/useGenericRequest', () => ({
@@ -266,7 +270,7 @@ describe('PDFInvoicePreview', () => {
         await waitFor(() => {
             expect(screen.getByText('Test-E-Mail erfolgreich gesendet!')).toBeInTheDocument();
         });
-        expect(mutateAsync).toHaveBeenCalledWith({ email: 'custom@test.com', orderId: 12345 });
+        expect(mutateAsync).toHaveBeenCalledWith({ testEmail: 'custom@test.com', bestellnummer: 12345 });
     });
 
     it('shows error message when test email sending fails', async () => {

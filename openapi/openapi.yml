@@ -376,12 +376,12 @@ paths:
         '409':
           description: Invoice already exists for this order.
 
-  /v1/orders/{externalOrderId}/invoice/send-email:
+  /v1/orders/{externalOrderId}/send-invoice-email:
     post:
       tags:
-        - orders
-      summary: Send invoice email to customer
-      description: Sends the invoice as a PDF attachment to the customer's stored email address.
+        - InvoiceEmail
+      summary: Send the invoice for an order via email
+      description: Sends the stored invoice PDF for the given order to the customer's email address. Returns 404 if the order or invoice is not found, 400 if the customer has no email address.
       operationId: sendInvoiceEmail
       parameters:
         - name: externalOrderId
@@ -398,30 +398,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/responseMessage'
+        '400':
+          description: Customer has no email address.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
         '404':
           description: Order or invoice not found.
-        '409':
-          description: No email address found for customer.
         '500':
-          description: Server error.
+          description: Failed to send email.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/responseMessage'
 
-  /v1/test/send-invoice-email:
+  /test/send-invoice-email:
     post:
       tags:
-        - orders
-      summary: Send test invoice email
-      description: Sends a test invoice email to a custom email address.
-      operationId: sendTestInvoiceEmail
+        - InvoiceEmail
+      summary: Send a test invoice email to a custom address
+      description: Looks up the invoice by bestellnummer and sends it to the provided test email address, overriding the customer's stored email.
+      operationId: testSendInvoiceEmail
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/testEmailRequest'
+              $ref: '#/components/schemas/testSendInvoiceEmailRequest'
       responses:
         '200':
           description: Test email sent successfully.
@@ -429,14 +433,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/responseMessage'
-        '400':
-          description: Invalid input.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
+        '404':
+          description: Order or invoice not found.
         '500':
-          description: Server error.
+          description: Failed to send email.
           content:
             application/json:
               schema:
@@ -666,21 +666,22 @@ components:
           type: string
           example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
 
-    testEmailRequest:
+    testSendInvoiceEmailRequest:
       type: object
-      description: Request body for sending a test invoice email.
+      description: Request body for the test send invoice email endpoint.
       properties:
-        email:
+        testEmail:
           type: string
-          description: Test email address to send the invoice to.
-          example: "test@example.com"
-        orderId:
+          description: Email address to send the test invoice to.
+          example: "your@email.com"
+        bestellnummer:
           type: integer
           format: int64
-          description: The order ID to generate the invoice for.
+          description: The external order id whose invoice should be sent.
+          example: 12345
       required:
-        - email
-        - orderId
+        - testEmail
+        - bestellnummer
 
     invoice:
       type: object

@@ -12,9 +12,7 @@ import type {
 
 import type {
   CardmarketOrder,
-  Invoice,
-  ResponseMessage,
-  TestEmailRequest
+  Invoice
 } from './Schemas';
 
 
@@ -54,31 +52,6 @@ export const createInvoice = (
       `/v1/orders/${externalOrderId}/invoice`,undefined,options
     );
   }
-/**
- * Sends the invoice as a PDF attachment to the customer's stored email address.
- * @summary Send invoice email to customer
- */
-export const sendInvoiceEmail = (
-    externalOrderId: number, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<ResponseMessage>> => {
-    return axios.post(
-      `/v1/orders/${externalOrderId}/invoice/send-email`,undefined,options
-    );
-  }
-/**
- * Sends a test invoice email to a custom email address.
- * @summary Send test invoice email
- */
-export const sendTestInvoiceEmail = (
-    testEmailRequest: TestEmailRequest, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<ResponseMessage>> => {
-    return axios.post(
-      `/v1/test/send-invoice-email`,
-      testEmailRequest,options
-    );
-  }
 export type GetOrdersResult = AxiosResponse<CardmarketOrder[]>
 export type GetOrdersByUserNameResult = AxiosResponse<CardmarketOrder[]>
 export type CreateInvoiceResult = AxiosResponse<Invoice>
-export type SendInvoiceEmailResult = AxiosResponse<ResponseMessage>
-export type SendTestInvoiceEmailResult = AxiosResponse<ResponseMessage>

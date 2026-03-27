@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { sendInvoiceEmail, sendTestInvoiceEmail } from '../api/generated/orders';
-import { TestEmailRequest } from '../api/generated/Schemas';
+import { sendInvoiceEmail, testSendInvoiceEmail } from '../api/generated/invoice-email';
+import { TestSendInvoiceEmailRequest } from '../api/generated/Schemas';
 
 export function useSendInvoiceEmailMutation() {
     return useMutation({
@@ -10,6 +10,6 @@ export function useSendInvoiceEmailMutation() {
 
 export function useSendTestInvoiceEmailMutation() {
     return useMutation({
-        mutationFn: (request: TestEmailRequest) => sendTestInvoiceEmail(request),
+        mutationFn: (request: TestSendInvoiceEmailRequest) => testSendInvoiceEmail(request),
     });
 }
