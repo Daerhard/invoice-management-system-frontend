@@ -17,12 +17,6 @@ jest.mock('../../api/generated/orders', () => ({
     createInvoice: jest.fn(),
 }));
 
-jest.mock('../../api/generated/invoice-email', () => ({
-    __esModule: true,
-    sendInvoiceEmail: jest.fn(),
-    testSendInvoiceEmail: jest.fn(),
-}));
-
 jest.mock('../../api/hooks/useGenericRequest', () => ({
     useGenericRequest: jest.fn().mockReturnValue({ data: undefined }),
 }));
@@ -31,22 +25,15 @@ jest.mock('../../queries/useSaveInvoiceMutation', () => ({
     useSaveInvoiceMutation: jest.fn(),
 }));
 
-jest.mock('../../queries/useSendInvoiceEmailMutation', () => ({
-    useSendInvoiceEmailMutation: jest.fn(),
-    useSendTestInvoiceEmailMutation: jest.fn(),
-}));
-
 jest.mock('../../components/invoices/InvoicePDF', () => () => <div data-testid="pdf-invoice" />);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { useGenericRequest } = require('../../api/hooks/useGenericRequest');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { useSaveInvoiceMutation } = require('../../queries/useSaveInvoiceMutation');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { useSendInvoiceEmailMutation, useSendTestInvoiceEmailMutation } = require('../../queries/useSendInvoiceEmailMutation');
 
 const mockOrderUnsaved: CardmarketOrder = {
-    customer: { user_name: 'TestUser', is_professional: false, email: 'test@example.com' },
+    customer: { user_name: 'TestUser', is_professional: false },
     order_id: 12345,
     payment_date: '2025-01-15',
     article_count: 2,
@@ -56,11 +43,6 @@ const mockOrderUnsaved: CardmarketOrder = {
     commission: 1,
     currency: 'EUR',
     invoice: null,
-};
-
-const mockOrderNoEmail: CardmarketOrder = {
-    ...mockOrderUnsaved,
-    customer: { user_name: 'TestUser', is_professional: false, email: null },
 };
 
 const mockOrderSaved: CardmarketOrder = {
@@ -89,8 +71,6 @@ describe('PDFInvoicePreview', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         useGenericRequest.mockReturnValue({ data: undefined });
-        useSendInvoiceEmailMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        useSendTestInvoiceEmailMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
     });
 
     it('renders the dialog title', () => {
@@ -162,130 +142,5 @@ describe('PDFInvoicePreview', () => {
         renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose });
         fireEvent.click(screen.getByRole('button', { name: /schließen/i }));
         expect(onClose).toHaveBeenCalled();
-    });
-
-    // Email feature tests
-    it('shows "Rechnung per E-Mail senden" button', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-        expect(screen.getByRole('button', { name: /rechnung per e-mail senden/i })).toBeInTheDocument();
-    });
-
-    it('disables "Rechnung per E-Mail senden" button when customer has no email', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderNoEmail, open: true, onClose: jest.fn() });
-        const emailButton = screen.getByRole('button', { name: /rechnung per e-mail senden/i });
-        expect(emailButton).toBeDisabled();
-    });
-
-    it('shows warning when customer has no email', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderNoEmail, open: true, onClose: jest.fn() });
-        expect(screen.getByText('Keine E-Mail-Adresse für diesen Kunden hinterlegt.')).toBeInTheDocument();
-    });
-
-    it('enables "Rechnung per E-Mail senden" button when customer has email', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-        const emailButton = screen.getByRole('button', { name: /rechnung per e-mail senden/i });
-        expect(emailButton).not.toBeDisabled();
-    });
-
-    it('shows success message after sending email', async () => {
-        const mutateAsync = jest.fn().mockResolvedValue({});
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        useSendInvoiceEmailMutation.mockReturnValue({ mutateAsync, isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-
-        fireEvent.click(screen.getByRole('button', { name: /rechnung per e-mail senden/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('E-Mail erfolgreich gesendet!')).toBeInTheDocument();
-        });
-    });
-
-    it('shows error message when email sending fails', async () => {
-        const mutateAsync = jest.fn().mockRejectedValue(new Error('Server error'));
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        useSendInvoiceEmailMutation.mockReturnValue({ mutateAsync, isPending: false, isError: true });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-
-        fireEvent.click(screen.getByRole('button', { name: /rechnung per e-mail senden/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('E-Mail senden fehlgeschlagen.')).toBeInTheDocument();
-        });
-    });
-
-    it('disables email send button while sending is pending', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        useSendInvoiceEmailMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: true, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-        const emailButton = screen.getByRole('button', { name: /rechnung per e-mail senden/i });
-        expect(emailButton).toBeDisabled();
-    });
-
-    it('shows test email input field', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-        expect(screen.getByLabelText('Test E-Mail-Adresse')).toBeInTheDocument();
-    });
-
-    it('shows "Test E-Mail senden" button', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-        expect(screen.getByRole('button', { name: /test e-mail senden/i })).toBeInTheDocument();
-    });
-
-    it('disables "Test E-Mail senden" button when test email is empty', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-        const testButton = screen.getByRole('button', { name: /test e-mail senden/i });
-        expect(testButton).toBeDisabled();
-    });
-
-    it('enables "Test E-Mail senden" button when test email is entered', () => {
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-
-        fireEvent.change(screen.getByLabelText('Test E-Mail-Adresse'), {
-            target: { value: 'custom@test.com' },
-        });
-
-        const testButton = screen.getByRole('button', { name: /test e-mail senden/i });
-        expect(testButton).not.toBeDisabled();
-    });
-
-    it('shows success message after sending test email', async () => {
-        const mutateAsync = jest.fn().mockResolvedValue({});
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        useSendTestInvoiceEmailMutation.mockReturnValue({ mutateAsync, isPending: false, isError: false });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-
-        fireEvent.change(screen.getByLabelText('Test E-Mail-Adresse'), {
-            target: { value: 'custom@test.com' },
-        });
-        fireEvent.click(screen.getByRole('button', { name: /test e-mail senden/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Test-E-Mail erfolgreich gesendet!')).toBeInTheDocument();
-        });
-        expect(mutateAsync).toHaveBeenCalledWith({ testEmail: 'custom@test.com', bestellnummer: 12345 });
-    });
-
-    it('shows error message when test email sending fails', async () => {
-        const mutateAsync = jest.fn().mockRejectedValue(new Error('Server error'));
-        useSaveInvoiceMutation.mockReturnValue({ mutateAsync: jest.fn(), isPending: false, isError: false });
-        useSendTestInvoiceEmailMutation.mockReturnValue({ mutateAsync, isPending: false, isError: true });
-        renderWithProviders({ cardmarketOrder: mockOrderUnsaved, open: true, onClose: jest.fn() });
-
-        fireEvent.change(screen.getByLabelText('Test E-Mail-Adresse'), {
-            target: { value: 'custom@test.com' },
-        });
-        fireEvent.click(screen.getByRole('button', { name: /test e-mail senden/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Test-E-Mail senden fehlgeschlagen.')).toBeInTheDocument();
-        });
     });
 });
