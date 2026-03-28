@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Box, Button, CircularProgress, TextField, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Alert, Button, CircularProgress, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { getInvoicePDF } from '../../api/generated/invoice-generation-pd-f';
 import { useGenericRequest } from '../../api/hooks/useGenericRequest';
 import { useSaveInvoiceMutation } from '../../queries/useSaveInvoiceMutation';
-import { useSendInvoiceEmailMutation, useSendTestInvoiceEmailMutation } from '../../queries/useSendInvoiceEmailMutation';
 import PDFInvoice from '../../components/invoices/InvoicePDF';
 import { CardmarketOrder } from '../../api/generated/Schemas'
 import { formatStringToDate } from '../../helper/Utils'
@@ -43,13 +42,6 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
     const saveInvoiceMutation = useSaveInvoiceMutation();
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    const sendEmailMutation = useSendInvoiceEmailMutation();
-    const [emailSuccess, setEmailSuccess] = useState(false);
-
-    const sendTestEmailMutation = useSendTestInvoiceEmailMutation();
-    const [testEmailSuccess, setTestEmailSuccess] = useState(false);
-    const [testEmail, setTestEmail] = useState('');
-
     const handleSave = async () => {
         setSaveSuccess(false);
         try {
@@ -57,26 +49,6 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
             setSaveSuccess(true);
         } catch {
             // error shown via saveInvoiceMutation.isError
-        }
-    };
-
-    const handleSendEmail = async () => {
-        setEmailSuccess(false);
-        try {
-            await sendEmailMutation.mutateAsync(cardmarketOrder.order_id);
-            setEmailSuccess(true);
-        } catch {
-            // error shown via sendEmailMutation.isError
-        }
-    };
-
-    const handleSendTestEmail = async () => {
-        setTestEmailSuccess(false);
-        try {
-            await sendTestEmailMutation.mutateAsync({ testEmail: testEmail, bestellnummer: cardmarketOrder.order_id });
-            setTestEmailSuccess(true);
-        } catch {
-            // error shown via sendTestEmailMutation.isError
         }
     };
 
@@ -92,7 +64,6 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
     };
 
     const isSaved = invoiceSaved || saveSuccess;
-    const customerEmail = cardmarketOrder.customer.email;
 
     return (
         <Dialog style={{ display: 'flex' }} open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -113,51 +84,6 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
                         Speichern fehlgeschlagen.
                     </Alert>
                 )}
-                {!customerEmail && (
-                    <Alert severity="warning" sx={{ mt: 1 }}>
-                        Keine E-Mail-Adresse für diesen Kunden hinterlegt.
-                    </Alert>
-                )}
-                {emailSuccess && (
-                    <Alert severity="success" sx={{ mt: 1 }}>
-                        E-Mail erfolgreich gesendet!
-                    </Alert>
-                )}
-                {sendEmailMutation.isError && (
-                    <Alert severity="error" sx={{ mt: 1 }}>
-                        E-Mail senden fehlgeschlagen.
-                    </Alert>
-                )}
-                <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <TextField
-                        label="Test E-Mail-Adresse"
-                        type="email"
-                        size="small"
-                        value={testEmail}
-                        onChange={(e) => setTestEmail(e.target.value)}
-                        sx={{ flex: 1 }}
-                        inputProps={{ 'aria-label': 'Test E-Mail-Adresse' }}
-                    />
-                    <Button
-                        onClick={handleSendTestEmail}
-                        color="secondary"
-                        variant="outlined"
-                        disabled={!testEmail || sendTestEmailMutation.isPending}
-                        startIcon={sendTestEmailMutation.isPending ? <CircularProgress size={16} /> : undefined}
-                    >
-                        Test E-Mail senden
-                    </Button>
-                </Box>
-                {testEmailSuccess && (
-                    <Alert severity="success" sx={{ mt: 1 }}>
-                        Test-E-Mail erfolgreich gesendet!
-                    </Alert>
-                )}
-                {sendTestEmailMutation.isError && (
-                    <Alert severity="error" sx={{ mt: 1 }}>
-                        Test-E-Mail senden fehlgeschlagen.
-                    </Alert>
-                )}
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="secondary">
@@ -171,15 +97,6 @@ export default function PDFInvoicePreview({ cardmarketOrder, open, onClose }: Re
                     startIcon={saveInvoiceMutation.isPending ? <CircularProgress size={16} /> : undefined}
                 >
                     {isSaved ? 'Rechnung gespeichert' : 'Rechnung speichern'}
-                </Button>
-                <Button
-                    onClick={handleSendEmail}
-                    color="primary"
-                    variant="contained"
-                    disabled={!customerEmail || sendEmailMutation.isPending}
-                    startIcon={sendEmailMutation.isPending ? <CircularProgress size={16} /> : undefined}
-                >
-                    Rechnung per E-Mail senden
                 </Button>
                 <Button onClick={handleDownload} color="primary" disabled={!invoice}>
                     Download Rechnung

@@ -18,4 +18,3 @@ export * from './invoice';
 export * from './orderItem';
 export * from './purchaseInvoice';
 export * from './responseMessage';
-export * from './testSendInvoiceEmailRequest';
