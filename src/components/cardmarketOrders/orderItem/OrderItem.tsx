@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Tooltip, Typography,
 } from '@mui/material';
-import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelopeOpen, faEye, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CustomIconButton from '../../../customComponents/CustomIconButton';
@@ -36,36 +36,53 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                 action={
                     <Stack direction="row" alignItems="center" sx={{ justifyContent: 'left' }}>
                         <CustomIconButton
-                            title="Öffne Bestelldetails"
-                            titleVariant="body2"
-                            icon={faEnvelopeOpen}
-                            iconSize="xs"
-                            onClick={toggleDetails}
-                        />
-                        <CustomIconButton
-                            title="Erstelle Rechnung (PDF)"
+                            title="Rechnung (PDF)"
                             titleVariant="body2"
                             icon={faFileInvoiceDollar}
                             iconSize="xs"
                             onClick={openInvoicePreview}
                         />
+                        <Tooltip title="Rechnung gespeichert PDF">
+                            <CheckCircleOutlineIcon
+                                data-testid="pdf-invoice-ticker"
+                                sx={{ fontSize: 16, color: invoiceSaved ? 'success.main' : 'action.disabled' }}
+                            />
+                        </Tooltip>
                         {showInvoicePreview && <PDFInvoicePreview
                             cardmarketOrder={cardmarketOrder}
                             open={showInvoicePreview}
                             onClose={closeInvoicePreview}
                         />}
                         <CustomIconButton
-                            title="Erstelle Rechnung (E)"
+                            title="Rechnung (E)"
                             titleVariant="body2"
                             icon={faFileInvoiceDollar}
                             iconSize="xs"
                         />
+                        <Tooltip title="Rechnung gespeichert E">
+                            <CheckCircleOutlineIcon
+                                data-testid="e-invoice-ticker"
+                                sx={{ fontSize: 16, color: 'action.disabled' }}
+                            />
+                        </Tooltip>
+                        <CustomIconButton
+                            title="Versenden"
+                            titleVariant="body2"
+                            icon={faEnvelopeOpen}
+                            iconSize="xs"
+                        />
+                        <Tooltip title="Rechnung Versand">
+                            <CheckCircleOutlineIcon
+                                data-testid="send-invoice-ticker"
+                                sx={{ fontSize: 16, color: 'action.disabled' }}
+                            />
+                        </Tooltip>
                     </Stack>
                 }
                 title={
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography variant="body2" fontWeight={600}>
-                            {`Kunde: ${cardmarketOrder.customer.user_name}`}
+                            {cardmarketOrder.customer.user_name}
                         </Typography>
                         {cardmarketOrder.customer.is_professional && (
                             <Chip
@@ -86,16 +103,14 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                         <Typography variant="body2" color="text.secondary">
                             {`Bestellnummer: ${cardmarketOrder.order_id}`}
                         </Typography>
-                        {invoiceSaved && (
-                            <Tooltip title="Rechnung gespeichert">
-                                <Stack direction="row" alignItems="center" spacing={0.5}>
-                                    <CheckCircleOutlineIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                                    <Typography variant="body2" color="success.main">
-                                        Rechnung gespeichert
-                                    </Typography>
-                                </Stack>
-                            </Tooltip>
-                        )}
+                        <CustomIconButton
+                            title="Öffne Bestelldetails"
+                            titleVariant="body2"
+                            icon={faEye}
+                            iconSize="xs"
+                            iconPosition="left"
+                            onClick={toggleDetails}
+                        />
                     </Stack>
                 }
                 sx={{ pb: open ? 0 : undefined }}

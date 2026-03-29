@@ -50,9 +50,10 @@ const renderWithProviders = (cardmarketOrder: CardmarketOrder) => {
 };
 
 describe('OrderItem', () => {
-    it('shows customer name', () => {
+    it('shows customer name without "Kunde:" prefix', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByText('Kunde: TestUser')).toBeInTheDocument();
+        expect(screen.getByText('TestUser')).toBeInTheDocument();
+        expect(screen.queryByText('Kunde: TestUser')).not.toBeInTheDocument();
     });
 
     it('shows order id', () => {
@@ -60,19 +61,42 @@ describe('OrderItem', () => {
         expect(screen.getByText(/Bestellnummer: 42/)).toBeInTheDocument();
     });
 
-    it('does not show saved invoice indicator when invoice is null', () => {
+    it('shows "Öffne Bestelldetails" button in subheader', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.queryByText('Rechnung gespeichert')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Öffne Bestelldetails' })).toBeInTheDocument();
     });
 
-    it('shows saved invoice indicator when invoice is present', () => {
+    it('shows action buttons for Rechnung (PDF), Rechnung (E) and Versenden', () => {
+        renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.getByRole('button', { name: 'Rechnung (PDF)' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Rechnung (E)' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Versenden' })).toBeInTheDocument();
+    });
+
+    it('always renders the pdf invoice ticker', () => {
+        renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.getByTestId('pdf-invoice-ticker')).toBeInTheDocument();
+    });
+
+    it('always renders the e-invoice ticker', () => {
+        renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.getByTestId('e-invoice-ticker')).toBeInTheDocument();
+    });
+
+    it('always renders the send-invoice ticker', () => {
+        renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.getByTestId('send-invoice-ticker')).toBeInTheDocument();
+    });
+
+    it('pdf ticker shows success color when invoice is saved', () => {
         renderWithProviders(mockOrderWithInvoice);
-        expect(screen.getByText('Rechnung gespeichert')).toBeInTheDocument();
+        const ticker = screen.getByTestId('pdf-invoice-ticker');
+        expect(ticker).toBeInTheDocument();
     });
 
-    it('does not show saved indicator when invoice field is undefined', () => {
-        const orderWithUndefinedInvoice = { ...mockOrderWithoutInvoice, invoice: undefined };
-        renderWithProviders(orderWithUndefinedInvoice);
+    it('does not show "Rechnung gespeichert" as visible text', () => {
+        renderWithProviders(mockOrderWithInvoice);
         expect(screen.queryByText('Rechnung gespeichert')).not.toBeInTheDocument();
     });
 });
+
