@@ -9,8 +9,10 @@ import {
 } from '../../store/Global'
 import { Alert, Box, Button, Chip, CircularProgress, Divider, List, Pagination, Stack, Typography } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import FileUploadIcon from '@mui/icons-material/FileUpload'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer'
+import ImportOrdersDrawer from '../../components/cardmarketOrders/ImportOrdersDrawer'
 import dayjs from 'dayjs'
 import useCustomers from '../../api/hooks/useCustomers'
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders'
@@ -45,6 +47,7 @@ export default function CardmarketOrders() {
     const [page, setPage] = useState(1)
     const itemsPerPage = 15
     const [drawerOpen, setDrawerOpen] = useState(false)
+    const [importDrawerOpen, setImportDrawerOpen] = useState(false)
 
     const handlePageChange = (value: number) => {
         setPage(value)
@@ -58,6 +61,7 @@ export default function CardmarketOrders() {
     return (
         <Box style={{ width:'100%' }}>
             <FilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+            <ImportOrdersDrawer open={importDrawerOpen} onClose={() => setImportDrawerOpen(false)} />
             <Stack spacing={3} width="100%">
                 <Box>
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -74,6 +78,16 @@ export default function CardmarketOrders() {
                             )}
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={2}>
+                            <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                startIcon={<FileUploadIcon />}
+                                onClick={() => setImportDrawerOpen(true)}
+                                aria-label="Import öffnen"
+                            >
+                                Import
+                            </Button>
                             <Button
                                 variant="outlined"
                                 color="primary"

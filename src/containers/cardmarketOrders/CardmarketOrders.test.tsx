@@ -7,6 +7,7 @@ import CardmarketOrders from './CardmarketOrders';
 
 jest.mock('../../api/hooks/useCustomers', () => ({ __esModule: true, default: () => {} }));
 jest.mock('../../components/cardmarketOrders/filters/FilterDrawer', () => () => <div />);
+jest.mock('../../components/cardmarketOrders/ImportOrdersDrawer', () => () => <div />);
 jest.mock('../../components/cardmarketOrders/orderItem/OrderItem', () => ({ cardmarketOrder }: any) => (
     <div data-testid="order-item">{cardmarketOrder.order_id}</div>
 ));

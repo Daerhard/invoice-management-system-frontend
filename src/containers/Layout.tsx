@@ -2,7 +2,6 @@ import React from 'react'
 import { Box, Container } from '@mui/material'
 import Menu from '../components/menu/Menu'
 import CardmarketOrders from './cardmarketOrders/CardmarketOrders'
-import Import from './import/Import'
 import Statistik from './statistik/Statistik'
 import Einkaeufe from './einkaeufe/Einkaeufe'
 import Customers from './customers/Customers'
@@ -21,7 +20,6 @@ export default function Layout() {
                     <Route path="/einkaeufe" element={<Einkaeufe/>} />
                     <Route path="/kunden" element={<Customers/>} />
                     <Route path="/statistik" element={<Statistik/>} />
-                    <Route path="/import" element={<Import/>} />
                     <Route path="/konto" element={<Konto/>} />
                 </Routes>
             </Container>
