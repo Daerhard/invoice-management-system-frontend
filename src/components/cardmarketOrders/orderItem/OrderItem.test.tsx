@@ -35,6 +35,18 @@ const mockOrderWithInvoice: CardmarketOrder = {
         orderId: 42,
         createdAt: '2025-03-01T10:00:00Z',
         invoicePdf: null,
+        sent: false,
+    },
+};
+
+const mockOrderWithSentInvoice: CardmarketOrder = {
+    ...mockOrderWithoutInvoice,
+    invoice: {
+        id: 1,
+        orderId: 42,
+        createdAt: '2025-03-01T10:00:00Z',
+        invoicePdf: null,
+        sent: true,
     },
 };
 
@@ -103,6 +115,18 @@ describe('OrderItem', () => {
         renderWithProviders(mockOrderWithInvoice);
         const ticker = screen.getByTestId('pdf-invoice-ticker');
         expect(ticker).toBeInTheDocument();
+    });
+
+    it('send-invoice ticker shows success color when invoice is sent', () => {
+        renderWithProviders(mockOrderWithSentInvoice);
+        const ticker = screen.getByTestId('send-invoice-ticker');
+        expect(ticker).toHaveStyle({ color: 'rgb(46, 125, 50)' });
+    });
+
+    it('send-invoice ticker shows disabled color when invoice is not sent', () => {
+        renderWithProviders(mockOrderWithInvoice);
+        const ticker = screen.getByTestId('send-invoice-ticker');
+        expect(ticker).toHaveStyle({ color: 'rgba(0, 0, 0, 0.26)' });
     });
 
     it('does not show "Rechnung gespeichert" as visible text', () => {

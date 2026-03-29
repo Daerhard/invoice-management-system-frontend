@@ -27,6 +27,7 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
     const closeEmailDialog = () => setShowEmailDialog(false);
 
     const invoiceSaved = !!cardmarketOrder.invoice;
+    const invoiceSent = !!cardmarketOrder.invoice?.sent;
 
 
     return (
@@ -85,7 +86,7 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                             <Tooltip title="Rechnung Versand">
                                 <CheckCircleOutlineIcon
                                     data-testid="send-invoice-ticker"
-                                    sx={{ fontSize: 14, color: 'action.disabled' }}
+                                    sx={{ fontSize: 14, color: invoiceSent ? 'success.main' : 'action.disabled' }}
                                 />
                             </Tooltip>
                         </Stack>
