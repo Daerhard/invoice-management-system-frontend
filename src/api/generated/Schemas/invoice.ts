@@ -20,4 +20,6 @@ export interface Invoice {
      * @nullable
      */
   invoicePdf?: string | null;
+  /** Indicates whether the invoice has been sent to the customer. */
+  sent: boolean;
 }
