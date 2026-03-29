@@ -1,17 +1,18 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import OrderItem from './OrderItem';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
 
 jest.mock('../../../containers/invoices/PDFInvoicePreview', () => () => <div data-testid="pdf-invoice-preview" />);
+jest.mock('../../../containers/invoices/SendInvoiceEmailDialog', () => () => <div data-testid="send-invoice-email-dialog" />);
 jest.mock('./OrderItemContent', () => () => <div data-testid="order-item-content" />);
 jest.mock('@fortawesome/react-fontawesome', () => ({
     FontAwesomeIcon: () => <span data-testid="icon" />,
 }));
-jest.mock('../../../customComponents/CustomIconButton', () => ({ title }: { title: string }) => (
-    <button aria-label={title} />
+jest.mock('../../../customComponents/CustomIconButton', () => ({ title, onClick }: { title: string, onClick?: () => void }) => (
+    <button aria-label={title} onClick={onClick} />
 ));
 
 const mockOrderWithoutInvoice: CardmarketOrder = {
@@ -72,6 +73,15 @@ describe('OrderItem', () => {
         expect(screen.getByRole('button', { name: 'Rechnung (E)' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Versenden' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Erstelle Rechnung (E)' })).not.toBeInTheDocument();
+    });
+
+    it('opens send email dialog when clicking "Versenden"', () => {
+        renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.queryByTestId('send-invoice-email-dialog')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Versenden' }));
+
+        expect(screen.getByTestId('send-invoice-email-dialog')).toBeInTheDocument();
     });
 
     it('always renders the pdf invoice ticker', () => {

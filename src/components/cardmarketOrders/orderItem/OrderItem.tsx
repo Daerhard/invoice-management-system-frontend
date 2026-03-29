@@ -10,7 +10,7 @@ import OrderItemContent from './OrderItemContent';
 import { formatStringToDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
 import PDFInvoicePreview from '../../../containers/invoices/PDFInvoicePreview';
-
+import SendInvoiceEmailDialog from '../../../containers/invoices/SendInvoiceEmailDialog';
 
 interface OrderItemProps {
     cardmarketOrder: CardmarketOrder
@@ -87,6 +87,7 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 titleVariant="body2"
                                 icon={faEnvelopeOpen}
                                 iconSize="xs"
+                                onClick={openEmailDialog}
                             />
                             <Tooltip title="Rechnung Versand">
                                 <CheckCircleOutlineIcon
@@ -95,6 +96,13 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 />
                             </Tooltip>
                         </Stack>
+                        {showEmailDialog && (
+                            <SendInvoiceEmailDialog
+                                cardmarketOrder={cardmarketOrder}
+                                open={showEmailDialog}
+                                onClose={closeEmailDialog}
+                            />
+                        )}
                     </Stack>
                 }
                 title={
