@@ -34,49 +34,55 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                     </Box>
                 }
                 action={
-                    <Stack direction="row" alignItems="center" sx={{ justifyContent: 'left' }}>
-                        <CustomIconButton
-                            title="Rechnung (PDF)"
-                            titleVariant="body2"
-                            icon={faFileInvoiceDollar}
-                            iconSize="xs"
-                            onClick={openInvoicePreview}
-                        />
-                        <Tooltip title="Rechnung gespeichert PDF">
-                            <CheckCircleOutlineIcon
-                                data-testid="pdf-invoice-ticker"
-                                sx={{ fontSize: 16, color: invoiceSaved ? 'success.main' : 'action.disabled' }}
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                        <Stack direction="row" alignItems="center">
+                            <CustomIconButton
+                                title="Rechnung (PDF)"
+                                titleVariant="body2"
+                                icon={faFileInvoiceDollar}
+                                iconSize="xs"
+                                onClick={openInvoicePreview}
                             />
-                        </Tooltip>
+                            <Tooltip title="Rechnung gespeichert PDF">
+                                <CheckCircleOutlineIcon
+                                    data-testid="pdf-invoice-ticker"
+                                    sx={{ fontSize: 16, color: invoiceSaved ? 'success.main' : 'action.disabled' }}
+                                />
+                            </Tooltip>
+                        </Stack>
                         {showInvoicePreview && <PDFInvoicePreview
                             cardmarketOrder={cardmarketOrder}
                             open={showInvoicePreview}
                             onClose={closeInvoicePreview}
                         />}
-                        <CustomIconButton
-                            title="Rechnung (E)"
-                            titleVariant="body2"
-                            icon={faFileInvoiceDollar}
-                            iconSize="xs"
-                        />
-                        <Tooltip title="Rechnung gespeichert E">
-                            <CheckCircleOutlineIcon
-                                data-testid="e-invoice-ticker"
-                                sx={{ fontSize: 16, color: 'action.disabled' }}
+                        <Stack direction="row" alignItems="center">
+                            <CustomIconButton
+                                title="Rechnung (E)"
+                                titleVariant="body2"
+                                icon={faFileInvoiceDollar}
+                                iconSize="xs"
                             />
-                        </Tooltip>
-                        <CustomIconButton
-                            title="Versenden"
-                            titleVariant="body2"
-                            icon={faEnvelopeOpen}
-                            iconSize="xs"
-                        />
-                        <Tooltip title="Rechnung Versand">
-                            <CheckCircleOutlineIcon
-                                data-testid="send-invoice-ticker"
-                                sx={{ fontSize: 16, color: 'action.disabled' }}
+                            <Tooltip title="Rechnung gespeichert E">
+                                <CheckCircleOutlineIcon
+                                    data-testid="e-invoice-ticker"
+                                    sx={{ fontSize: 16, color: 'action.disabled' }}
+                                />
+                            </Tooltip>
+                        </Stack>
+                        <Stack direction="row" alignItems="center">
+                            <CustomIconButton
+                                title="Versenden"
+                                titleVariant="body2"
+                                icon={faEnvelopeOpen}
+                                iconSize="xs"
                             />
-                        </Tooltip>
+                            <Tooltip title="Rechnung Versand">
+                                <CheckCircleOutlineIcon
+                                    data-testid="send-invoice-ticker"
+                                    sx={{ fontSize: 16, color: 'action.disabled' }}
+                                />
+                            </Tooltip>
+                        </Stack>
                     </Stack>
                 }
                 title={
@@ -93,6 +99,14 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 sx={{ height: 18, fontSize: '0.65rem', borderRadius: 1 }}
                             />
                         )}
+                        <CustomIconButton
+                            title="Öffne Bestelldetails"
+                            titleVariant="body2"
+                            icon={faEye}
+                            iconSize="xs"
+                            iconPosition="left"
+                            onClick={toggleDetails}
+                        />
                     </Stack>
                 }
                 subheader={
@@ -103,14 +117,6 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                         <Typography variant="body2" color="text.secondary">
                             {`Bestellnummer: ${cardmarketOrder.order_id}`}
                         </Typography>
-                        <CustomIconButton
-                            title="Öffne Bestelldetails"
-                            titleVariant="body2"
-                            icon={faEye}
-                            iconSize="xs"
-                            iconPosition="left"
-                            onClick={toggleDetails}
-                        />
                     </Stack>
                 }
                 sx={{ pb: open ? 0 : undefined }}

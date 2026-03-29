@@ -61,7 +61,7 @@ describe('OrderItem', () => {
         expect(screen.getByText(/Bestellnummer: 42/)).toBeInTheDocument();
     });
 
-    it('shows "Öffne Bestelldetails" button in subheader', () => {
+    it('shows "Öffne Bestelldetails" button in title row', () => {
         renderWithProviders(mockOrderWithoutInvoice);
         expect(screen.getByRole('button', { name: 'Öffne Bestelldetails' })).toBeInTheDocument();
     });
