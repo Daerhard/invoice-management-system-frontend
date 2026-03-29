@@ -71,6 +71,7 @@ describe('OrderItem', () => {
         expect(screen.getByRole('button', { name: 'Rechnung (PDF)' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Rechnung (E)' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Versenden' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Erstelle Rechnung (E)' })).not.toBeInTheDocument();
     });
 
     it('always renders the pdf invoice ticker', () => {
