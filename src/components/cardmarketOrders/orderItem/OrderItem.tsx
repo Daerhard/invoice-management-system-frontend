@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Tooltip, Typography,
 } from '@mui/material';
-import { faEnvelopeOpen, faEnvelope, faEye, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelopeOpen, faEye, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CustomIconButton from '../../../customComponents/CustomIconButton';
@@ -60,13 +60,6 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                             open={showInvoicePreview}
                             onClose={closeInvoicePreview}
                         />}
-                        <CustomIconButton
-                            title="Erstelle Rechnung (E)"
-                            titleVariant="body2"
-                            icon={faEnvelope}
-                            iconSize="xs"
-                            onClick={openEmailDialog}
-                        />
                         <Stack direction="row" alignItems="center">
                             <CustomIconButton
                                 title="Rechnung (E)"
