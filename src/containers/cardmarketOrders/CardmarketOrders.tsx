@@ -34,9 +34,11 @@ export default function CardmarketOrders() {
             .filter((order) => !startDateSelect || dayjs(order.payment_date) >= startDateSelect)
             .filter((order) => !endDateSelect || dayjs(order.payment_date) <= endDateSelect);
 
-        return onlyBusinessCustomers
+        const result = onlyBusinessCustomers
             ? filtered.filter((order) => order.customer.is_professional)
             : filtered;
+
+        return result.slice().sort((a, b) => dayjs(b.payment_date).diff(dayjs(a.payment_date)));
     }, [cardmarketOrders, cardmarketOrderSelect, customerSelect, endDateSelect, startDateSelect, onlyBusinessCustomers]);
 
 
