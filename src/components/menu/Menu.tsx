@@ -10,7 +10,7 @@ const navLinks = [
     { to: '/kunden', label: 'Kunden' },
     { to: '/statistik', label: 'Statistik' },
     { to: '/import', label: 'Import' },
-    { to: '/einstellungen', label: 'Einstellungen' },
+    { to: '/konto', label: 'Konto' },
 ];
 
 export default function Menu() {
