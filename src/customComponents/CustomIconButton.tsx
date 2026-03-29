@@ -9,9 +9,10 @@ interface CustomIconButtonProps {
     icon: any;
     iconSize: string;
     onClick?: () => void;
+    iconPosition?: 'left' | 'right';
 }
 
-export default function CustomIconButton({ title, titleVariant, icon, iconSize, onClick }: CustomIconButtonProps) {
+export default function CustomIconButton({ title, titleVariant, icon, iconSize, onClick, iconPosition = 'right' }: CustomIconButtonProps) {
     return (
         <IconButton
             onClick={onClick}
@@ -23,10 +24,15 @@ export default function CustomIconButton({ title, titleVariant, icon, iconSize, 
                 },
             }}
         >
-            <Typography sx={{ marginRight: '0.5rem' }} variant="body2">
+            {iconPosition === 'left' && (
+                <FontAwesomeIcon icon={icon} size="xs" />
+            )}
+            <Typography sx={iconPosition === 'right' ? { marginRight: '0.5rem' } : { marginLeft: '0.5rem' }} variant="body2">
                 {title}
             </Typography>
-            <FontAwesomeIcon icon={icon} size="xs" />
+            {iconPosition === 'right' && (
+                <FontAwesomeIcon icon={icon} size="xs" />
+            )}
         </IconButton>
     );
 }
