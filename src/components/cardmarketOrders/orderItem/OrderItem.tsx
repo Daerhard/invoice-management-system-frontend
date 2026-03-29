@@ -27,6 +27,7 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
 
     return (
         <Card sx={{ width: '100%', marginBottom: '0.4rem' }}>
+            <Box sx={{ overflowX: 'auto' }}>
             <CardHeader
                 avatar={
                     <Box sx={{ color: 'primary.main' }}>
@@ -110,17 +111,18 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                     </Stack>
                 }
                 subheader={
-                    <Stack direction="row" spacing={3} sx={{ mt: 0.25 }}>
-                        <Typography variant="body2" color="text.secondary">
+                    <Stack direction="row" spacing={3} sx={{ mt: 0.25, flexWrap: 'nowrap' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
                             {`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
                             {`Bestellnummer: ${cardmarketOrder.order_id}`}
                         </Typography>
                     </Stack>
                 }
-                sx={{ pb: open ? 0 : undefined }}
+                sx={{ pb: open ? 0 : undefined, minWidth: 'max-content' }}
             />
+            </Box>
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <CardContent sx={{ pt: 0 }}>
                     <OrderItemContent cardmarketOrder={cardmarketOrder} />
