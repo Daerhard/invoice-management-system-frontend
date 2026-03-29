@@ -52,6 +52,7 @@ const mockOrderSaved: CardmarketOrder = {
         orderId: 12345,
         createdAt: '2025-01-15T10:00:00Z',
         invoicePdf: null,
+        sent: false,
     },
 };
 

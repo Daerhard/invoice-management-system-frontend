@@ -45,6 +45,7 @@ const mockInvoice: Invoice = {
     orderId: 1,
     createdAt: '2025-01-01T12:00:00Z',
     invoicePdf: null,
+    sent: false,
 };
 
 const createWrapper = (store: ReturnType<typeof createStore>) => {
