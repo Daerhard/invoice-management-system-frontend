@@ -9,7 +9,6 @@ const navLinks = [
     { to: '/einkaeufe', label: 'Einkäufe' },
     { to: '/kunden', label: 'Kunden' },
     { to: '/statistik', label: 'Statistik' },
-    { to: '/import', label: 'Import' },
     { to: '/konto', label: 'Konto' },
 ];
 
