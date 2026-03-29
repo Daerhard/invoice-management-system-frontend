@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Tooltip, Typography,
 } from '@mui/material';
-import { faEnvelopeOpen, faEnvelope, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { faEnvelopeOpen, faEye, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -61,20 +60,6 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                             open={showInvoicePreview}
                             onClose={closeInvoicePreview}
                         />}
-                        <CustomIconButton
-                            title="Erstelle Rechnung (E)"
-                            titleVariant="body2"
-                            icon={faEnvelope}
-                            iconSize="xs"
-                            onClick={openEmailDialog}
-                        />
-                        {showEmailDialog && (
-                            <SendInvoiceEmailDialog
-                                cardmarketOrder={cardmarketOrder}
-                                open={showEmailDialog}
-                                onClose={closeEmailDialog}
-                            />
-                        )}
                         <Stack direction="row" alignItems="center">
                             <CustomIconButton
                                 title="Rechnung (E)"
@@ -95,6 +80,7 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 titleVariant="body2"
                                 icon={faEnvelopeOpen}
                                 iconSize="xs"
+                                onClick={openEmailDialog}
                             />
                             <Tooltip title="Rechnung Versand">
                                 <CheckCircleOutlineIcon
@@ -103,6 +89,13 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 />
                             </Tooltip>
                         </Stack>
+                        {showEmailDialog && (
+                            <SendInvoiceEmailDialog
+                                cardmarketOrder={cardmarketOrder}
+                                open={showEmailDialog}
+                                onClose={closeEmailDialog}
+                            />
+                        )}
                     </Stack>
                 }
                 title={
