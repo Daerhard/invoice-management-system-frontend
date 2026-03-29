@@ -100,6 +100,16 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 sx={{ height: 18, fontSize: '0.65rem', borderRadius: 1 }}
                             />
                         )}
+                    </Stack>
+                }
+                subheader={
+                    <Stack direction="row" spacing={3} alignItems="center" sx={{ mt: 0.25, flexWrap: 'nowrap' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                            {`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                            {`Bestellnummer: ${cardmarketOrder.order_id}`}
+                        </Typography>
                         <CustomIconButton
                             title="Öffne Bestelldetails"
                             titleVariant="body2"
@@ -108,16 +118,6 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                             iconPosition="left"
                             onClick={toggleDetails}
                         />
-                    </Stack>
-                }
-                subheader={
-                    <Stack direction="row" spacing={3} sx={{ mt: 0.25, flexWrap: 'nowrap' }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                            {`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                            {`Bestellnummer: ${cardmarketOrder.order_id}`}
-                        </Typography>
                     </Stack>
                 }
                 sx={{ pb: open ? 0 : undefined, minWidth: 'max-content' }}
