@@ -6,6 +6,7 @@ import OrderItem from './OrderItem';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
 
 jest.mock('../../../containers/invoices/PDFInvoicePreview', () => () => <div data-testid="pdf-invoice-preview" />);
+jest.mock('../../../containers/invoices/SendInvoiceEmailDialog', () => () => <div data-testid="send-invoice-email-dialog" />);
 jest.mock('./OrderItemContent', () => () => <div data-testid="order-item-content" />);
 jest.mock('@fortawesome/react-fontawesome', () => ({
     FontAwesomeIcon: () => <span data-testid="icon" />,

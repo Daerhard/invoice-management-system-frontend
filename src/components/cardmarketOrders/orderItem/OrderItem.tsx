@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import {
     Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Tooltip, Typography,
 } from '@mui/material';
-import { faEnvelopeOpen, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelopeOpen, faEnvelope, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CustomIconButton from '../../../customComponents/CustomIconButton';
 import OrderItemContent from './OrderItemContent';
 import { formatStringToDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
-import PDFInvoicePreview from '../../../containers/invoices/PDFInvoicePreview'
+import PDFInvoicePreview from '../../../containers/invoices/PDFInvoicePreview';
+import SendInvoiceEmailDialog from '../../../containers/invoices/SendInvoiceEmailDialog';
 
 interface OrderItemProps {
     cardmarketOrder: CardmarketOrder
@@ -21,6 +22,9 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
     const [showInvoicePreview, setShowInvoicePreview] = useState(false);
     const openInvoicePreview = () => setShowInvoicePreview(true);
     const closeInvoicePreview = () => setShowInvoicePreview(false);
+    const [showEmailDialog, setShowEmailDialog] = useState(false);
+    const openEmailDialog = () => setShowEmailDialog(true);
+    const closeEmailDialog = () => setShowEmailDialog(false);
 
     const invoiceSaved = !!cardmarketOrder.invoice;
 
@@ -57,9 +61,17 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                         <CustomIconButton
                             title="Erstelle Rechnung (E)"
                             titleVariant="body2"
-                            icon={faFileInvoiceDollar}
+                            icon={faEnvelope}
                             iconSize="xs"
+                            onClick={openEmailDialog}
                         />
+                        {showEmailDialog && (
+                            <SendInvoiceEmailDialog
+                                cardmarketOrder={cardmarketOrder}
+                                open={showEmailDialog}
+                                onClose={closeEmailDialog}
+                            />
+                        )}
                     </Stack>
                 }
                 title={
