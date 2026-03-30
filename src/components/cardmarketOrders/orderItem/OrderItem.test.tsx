@@ -11,8 +11,8 @@ jest.mock('./OrderItemContent', () => () => <div data-testid="order-item-content
 jest.mock('@fortawesome/react-fontawesome', () => ({
     FontAwesomeIcon: () => <span data-testid="icon" />,
 }));
-jest.mock('../../../customComponents/CustomIconButton', () => ({ title, onClick }: { title: string, onClick?: () => void }) => (
-    <button aria-label={title} onClick={onClick} />
+jest.mock('../../../customComponents/CustomIconButton', () => ({ title, onClick, disabled }: { title: string, onClick?: () => void, disabled?: boolean }) => (
+    <button aria-label={title} onClick={onClick} disabled={disabled} />
 ));
 
 const mockOrderWithoutInvoice: CardmarketOrder = {
@@ -26,6 +26,11 @@ const mockOrderWithoutInvoice: CardmarketOrder = {
     commission: 1.5,
     currency: 'EUR',
     invoice: null,
+};
+
+const mockProfessionalOrder: CardmarketOrder = {
+    ...mockOrderWithoutInvoice,
+    customer: { user_name: 'ProUser', is_professional: true },
 };
 
 const mockOrderWithInvoice: CardmarketOrder = {
@@ -87,13 +92,23 @@ describe('OrderItem', () => {
         expect(screen.queryByRole('button', { name: 'Erstelle Rechnung (E)' })).not.toBeInTheDocument();
     });
 
-    it('opens send email dialog when clicking "Versenden"', () => {
-        renderWithProviders(mockOrderWithoutInvoice);
+    it('opens send email dialog when clicking "Versenden" for professional customer', () => {
+        renderWithProviders(mockProfessionalOrder);
         expect(screen.queryByTestId('send-invoice-email-dialog')).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Versenden' }));
 
         expect(screen.getByTestId('send-invoice-email-dialog')).toBeInTheDocument();
+    });
+
+    it('"Versenden" button is disabled for non-professional customers', () => {
+        renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.getByRole('button', { name: 'Versenden' })).toBeDisabled();
+    });
+
+    it('"Versenden" button is enabled for professional customers', () => {
+        renderWithProviders(mockProfessionalOrder);
+        expect(screen.getByRole('button', { name: 'Versenden' })).not.toBeDisabled();
     });
 
     it('always renders the pdf invoice ticker', () => {

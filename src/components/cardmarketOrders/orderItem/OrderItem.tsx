@@ -81,7 +81,8 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 titleVariant="body2"
                                 icon={faEnvelopeOpen}
                                 iconSize="xs"
-                                onClick={openEmailDialog}
+                                onClick={cardmarketOrder.customer.is_professional ? openEmailDialog : undefined}
+                                disabled={!cardmarketOrder.customer.is_professional}
                             />
                             <Tooltip title="Rechnung Versand">
                                 <CheckCircleOutlineIcon

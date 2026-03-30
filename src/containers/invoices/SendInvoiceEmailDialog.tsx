@@ -10,12 +10,11 @@ import {
     DialogTitle,
     Typography,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useSetAtom } from 'jotai';
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import { useSendInvoiceEmailMutation } from '../../queries/useSendInvoiceEmailMutation';
-
-// TODO: Hardcoded test-only email address – remove once the customer email is reliably stored in the backend.
-// The customer email from the order is used when available; this address is only a testing fallback.
-const TESTING_FALLBACK_EMAIL = 'Erhard-daniel-gew@gmx.de';
+import { customerPageNameFilterAtom, customerPageEmailFilterAtom } from '../../store/Global';
 
 interface SendInvoiceEmailDialogProps {
     cardmarketOrder: CardmarketOrder;
@@ -30,17 +29,22 @@ export default function SendInvoiceEmailDialog({
 }: Readonly<SendInvoiceEmailDialogProps>) {
     const mutation = useSendInvoiceEmailMutation();
     const [sendSuccess, setSendSuccess] = useState(false);
+    const navigate = useNavigate();
+    const setCustomerNameFilter = useSetAtom(customerPageNameFilterAtom);
+    const setCustomerEmailFilter = useSetAtom(customerPageEmailFilterAtom);
 
-    const recipientEmail = cardmarketOrder.customer.email ?? TESTING_FALLBACK_EMAIL;
+    const recipientEmail = cardmarketOrder.customer.email ?? null;
+    const hasEmail = !!recipientEmail;
     const subject = `Bestellung ${cardmarketOrder.order_id}`;
 
     const handleSend = async () => {
+        if (!hasEmail) return;
         setSendSuccess(false);
         try {
             await mutation.mutateAsync({
                 orderId: cardmarketOrder.order_id,
                 request: {
-                    to: recipientEmail,
+                    to: recipientEmail!,
                     subject,
                 },
             });
@@ -56,8 +60,15 @@ export default function SendInvoiceEmailDialog({
         onClose();
     };
 
+    const handleNavigateToCustomer = () => {
+        setCustomerNameFilter(cardmarketOrder.customer.user_name);
+        setCustomerEmailFilter('without_email');
+        onClose();
+        navigate('/kunden');
+    };
+
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth data-testid="send-invoice-email-dialog">
             <DialogTitle>Rechnung per E-Mail senden</DialogTitle>
             <DialogContent>
                 <DialogContentText>
@@ -70,8 +81,13 @@ export default function SendInvoiceEmailDialog({
                     <strong>Bestellnummer:</strong> {cardmarketOrder.order_id}
                 </Typography>
                 <Typography variant="body2">
-                    <strong>E-Mail-Adresse:</strong> {recipientEmail}
+                    <strong>E-Mail-Adresse:</strong> {recipientEmail ?? '–'}
                 </Typography>
+                {!hasEmail && (
+                    <Alert severity="warning" sx={{ mt: 2 }} data-testid="no-email-warning">
+                        Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.
+                    </Alert>
+                )}
                 {sendSuccess && (
                     <Alert severity="success" sx={{ mt: 2 }}>
                         E-Mail erfolgreich gesendet!
@@ -85,6 +101,16 @@ export default function SendInvoiceEmailDialog({
                 )}
             </DialogContent>
             <DialogActions>
+                {!hasEmail && (
+                    <Button
+                        onClick={handleNavigateToCustomer}
+                        color="warning"
+                        variant="outlined"
+                        data-testid="navigate-to-customer-button"
+                    >
+                        Zum Kunden
+                    </Button>
+                )}
                 <Button onClick={handleClose} color="secondary">
                     Abbrechen
                 </Button>
@@ -92,7 +118,7 @@ export default function SendInvoiceEmailDialog({
                     onClick={handleSend}
                     color="primary"
                     variant="contained"
-                    disabled={sendSuccess || mutation.isPending}
+                    disabled={!hasEmail || sendSuccess || mutation.isPending}
                     startIcon={mutation.isPending ? <CircularProgress size={16} /> : undefined}
                 >
                     {sendSuccess ? 'Gesendet' : 'Senden'}

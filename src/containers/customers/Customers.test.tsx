@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider, createStore } from 'jotai';
 import Customers from './Customers';
 
 jest.mock('../../api/generated/customers', () => ({
@@ -24,9 +25,12 @@ jest.mock('../../queries/useUpdateCustomerEmailMutation', () => ({
 
 const renderWithProviders = () => {
     const queryClient = new QueryClient();
+    const store = createStore();
     return render(
         <QueryClientProvider client={queryClient}>
-            <Customers />
+            <Provider store={store}>
+                <Customers />
+            </Provider>
         </QueryClientProvider>
     );
 };
@@ -141,6 +145,20 @@ describe('Customers', () => {
             { userName: 'Alice', email: 'newalice@example.com' },
             expect.any(Object)
         );
+    });
+
+    it('renders a filter button', () => {
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: [] } });
+        renderWithProviders();
+        expect(screen.getByRole('button', { name: /filter/i })).toBeInTheDocument();
+    });
+
+    it('opens the filter drawer when the filter button is clicked', () => {
+        mockUseProfessionalCustomersQuery.mockReturnValue({ isLoading: false, isError: false, data: { data: [] } });
+        renderWithProviders();
+        expect(screen.queryByText('Filter nach Name')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /filter/i }));
+        expect(screen.getByText('Filter nach Name')).toBeInTheDocument();
     });
 });
 

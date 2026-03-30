@@ -10,13 +10,16 @@ interface CustomIconButtonProps {
     iconSize: string;
     onClick?: () => void;
     iconPosition?: 'left' | 'right';
+    disabled?: boolean;
 }
 
-export default function CustomIconButton({ title, titleVariant, icon, iconSize, onClick, iconPosition = 'right' }: CustomIconButtonProps) {
+export default function CustomIconButton({ title, titleVariant, icon, iconSize, onClick, iconPosition = 'right', disabled = false }: CustomIconButtonProps) {
     return (
         <IconButton
             onClick={onClick}
             disableRipple
+            disabled={disabled}
+            aria-label={title}
             sx={{
                 ':hover': {
                     backgroundColor: 'transparent',

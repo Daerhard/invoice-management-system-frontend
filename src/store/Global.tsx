@@ -20,3 +20,7 @@ export const cardmarketOrderSelectAtom = atom<CardmarketOrder | null>(null)
 export const startDateSelectAtom = atom<Dayjs | null>(null)
 export const endDateSelectAtom = atom<Dayjs | null>(null)
 export const businessCustomerSelectAtom = atom<boolean>(false)
+
+export type CustomerEmailFilter = 'all' | 'with_email' | 'without_email'
+export const customerPageNameFilterAtom = atom<string>('')
+export const customerPageEmailFilterAtom = atom<CustomerEmailFilter>('all')
