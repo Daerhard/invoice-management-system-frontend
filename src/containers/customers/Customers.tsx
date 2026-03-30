@@ -122,8 +122,9 @@ export default function Customers() {
     const [emailFilter] = useAtom(customerPageEmailFilterAtom);
 
     const filteredCustomers = useMemo(() => {
+        const trimmedName = nameFilter.trim();
         return customers
-            .filter((c) => !nameFilter || c.user_name.toLowerCase().includes(nameFilter.toLowerCase()))
+            .filter((c) => !trimmedName || c.user_name.toLowerCase().includes(trimmedName.toLowerCase()))
             .filter((c) => {
                 if (emailFilter === 'with_email') return !!c.email;
                 if (emailFilter === 'without_email') return !c.email;

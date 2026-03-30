@@ -12,8 +12,8 @@ export default function CustomerPageEmailFilter() {
 
     return (
         <FormControl component="fieldset">
-            <FormLabel component="legend">E-Mail-Filter</FormLabel>
-            <RadioGroup value={emailFilter} onChange={handleChange} aria-label="E-Mail-Filter">
+            <FormLabel component="legend" id="email-filter-label">E-Mail-Filter</FormLabel>
+            <RadioGroup value={emailFilter} onChange={handleChange} aria-labelledby="email-filter-label">
                 <FormControlLabel value="all" control={<Radio size="small" />} label="Alle" />
                 <FormControlLabel value="with_email" control={<Radio size="small" />} label="Mit E-Mail" />
                 <FormControlLabel value="without_email" control={<Radio size="small" />} label="Ohne E-Mail" />
