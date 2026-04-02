@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider, createStore } from 'jotai';
 import SendInvoiceEmailDialog from './SendInvoiceEmailDialog';
 import { CardmarketOrder } from '../../api/generated/Schemas';
 
@@ -13,11 +14,16 @@ jest.mock('../../queries/useSendInvoiceEmailMutation', () => ({
     useSendInvoiceEmailMutation: jest.fn(),
 }));
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+    useNavigate: () => mockNavigate,
+}));
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { useSendInvoiceEmailMutation } = require('../../queries/useSendInvoiceEmailMutation');
 
 const mockOrder: CardmarketOrder = {
-    customer: { user_name: 'TestUser', is_professional: false, email: 'test@example.com' },
+    customer: { user_name: 'TestUser', is_professional: true, email: 'test@example.com' },
     order_id: 99,
     payment_date: '2025-06-01',
     article_count: 1,
@@ -31,19 +37,22 @@ const mockOrder: CardmarketOrder = {
 
 const mockOrderNoEmail: CardmarketOrder = {
     ...mockOrder,
-    customer: { user_name: 'NoEmailUser', is_professional: false },
+    customer: { user_name: 'NoEmailUser', is_professional: true },
 };
 
 const renderDialog = (props: Partial<React.ComponentProps<typeof SendInvoiceEmailDialog>> = {}) => {
     const queryClient = new QueryClient();
+    const store = createStore();
     return render(
         <QueryClientProvider client={queryClient}>
-            <SendInvoiceEmailDialog
-                cardmarketOrder={mockOrder}
-                open={true}
-                onClose={jest.fn()}
-                {...props}
-            />
+            <Provider store={store}>
+                <SendInvoiceEmailDialog
+                    cardmarketOrder={mockOrder}
+                    open={true}
+                    onClose={jest.fn()}
+                    {...props}
+                />
+            </Provider>
         </QueryClientProvider>
     );
 };
@@ -87,7 +96,7 @@ describe('SendInvoiceEmailDialog', () => {
         expect(screen.getByText(/test@example\.com/)).toBeInTheDocument();
     });
 
-    it('falls back to hardcoded test email when customer has no email', () => {
+    it('shows warning and disables send button when customer has no email', () => {
         useSendInvoiceEmailMutation.mockReturnValue({
             mutateAsync: jest.fn(),
             isPending: false,
@@ -95,7 +104,31 @@ describe('SendInvoiceEmailDialog', () => {
             reset: jest.fn(),
         });
         renderDialog({ cardmarketOrder: mockOrderNoEmail });
-        expect(screen.getByText(/Erhard-daniel-gew@gmx\.de/)).toBeInTheDocument();
+        expect(screen.getByTestId('no-email-warning')).toBeInTheDocument();
+        expect(screen.getByText('Für diesen Kunden ist keine E-Mail-Adresse hinterlegt.')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /senden/i })).toBeDisabled();
+    });
+
+    it('shows "Zum Kunden" button when customer has no email', () => {
+        useSendInvoiceEmailMutation.mockReturnValue({
+            mutateAsync: jest.fn(),
+            isPending: false,
+            isError: false,
+            reset: jest.fn(),
+        });
+        renderDialog({ cardmarketOrder: mockOrderNoEmail });
+        expect(screen.getByTestId('navigate-to-customer-button')).toBeInTheDocument();
+    });
+
+    it('does not show "Zum Kunden" button when customer has an email', () => {
+        useSendInvoiceEmailMutation.mockReturnValue({
+            mutateAsync: jest.fn(),
+            isPending: false,
+            isError: false,
+            reset: jest.fn(),
+        });
+        renderDialog();
+        expect(screen.queryByTestId('navigate-to-customer-button')).not.toBeInTheDocument();
     });
 
     it('disables send button while pending', () => {

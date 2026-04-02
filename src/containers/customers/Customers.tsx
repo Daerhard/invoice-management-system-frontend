@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     Box,
+    Button,
     Chip,
     CircularProgress,
     Divider,
@@ -19,10 +20,14 @@ import {
     Typography,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { useAtom } from 'jotai';
 import { useProfessionalCustomersQuery } from '../../queries/useProfessionalCustomersQuery';
 import { useUpdateCustomerEmailMutation } from '../../queries/useUpdateCustomerEmailMutation';
 import { Customer } from '../../api/generated/Schemas';
+import { customerPageEmailFilterAtom, customerPageNameFilterAtom } from '../../store/Global';
+import CustomerPageFilterDrawer from '../../components/customers/filters/CustomerPageFilterDrawer';
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -111,6 +116,21 @@ export default function Customers() {
     const customers = data?.data ?? [];
 
     const [snackbar, setSnackbar] = useState<SnackbarState>({ open: false, message: '', severity: 'success' });
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const [nameFilter] = useAtom(customerPageNameFilterAtom);
+    const [emailFilter] = useAtom(customerPageEmailFilterAtom);
+
+    const filteredCustomers = useMemo(() => {
+        const trimmedName = nameFilter.trim();
+        return customers
+            .filter((c) => !trimmedName || c.user_name.toLowerCase().includes(trimmedName.toLowerCase()))
+            .filter((c) => {
+                if (emailFilter === 'with_email') return !!c.email;
+                if (emailFilter === 'without_email') return !c.email;
+                return true;
+            });
+    }, [customers, nameFilter, emailFilter]);
 
     const handleNotify = (message: string, severity: 'success' | 'error') => {
         setSnackbar({ open: true, message, severity });
@@ -118,19 +138,31 @@ export default function Customers() {
 
     return (
         <Box style={{ width: '100%' }}>
+            <CustomerPageFilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
             <Stack spacing={3} width="100%">
                 <Box>
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <PeopleAltIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-                        <Typography variant="h5">Kunden</Typography>
-                        {customers.length > 0 && (
-                            <Chip
-                                label={customers.length}
-                                size="small"
-                                color="primary"
-                                sx={{ fontWeight: 600, borderRadius: 1 }}
-                            />
-                        )}
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Stack direction="row" alignItems="center" spacing={1.5}>
+                            <PeopleAltIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+                            <Typography variant="h5">Kunden</Typography>
+                            {filteredCustomers.length > 0 && (
+                                <Chip
+                                    label={filteredCustomers.length}
+                                    size="small"
+                                    color="primary"
+                                    sx={{ fontWeight: 600, borderRadius: 1 }}
+                                />
+                            )}
+                        </Stack>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            startIcon={<FilterListIcon />}
+                            onClick={() => setDrawerOpen(true)}
+                        >
+                            Filter
+                        </Button>
                     </Stack>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                         Übersicht aller professionellen Kunden
@@ -164,7 +196,7 @@ export default function Customers() {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {customers.map((customer) => (
+                                        {filteredCustomers.map((customer) => (
                                             <CustomerRow
                                                 key={customer.user_name}
                                                 customer={customer}
