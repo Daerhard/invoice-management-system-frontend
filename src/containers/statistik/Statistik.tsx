@@ -232,7 +232,7 @@ export default function Statistik() {
                 const einkaeufe = Math.round((purchasesByYear.get(year) ?? 0) * 100) / 100;
                 const nachzahlungen = 0; // placeholder – no backend endpoint yet
                 const gewinn = Math.round(
-                    (totalValue + nachzahlungen - shipmentCost - commission - merchandiseValue - erstattungen - arbeitsmittel - einkaeufe) * 100
+                    (totalValue + nachzahlungen - shipmentCost - commission - erstattungen - arbeitsmittel - einkaeufe) * 100
                 ) / 100;
                 return {
                     year,
