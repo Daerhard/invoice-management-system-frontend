@@ -47,10 +47,9 @@ export default function AddPurchaseInvoiceDrawer({ open, onClose }: AddPurchaseI
                     <Stack spacing={2}>
                         <Autocomplete
                             options={konamiSets}
-                            value={produktname || null}
-                            onChange={(_event, newValue) => setProduktname(newValue ?? '')}
-                            freeSolo
+                            inputValue={produktname}
                             onInputChange={(_event, newInputValue) => setProduktname(newInputValue)}
+                            freeSolo
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
