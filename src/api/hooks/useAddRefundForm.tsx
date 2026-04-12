@@ -10,15 +10,13 @@ export interface AddRefundFormState {
     setDescription: (value: string) => void;
     amount: string;
     setAmount: (value: string) => void;
-    date: string;
-    setDate: (value: string) => void;
-    pdfFile: File | null;
+    year: string;
+    setYear: (value: string) => void;
     loading: boolean;
     message: string;
     setMessage: (value: string) => void;
     error: string;
     setError: (value: string) => void;
-    handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSubmit: (e: React.FormEvent) => Promise<void>;
 }
 
@@ -27,8 +25,7 @@ export default function useAddRefundForm(): AddRefundFormState {
 
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
-    const [date, setDate] = useState('');
-    const [pdfFile, setPdfFile] = useState<File | null>(null);
+    const [year, setYear] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -36,18 +33,7 @@ export default function useAddRefundForm(): AddRefundFormState {
     const resetForm = () => {
         setDescription('');
         setAmount('');
-        setDate('');
-        setPdfFile(null);
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selected = e.target.files?.[0] ?? null;
-        if (selected && selected.type === 'application/pdf') {
-            setPdfFile(selected);
-            setError('');
-        } else {
-            setError('Bitte eine gültige PDF-Datei auswählen.');
-        }
+        setYear('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -61,8 +47,9 @@ export default function useAddRefundForm(): AddRefundFormState {
             setError('Bitte einen gültigen Betrag eingeben.');
             return;
         }
-        if (!date) {
-            setError('Bitte ein Datum eingeben.');
+        const parsedYear = parseInt(year, 10);
+        if (!year || isNaN(parsedYear) || parsedYear < 1900 || parsedYear > 2100) {
+            setError('Bitte ein gültiges Jahr eingeben.');
             return;
         }
         setMessage('');
@@ -72,11 +59,11 @@ export default function useAddRefundForm(): AddRefundFormState {
         const refundData: Refund = {
             description: description.trim(),
             amount: parsedAmount,
-            date,
+            date: String(parsedYear),
         };
 
         try {
-            const response = await createRefund({ refundData, pdf: pdfFile ?? undefined });
+            const response = await createRefund({ refundData });
             setRefunds((prev) => [response.data, ...prev]);
             setMessage('Erstattung erfolgreich gespeichert!');
             resetForm();
@@ -93,15 +80,13 @@ export default function useAddRefundForm(): AddRefundFormState {
         setDescription,
         amount,
         setAmount,
-        date,
-        setDate,
-        pdfFile,
+        year,
+        setYear,
         loading,
         message,
         setMessage,
         error,
         setError,
-        handleFileChange,
         handleSubmit,
     };
 }

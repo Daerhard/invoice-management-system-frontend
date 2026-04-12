@@ -39,7 +39,7 @@ describe('Einkaeufe', () => {
         renderWithProvider();
         expect(screen.getByRole('tab', { name: 'Einkäufe' })).toBeInTheDocument();
         expect(screen.getByRole('tab', { name: 'Erstattungen' })).toBeInTheDocument();
-        expect(screen.getByRole('tab', { name: 'Zusatzmittel' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Arbeitsmittel' })).toBeInTheDocument();
     });
 
     it('renders the add button', () => {

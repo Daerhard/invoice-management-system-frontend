@@ -183,7 +183,7 @@ export default function Einkaeufe() {
                     >
                         <Tab label="Einkäufe" />
                         <Tab label="Erstattungen" />
-                        <Tab label="Zusatzmittel" />
+                        <Tab label="Arbeitsmittel" />
                     </Tabs>
                 </Box>
                 {activeTab === 0 && (
@@ -324,12 +324,12 @@ export default function Einkaeufe() {
                                             sx={{ fontWeight: 600, borderRadius: 1 }}
                                         />
                                     )}
-                                    <Tooltip title="Neues Zusatzmittel erfassen">
+                                    <Tooltip title="Neues Arbeitsmittel erfassen">
                                         <IconButton
                                             color="primary"
                                             size="small"
                                             onClick={() => setSupplyDrawerOpen(true)}
-                                            aria-label="Neues Zusatzmittel erfassen"
+                                            aria-label="Neues Arbeitsmittel erfassen"
                                         >
                                             <AddIcon />
                                         </IconButton>
@@ -337,7 +337,7 @@ export default function Einkaeufe() {
                                 </Stack>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Zusatzmittel manuell erfassen und verwalten
+                                Arbeitsmittel manuell erfassen und verwalten
                             </Typography>
                             <Divider sx={{ mt: 2 }} />
                         </Box>
@@ -348,7 +348,7 @@ export default function Einkaeufe() {
                                 ))
                             ) : (
                                 <Typography variant="body2" color="text.secondary">
-                                    Keine Zusatzmittel vorhanden.
+                                    Keine Arbeitsmittel vorhanden.
                                 </Typography>
                             )}
                         </List>

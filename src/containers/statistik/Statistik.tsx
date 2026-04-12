@@ -3,6 +3,8 @@ import { useAtom } from 'jotai';
 import {
     cardmarketOrdersAtom,
     purchaseInvoicesAtom,
+    refundsAtom,
+    suppliesAtom,
 } from '../../store/Global';
 import { CardmarketOrder } from '../../api/generated/Schemas';
 import {
@@ -26,6 +28,8 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import ProfitPieChart from '../../components/statistic/ProfitPieChart';
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
 import usePurchaseInvoices from '../../api/hooks/usePurchaseInvoices';
+import useRefunds from '../../api/hooks/useRefunds';
+import useSupplies from '../../api/hooks/useSupplies';
 
 const PROFIT_CHART_LIMIT = 5;
 
@@ -37,9 +41,13 @@ function sumAndRound(values: number[]): number {
 export default function Statistik() {
     useCardmarketOrders();
     usePurchaseInvoices();
+    useRefunds();
+    useSupplies();
 
     const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
     const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
+    const [refunds] = useAtom(refundsAtom);
+    const [supplies] = useAtom(suppliesAtom);
 
     const [activeTab, setActiveTab] = useState(0);
     const [setFilter, setSetFilter] = useState('');
@@ -166,6 +174,61 @@ export default function Statistik() {
         [worstSets]
     );
 
+    // Jahresübersicht: yearly aggregation including refunds and supplies
+    const yearlyStats = useMemo(() => {
+        const ordersByYearMap = new Map<string, CardmarketOrder[]>();
+        cardmarketOrders.forEach((order) => {
+            const year = String(new Date(order.payment_date).getFullYear());
+            if (!ordersByYearMap.has(year)) {
+                ordersByYearMap.set(year, []);
+            }
+            ordersByYearMap.get(year)!.push(order);
+        });
+
+        const refundsByYear = new Map<string, number>();
+        refunds.forEach((r) => {
+            const year = r.date.slice(0, 4);
+            refundsByYear.set(year, (refundsByYear.get(year) ?? 0) + r.amount);
+        });
+
+        const suppliesByYear = new Map<string, number>();
+        supplies.forEach((s) => {
+            const year = s.date.slice(0, 4);
+            suppliesByYear.set(year, (suppliesByYear.get(year) ?? 0) + s.amount);
+        });
+
+        // Collect all years from orders, refunds, and supplies
+        const allYears = new Set<string>([
+            ...Array.from(ordersByYearMap.keys()),
+            ...Array.from(refundsByYear.keys()),
+            ...Array.from(suppliesByYear.keys()),
+        ]);
+
+        return Array.from(allYears)
+            .sort((a, b) => a.localeCompare(b))
+            .map((year) => {
+                const orders = ordersByYearMap.get(year) ?? [];
+                return {
+                    year,
+                    totalValue: sumAndRound(orders.map((o) => o.total_value)),
+                    shipmentCost: sumAndRound(orders.map((o) => o.shipment_cost)),
+                    commission: sumAndRound(orders.map((o) => o.commission)),
+                    merchandiseValue: sumAndRound(orders.map((o) => o.merchandise_value)),
+                    erstattungen: Math.round((refundsByYear.get(year) ?? 0) * 100) / 100,
+                    arbeitsmittel: Math.round((suppliesByYear.get(year) ?? 0) * 100) / 100,
+                };
+            });
+    }, [cardmarketOrders, refunds, supplies]);
+
+    const yearlyTotals = useMemo(() => ({
+        totalValue: sumAndRound(yearlyStats.map((s) => s.totalValue)),
+        shipmentCost: sumAndRound(yearlyStats.map((s) => s.shipmentCost)),
+        commission: sumAndRound(yearlyStats.map((s) => s.commission)),
+        merchandiseValue: sumAndRound(yearlyStats.map((s) => s.merchandiseValue)),
+        erstattungen: sumAndRound(yearlyStats.map((s) => s.erstattungen)),
+        arbeitsmittel: sumAndRound(yearlyStats.map((s) => s.arbeitsmittel)),
+    }), [yearlyStats]);
+
     return (
         <Box style={{ width: '100%' }}>
             <Stack spacing={3} width="100%">
@@ -187,6 +250,7 @@ export default function Statistik() {
                 >
                     <Tab label="Profit Übersicht" />
                     <Tab label="Monatsübersicht" />
+                    <Tab label="Jahresübersicht" />
                     <Tab label="Set-Statistik" />
                 </Tabs>
                 {activeTab === 0 && (
@@ -271,6 +335,81 @@ export default function Statistik() {
                     </Stack>
                 )}
                 {activeTab === 2 && (
+                    <Stack spacing={2}>
+                        {yearlyStats.length > 0 && (
+                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+                                    Gesamt:
+                                </Typography>
+                                <Stack direction="row" flexWrap="wrap" gap={3}>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Gesamtwert</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.totalValue.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Versandkosten</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.shipmentCost.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Cardmarket Gebühren</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.commission.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Warenwert</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.merchandiseValue.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Erstattungen</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.erstattungen.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Arbeitsmittel</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.arbeitsmittel.toFixed(2)} €</Typography>
+                                    </Box>
+                                </Stack>
+                            </Paper>
+                        )}
+                        <TableContainer component={Paper} elevation={0}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell><strong>Jahr</strong></TableCell>
+                                        <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Erstattungen (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Arbeitsmittel (€)</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {yearlyStats.length > 0 ? (
+                                        yearlyStats.map((stat) => (
+                                            <TableRow key={stat.year}>
+                                                <TableCell>{stat.year}</TableCell>
+                                                <TableCell align="right">{stat.totalValue}</TableCell>
+                                                <TableCell align="right">{stat.shipmentCost}</TableCell>
+                                                <TableCell align="right">{stat.commission}</TableCell>
+                                                <TableCell align="right">{stat.merchandiseValue}</TableCell>
+                                                <TableCell align="right">{stat.erstattungen}</TableCell>
+                                                <TableCell align="right">{stat.arbeitsmittel}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={7}>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Keine Daten vorhanden.
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Stack>
+                )}
+                {activeTab === 3 && (
                     <Stack spacing={2}>
                         <TextField
                             label="Set filtern"
