@@ -247,6 +247,48 @@ describe('Statistik', () => {
         expect(screen.getByText('Arbeitsmittel (€)')).toBeInTheDocument();
     });
 
+    it('Jahresübersicht does not show Warenwert column', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        // Warenwert column was removed from Jahresübersicht
+        const columnHeaders = screen.getAllByRole('columnheader');
+        const headerTexts = columnHeaders.map((h) => h.textContent);
+        expect(headerTexts.some((t) => t?.includes('Warenwert'))).toBe(false);
+    });
+
+    it('Jahresübersicht shows Einkäufe column', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Einkäufe (€)')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows Nachzahlungen column', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Nachzahlungen (€)')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows Gewinn column', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Gewinn (€)')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht calculates Gewinn correctly per year', () => {
+        // order 1001: total=22, ship=2, comm=1.5, merch=18.5 → gewinn = 22+0-2-1.5-18.5-0-0-0 = 0
+        // order 1002: total=15, ship=1.5, comm=0.8, merch=12.7 → gewinn = 15+0-1.5-0.8-12.7-0-0-0 = 0
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        // 2024 gewinn = (22+15) + 0 - (2+1.5) - (1.5+0.8) - (18.5+12.7) - 0 - 0 - 0 = 0
+        expect(screen.getByText('Gewinn (€)')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows Gewinn in summary panel', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Gewinn')).toBeInTheDocument();
+    });
+
     it('Jahresübersicht aggregates refunds per year', () => {
         renderWithStore(mockOrders, mockPurchaseInvoices, mockRefunds);
         fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));

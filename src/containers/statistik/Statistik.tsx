@@ -174,7 +174,21 @@ export default function Statistik() {
         [worstSets]
     );
 
-    // Jahresübersicht: yearly aggregation including refunds and supplies
+    const purchasesByYear = useMemo(() => {
+        const map = new Map<string, number>();
+        purchaseInvoices.forEach((invoice) => {
+            invoice.items?.forEach((item) => {
+                const year = typeof item.invoiceDate === 'string' ? item.invoiceDate.slice(0, 4) : undefined;
+                if (year) {
+                    const itemTotal = (item.amount ?? 0) * (item.price ?? 0);
+                    map.set(year, (map.get(year) ?? 0) + itemTotal);
+                }
+            });
+        });
+        return map;
+    }, [purchaseInvoices]);
+
+    // Jahresübersicht: yearly aggregation including refunds, supplies and purchase invoices
     const yearlyStats = useMemo(() => {
         const ordersByYearMap = new Map<string, CardmarketOrder[]>();
         cardmarketOrders.forEach((order) => {
@@ -197,28 +211,43 @@ export default function Statistik() {
             suppliesByYear.set(year, (suppliesByYear.get(year) ?? 0) + s.amount);
         });
 
-        // Collect all years from orders, refunds, and supplies
+        // Collect all years from orders, refunds, supplies and purchase invoices
         const allYears = new Set<string>([
             ...Array.from(ordersByYearMap.keys()),
             ...Array.from(refundsByYear.keys()),
             ...Array.from(suppliesByYear.keys()),
+            ...Array.from(purchasesByYear.keys()),
         ]);
 
         return Array.from(allYears)
             .sort((a, b) => a.localeCompare(b))
             .map((year) => {
                 const orders = ordersByYearMap.get(year) ?? [];
+                const totalValue = sumAndRound(orders.map((o) => o.total_value));
+                const shipmentCost = sumAndRound(orders.map((o) => o.shipment_cost));
+                const commission = sumAndRound(orders.map((o) => o.commission));
+                const merchandiseValue = sumAndRound(orders.map((o) => o.merchandise_value));
+                const erstattungen = Math.round((refundsByYear.get(year) ?? 0) * 100) / 100;
+                const arbeitsmittel = Math.round((suppliesByYear.get(year) ?? 0) * 100) / 100;
+                const einkaeufe = Math.round((purchasesByYear.get(year) ?? 0) * 100) / 100;
+                const nachzahlungen = 0; // placeholder – no backend endpoint yet
+                const gewinn = Math.round(
+                    (totalValue + nachzahlungen - shipmentCost - commission - merchandiseValue - erstattungen - arbeitsmittel - einkaeufe) * 100
+                ) / 100;
                 return {
                     year,
-                    totalValue: sumAndRound(orders.map((o) => o.total_value)),
-                    shipmentCost: sumAndRound(orders.map((o) => o.shipment_cost)),
-                    commission: sumAndRound(orders.map((o) => o.commission)),
-                    merchandiseValue: sumAndRound(orders.map((o) => o.merchandise_value)),
-                    erstattungen: Math.round((refundsByYear.get(year) ?? 0) * 100) / 100,
-                    arbeitsmittel: Math.round((suppliesByYear.get(year) ?? 0) * 100) / 100,
+                    totalValue,
+                    shipmentCost,
+                    commission,
+                    merchandiseValue,
+                    erstattungen,
+                    arbeitsmittel,
+                    einkaeufe,
+                    nachzahlungen,
+                    gewinn,
                 };
             });
-    }, [cardmarketOrders, refunds, supplies]);
+    }, [cardmarketOrders, refunds, supplies, purchasesByYear]);
 
     const yearlyTotals = useMemo(() => ({
         totalValue: sumAndRound(yearlyStats.map((s) => s.totalValue)),
@@ -227,6 +256,9 @@ export default function Statistik() {
         merchandiseValue: sumAndRound(yearlyStats.map((s) => s.merchandiseValue)),
         erstattungen: sumAndRound(yearlyStats.map((s) => s.erstattungen)),
         arbeitsmittel: sumAndRound(yearlyStats.map((s) => s.arbeitsmittel)),
+        einkaeufe: sumAndRound(yearlyStats.map((s) => s.einkaeufe)),
+        nachzahlungen: sumAndRound(yearlyStats.map((s) => s.nachzahlungen)),
+        gewinn: sumAndRound(yearlyStats.map((s) => s.gewinn)),
     }), [yearlyStats]);
 
     return (
@@ -347,6 +379,10 @@ export default function Statistik() {
                                         <Typography variant="body2" fontWeight={600}>{yearlyTotals.totalValue.toFixed(2)} €</Typography>
                                     </Box>
                                     <Box>
+                                        <Typography variant="caption" color="text.secondary">Nachzahlungen</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.nachzahlungen.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
                                         <Typography variant="caption" color="text.secondary">Versandkosten</Typography>
                                         <Typography variant="body2" fontWeight={600}>{yearlyTotals.shipmentCost.toFixed(2)} €</Typography>
                                     </Box>
@@ -355,16 +391,20 @@ export default function Statistik() {
                                         <Typography variant="body2" fontWeight={600}>{yearlyTotals.commission.toFixed(2)} €</Typography>
                                     </Box>
                                     <Box>
-                                        <Typography variant="caption" color="text.secondary">Warenwert</Typography>
-                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.merchandiseValue.toFixed(2)} €</Typography>
-                                    </Box>
-                                    <Box>
                                         <Typography variant="caption" color="text.secondary">Erstattungen</Typography>
                                         <Typography variant="body2" fontWeight={600}>{yearlyTotals.erstattungen.toFixed(2)} €</Typography>
                                     </Box>
                                     <Box>
                                         <Typography variant="caption" color="text.secondary">Arbeitsmittel</Typography>
                                         <Typography variant="body2" fontWeight={600}>{yearlyTotals.arbeitsmittel.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Einkäufe</Typography>
+                                        <Typography variant="body2" fontWeight={600}>{yearlyTotals.einkaeufe.toFixed(2)} €</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Gewinn</Typography>
+                                        <Typography variant="body2" fontWeight={700} color={yearlyTotals.gewinn >= 0 ? 'success.main' : 'error.main'}>{yearlyTotals.gewinn.toFixed(2)} €</Typography>
                                     </Box>
                                 </Stack>
                             </Paper>
@@ -375,11 +415,13 @@ export default function Statistik() {
                                     <TableRow>
                                         <TableCell><strong>Jahr</strong></TableCell>
                                         <TableCell align="right"><strong>Gesamtwert (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Nachzahlungen (€)</strong></TableCell>
                                         <TableCell align="right"><strong>Versandkosten (€)</strong></TableCell>
                                         <TableCell align="right"><strong>Cardmarket Gebühren (€)</strong></TableCell>
-                                        <TableCell align="right"><strong>Warenwert (€)</strong></TableCell>
                                         <TableCell align="right"><strong>Erstattungen (€)</strong></TableCell>
                                         <TableCell align="right"><strong>Arbeitsmittel (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Einkäufe (€)</strong></TableCell>
+                                        <TableCell align="right"><strong>Gewinn (€)</strong></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -388,16 +430,18 @@ export default function Statistik() {
                                             <TableRow key={stat.year}>
                                                 <TableCell>{stat.year}</TableCell>
                                                 <TableCell align="right">{stat.totalValue}</TableCell>
+                                                <TableCell align="right">{stat.nachzahlungen}</TableCell>
                                                 <TableCell align="right">{stat.shipmentCost}</TableCell>
                                                 <TableCell align="right">{stat.commission}</TableCell>
-                                                <TableCell align="right">{stat.merchandiseValue}</TableCell>
                                                 <TableCell align="right">{stat.erstattungen}</TableCell>
                                                 <TableCell align="right">{stat.arbeitsmittel}</TableCell>
+                                                <TableCell align="right">{stat.einkaeufe}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700, color: stat.gewinn >= 0 ? 'success.main' : 'error.main' }}>{stat.gewinn}</TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={7}>
+                                            <TableCell colSpan={9}>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Keine Daten vorhanden.
                                                 </Typography>
