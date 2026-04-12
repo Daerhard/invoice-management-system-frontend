@@ -6,6 +6,7 @@ import Statistik from './statistik/Statistik'
 import Einkaeufe from './einkaeufe/Einkaeufe'
 import Customers from './customers/Customers'
 import Konto from './konto/Konto'
+import Euer from './euer/Euer'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 export default function Layout() {
@@ -21,6 +22,7 @@ export default function Layout() {
                     <Route path="/kunden" element={<Customers/>} />
                     <Route path="/statistik" element={<Statistik/>} />
                     <Route path="/konto" element={<Konto/>} />
+                    <Route path="/euer" element={<Euer/>} />
                 </Routes>
             </Container>
         </Box>
