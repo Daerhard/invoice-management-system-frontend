@@ -1,11 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
-import { cardmarketOrdersAtom, purchaseInvoicesAtom } from '../../store/Global';
+import { cardmarketOrdersAtom, purchaseInvoicesAtom, refundsAtom, suppliesAtom } from '../../store/Global';
 import Statistik from './Statistik';
 
 jest.mock('../../api/hooks/useCardmarketOrders', () => ({ __esModule: true, default: () => {} }));
 jest.mock('../../api/hooks/usePurchaseInvoices', () => ({ __esModule: true, default: () => {} }));
+jest.mock('../../api/hooks/useRefunds', () => ({ __esModule: true, default: () => {} }));
+jest.mock('../../api/hooks/useSupplies', () => ({ __esModule: true, default: () => {} }));
 
 const mockOrders = [
     {
@@ -59,10 +61,26 @@ const mockPurchaseInvoices = [
     { id: 1, productName: 'Darkwing Blast', amount: 1, price: 7.50, invoiceDate: '2024-01-10' },
 ];
 
-const renderWithStore = (orders = mockOrders, purchaseInvoices = mockPurchaseInvoices) => {
+const mockRefunds = [
+    { id: 1, description: 'Rückerstattung Porto', amount: 5.00, date: '2024' },
+    { id: 2, description: 'Rückerstattung Material', amount: 3.00, date: '2025' },
+];
+
+const mockSupplies = [
+    { id: 1, description: 'Schutzhüllen', amount: 10.00, date: '2024-05-01' },
+];
+
+const renderWithStore = (
+    orders = mockOrders,
+    purchaseInvoices = mockPurchaseInvoices,
+    refunds: typeof mockRefunds = [],
+    supplies: typeof mockSupplies = [],
+) => {
     const store = createStore();
     store.set(cardmarketOrdersAtom, orders as any);
     store.set(purchaseInvoicesAtom, purchaseInvoices as any);
+    store.set(refundsAtom, refunds as any);
+    store.set(suppliesAtom, supplies as any);
     return render(
         <Provider store={store}>
             <Statistik />
@@ -71,12 +89,13 @@ const renderWithStore = (orders = mockOrders, purchaseInvoices = mockPurchaseInv
 };
 
 describe('Statistik', () => {
-    it('renders all three tabs with Profit Übersicht first', () => {
+    it('renders all four tabs', () => {
         renderWithStore();
         const tabs = screen.getAllByRole('tab');
         expect(tabs[0]).toHaveTextContent('Profit Übersicht');
         expect(tabs[1]).toHaveTextContent('Monatsübersicht');
-        expect(tabs[2]).toHaveTextContent('Set-Statistik');
+        expect(tabs[2]).toHaveTextContent('Jahresübersicht');
+        expect(tabs[3]).toHaveTextContent('Set-Statistik');
     });
 
     it('shows Profit Übersicht tab by default with German chart titles', () => {
@@ -196,6 +215,43 @@ describe('Statistik', () => {
         // With "Alle Jahre" (default), both 2024 and 2025 months are shown
         expect(screen.getByText('2024-01')).toBeInTheDocument();
         expect(screen.getByText('2025-03')).toBeInTheDocument();
+    });
+
+    it('shows Jahresübersicht tab with yearly rows', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('2024')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows Gesamt summary panel at top when data present', () => {
+        renderWithStore(mockOrders);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Gesamt:')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows no data message when no orders, refunds, or supplies', () => {
+        renderWithStore([]);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Keine Daten vorhanden.')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows Erstattungen column', () => {
+        renderWithStore(mockOrders, mockPurchaseInvoices, mockRefunds);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Erstattungen (€)')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht shows Arbeitsmittel column', () => {
+        renderWithStore(mockOrders, mockPurchaseInvoices, [], mockSupplies);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        expect(screen.getByText('Arbeitsmittel (€)')).toBeInTheDocument();
+    });
+
+    it('Jahresübersicht aggregates refunds per year', () => {
+        renderWithStore(mockOrders, mockPurchaseInvoices, mockRefunds);
+        fireEvent.click(screen.getByRole('tab', { name: 'Jahresübersicht' }));
+        // mockRefunds: 2024 → 5.00, 2025 → 3.00
+        expect(screen.getByText('5')).toBeInTheDocument();
     });
 
     it('switches to Set-Statistik tab and shows set filter input', () => {

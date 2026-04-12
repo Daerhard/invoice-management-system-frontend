@@ -48,11 +48,11 @@ export default function SupplyItem({ supply }: Readonly<SupplyItemProps>) {
                                 </IconButton>
                             </Tooltip>
                         )}
-                        <Tooltip title="Zusatzmittel löschen">
+                        <Tooltip title="Arbeitsmittel löschen">
                             <IconButton
                                 size="small"
                                 onClick={handleDelete}
-                                aria-label="Zusatzmittel löschen"
+                                aria-label="Arbeitsmittel löschen"
                                 disabled={deleteLoading}
                                 color="error"
                             >

@@ -9,11 +9,9 @@ import {
     IconButton,
     Stack,
     TextField,
-    Tooltip,
     Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
 import useAddRefundForm from '../../api/hooks/useAddRefundForm';
 
 interface AddRefundDrawerProps {
@@ -27,15 +25,13 @@ export default function AddRefundDrawer({ open, onClose }: AddRefundDrawerProps)
         setDescription,
         amount,
         setAmount,
-        date,
-        setDate,
-        pdfFile,
+        year,
+        setYear,
         loading,
         message,
         setMessage,
         error,
         setError,
-        handleFileChange,
         handleSubmit,
     } = useAddRefundForm();
 
@@ -70,38 +66,15 @@ export default function AddRefundDrawer({ open, onClose }: AddRefundDrawerProps)
                             inputProps={{ min: 0, step: '0.01' }}
                         />
                         <TextField
-                            label="Datum"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
+                            label="Jahr"
+                            value={year}
+                            onChange={(e) => setYear(e.target.value)}
                             size="small"
                             fullWidth
                             required
-                            type="date"
-                            InputLabelProps={{ shrink: true }}
+                            type="number"
+                            inputProps={{ min: 1900, max: 2100, step: 1 }}
                         />
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                            <Button
-                                component="label"
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AttachFileIcon />}
-                            >
-                                PDF anhängen
-                                <input
-                                    type="file"
-                                    accept="application/pdf"
-                                    hidden
-                                    onChange={handleFileChange}
-                                />
-                            </Button>
-                            {pdfFile && (
-                                <Tooltip title={pdfFile.name}>
-                                    <Typography variant="caption" noWrap sx={{ maxWidth: 200 }}>
-                                        {pdfFile.name}
-                                    </Typography>
-                                </Tooltip>
-                            )}
-                        </Stack>
                         <Button
                             type="submit"
                             variant="contained"

@@ -10,7 +10,6 @@ import {
 import { faFilePdf, faMoneyBillTransfer, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Refund } from '../../api/generated/Schemas';
-import { formatStringToDate } from '../../helper/Utils';
 import { getRefundPdf } from '../../api/generated/refunds';
 import useDeleteRefund from '../../api/hooks/useDeleteRefund';
 
@@ -72,7 +71,7 @@ export default function RefundItem({ refund }: Readonly<RefundItemProps>) {
                             {`${refund.amount.toFixed(2)} €`}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {formatStringToDate(refund.date)}
+                            {refund.date.slice(0, 4)}
                         </Typography>
                         {pdfError && (
                             <Typography variant="caption" color="error">

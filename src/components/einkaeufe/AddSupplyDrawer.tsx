@@ -43,7 +43,7 @@ export default function AddSupplyDrawer({ open, onClose }: AddSupplyDrawerProps)
         <Drawer anchor="right" open={open} onClose={onClose}>
             <Box sx={{ width: 440, padding: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 1 }}>
-                    <Typography variant="h6">Neues Zusatzmittel</Typography>
+                    <Typography variant="h6">Neues Arbeitsmittel</Typography>
                     <IconButton onClick={onClose} aria-label="Drawer schließen" size="small">
                         <CloseIcon />
                     </IconButton>
