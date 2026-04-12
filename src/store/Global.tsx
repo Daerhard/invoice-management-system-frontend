@@ -10,12 +10,20 @@ export interface Einkauf {
     datum: string;
 }
 
+export interface Nachzahlung {
+    id: number;
+    name: string;
+    amount: number;
+    year: string;
+}
+
 export const cardmarketOrdersAtom = atom<CardmarketOrder[]>([])
 export const customersAtom = atom<Customer[]>([])
 export const einkaeufeAtom = atom<Einkauf[]>([])
 export const purchaseInvoicesAtom = atom<PurchaseInvoice[]>([])
 export const refundsAtom = atom<Refund[]>([])
 export const suppliesAtom = atom<Supply[]>([])
+export const nachzahlungenAtom = atom<Nachzahlung[]>([])
 
 export const customerSelectAtom = atom<Customer | null>(null)
 export const cardmarketOrderSelectAtom = atom<CardmarketOrder | null>(null)

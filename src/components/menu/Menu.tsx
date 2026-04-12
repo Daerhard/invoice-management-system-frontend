@@ -5,7 +5,7 @@ import { faFileInvoice } from '@fortawesome/free-solid-svg-icons'
 import { Link, useLocation } from 'react-router-dom'
 
 const navLinks = [
-    { to: '/bestellungen', label: 'Bestellungen' },
+    { to: '/einnahmen', label: 'Einnahmen' },
     { to: '/einkaeufe', label: 'Ausgaben' },
     { to: '/kunden', label: 'Kunden' },
     { to: '/statistik', label: 'Statistik' },
