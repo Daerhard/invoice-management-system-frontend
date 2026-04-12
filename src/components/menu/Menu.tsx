@@ -10,6 +10,7 @@ const navLinks = [
     { to: '/kunden', label: 'Kunden' },
     { to: '/statistik', label: 'Statistik' },
     { to: '/konto', label: 'Konto' },
+    { to: '/euer', label: 'EÜR' },
 ];
 
 export default function Menu() {
