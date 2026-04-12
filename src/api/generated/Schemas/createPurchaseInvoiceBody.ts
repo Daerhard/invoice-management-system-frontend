@@ -4,9 +4,9 @@
  * invoice management system
  * OpenAPI spec version: 1.0.0
  */
-import type { PurchaseInvoice } from './purchaseInvoice';
+import type { PurchaseInvoiceItem } from './purchaseInvoiceItem';
 
-export type CreatePurchaseInvoiceBody = {
-  invoiceData: PurchaseInvoice;
-  pdf: Blob;
+export type AddPurchaseInvoiceItemBody = {
+  itemData: PurchaseInvoiceItem;
+  pdf?: Blob;
 };

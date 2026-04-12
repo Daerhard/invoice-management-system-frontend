@@ -18,13 +18,6 @@ jest.mock('@mui/material', () => {
     const actual = jest.requireActual('@mui/material');
     return {
         ...actual,
-        Autocomplete: ({ value, onChange }: { value: string | null; onChange: (e: unknown, v: string) => void }) => (
-            <input
-                aria-label="Produktname"
-                value={value ?? ''}
-                onChange={(e) => onChange(null, e.target.value)}
-            />
-        ),
         Drawer: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
             open ? <div>{children}</div> : null,
     };
@@ -34,21 +27,13 @@ const buildDefaultFormState = (
     overrides: Partial<ReturnType<typeof usePurchaseInvoiceFormType>> = {}
 ): ReturnType<typeof usePurchaseInvoiceFormType> => ({
     konamiSets: [],
-    produktname: null,
+    produktname: '',
     setProduktname: jest.fn(),
-    anzahlDisplays: '',
-    setAnzahlDisplays: jest.fn(),
-    preis: '',
-    setPreis: jest.fn(),
-    datum: '',
-    setDatum: jest.fn(),
-    pdfFile: null,
     loading: false,
     message: '',
     setMessage: jest.fn(),
     error: '',
     setError: jest.fn(),
-    handleFileChange: jest.fn(),
     handleSubmit: jest.fn((e: React.FormEvent) => { e.preventDefault(); return Promise.resolve(); }),
     ...overrides,
 });
@@ -70,9 +55,6 @@ describe('AddPurchaseInvoiceDrawer', () => {
     it('renders the form when open', () => {
         renderWithProvider();
         expect(screen.getByLabelText(/Produktname/)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Anzahl Displays/)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Preis/)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Datum/)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Hinzufügen' })).toBeInTheDocument();
     });
 
@@ -99,18 +81,6 @@ describe('AddPurchaseInvoiceDrawer', () => {
         usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ error: 'Speichern fehlgeschlagen.' }));
         renderWithProvider();
         expect(screen.getByText('Speichern fehlgeschlagen.')).toBeInTheDocument();
-    });
-
-    it('renders file upload area', () => {
-        renderWithProvider();
-        expect(screen.getByText('PDF-Rechnung auswählen')).toBeInTheDocument();
-    });
-
-    it('shows selected pdf file name when pdfFile is set', () => {
-        const pdfFile = new File(['dummy'], 'rechnung.pdf', { type: 'application/pdf' });
-        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ pdfFile }));
-        renderWithProvider();
-        expect(screen.getByText('rechnung.pdf')).toBeInTheDocument();
     });
 });
 

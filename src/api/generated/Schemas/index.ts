@@ -20,5 +20,6 @@ export * from './invoice';
 export * from './invoiceEmailRequest';
 export * from './orderItem';
 export * from './purchaseInvoice';
+export * from './purchaseInvoiceItem';
 export * from './responseMessage';
 export * from './user';

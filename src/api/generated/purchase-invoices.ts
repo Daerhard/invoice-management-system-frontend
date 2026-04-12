@@ -11,27 +11,23 @@ import type {
 } from 'axios';
 
 import type {
-  CreatePurchaseInvoiceBody,
+  AddPurchaseInvoiceItemBody,
   PurchaseInvoice
 } from './Schemas';
 
 
 
 
-
   /**
- * Accepts structured invoice data and a PDF file and stores them separately.
- * @summary Create a new purchase invoice with PDF upload
+ * Creates a new purchase invoice with a product name. Items can be added separately.
+ * @summary Create a new purchase invoice
  */
 export const createPurchaseInvoice = (
-    createPurchaseInvoiceBody: CreatePurchaseInvoiceBody, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<PurchaseInvoice>> => {const formData = new FormData();
-formData.append(`invoiceData`, JSON.stringify(createPurchaseInvoiceBody.invoiceData));
-formData.append(`pdf`, createPurchaseInvoiceBody.pdf);
-
+    purchaseInvoice: PurchaseInvoice, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<PurchaseInvoice>> => {
     return axios.post(
       `/v1/purchase-invoices`,
-      formData,options
+      purchaseInvoice,options
     );
   }
 /**
@@ -45,17 +41,37 @@ export const getAllPurchaseInvoices = (
     );
   }
 /**
- * @summary Download purchase invoice PDF
+ * Adds a new purchase invoice item (with an optional PDF document) to the given purchase invoice.
+ * @summary Add an item to a purchase invoice
  */
-export const getPurchaseInvoicePdf = (
-    id: number, options?: AxiosRequestConfig
+export const addPurchaseInvoiceItem = (
+    id: number,
+    addPurchaseInvoiceItemBody: AddPurchaseInvoiceItemBody, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<PurchaseInvoice>> => {const formData = new FormData();
+formData.append('itemData', new Blob([JSON.stringify(addPurchaseInvoiceItemBody.itemData)], { type: 'application/json' }));
+if (addPurchaseInvoiceItemBody.pdf) {
+  formData.append('pdf', addPurchaseInvoiceItemBody.pdf);
+}
+
+    return axios.post(
+      `/v1/purchase-invoices/${id}/items`,
+      formData,options
+    );
+  }
+/**
+ * @summary Download the PDF document of a purchase invoice item
+ */
+export const getPurchaseInvoiceItemPdf = (
+    id: number,
+    itemId: number, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<Blob>> => {
     return axios.get(
-      `/v1/purchase-invoices/${id}/pdf`,{
+      `/v1/purchase-invoices/${id}/items/${itemId}/pdf`,{
         responseType: 'blob',
     ...options,}
     );
   }
 export type CreatePurchaseInvoiceResult = AxiosResponse<PurchaseInvoice>
 export type GetAllPurchaseInvoicesResult = AxiosResponse<PurchaseInvoice[]>
-export type GetPurchaseInvoicePdfResult = AxiosResponse<Blob>
+export type AddPurchaseInvoiceItemResult = AxiosResponse<PurchaseInvoice>
+export type GetPurchaseInvoiceItemPdfResult = AxiosResponse<Blob>
