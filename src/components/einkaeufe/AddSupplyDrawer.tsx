@@ -9,11 +9,10 @@ import {
     IconButton,
     Stack,
     TextField,
-    Tooltip,
     Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import useAddSupplyForm from '../../api/hooks/useAddSupplyForm';
 
 interface AddSupplyDrawerProps {
@@ -79,29 +78,42 @@ export default function AddSupplyDrawer({ open, onClose }: AddSupplyDrawerProps)
                             type="date"
                             InputLabelProps={{ shrink: true }}
                         />
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                            <Button
-                                component="label"
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AttachFileIcon />}
-                            >
-                                PDF anhängen
-                                <input
-                                    type="file"
-                                    accept="application/pdf"
-                                    hidden
-                                    onChange={handleFileChange}
-                                />
-                            </Button>
-                            {pdfFile && (
-                                <Tooltip title={pdfFile.name}>
-                                    <Typography variant="caption" noWrap sx={{ maxWidth: 200 }}>
-                                        {pdfFile.name}
-                                    </Typography>
-                                </Tooltip>
-                            )}
-                        </Stack>
+                        <Box
+                            component="label"
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                border: '2px dashed',
+                                borderColor: pdfFile ? 'primary.main' : 'divider',
+                                borderRadius: 1,
+                                p: 2,
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                bgcolor: pdfFile ? 'action.hover' : 'background.default',
+                                '&:hover': { borderColor: 'primary.main' },
+                            }}
+                        >
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                            />
+                            <UploadFileIcon
+                                sx={{
+                                    fontSize: 32,
+                                    color: pdfFile ? 'primary.main' : 'text.disabled',
+                                    mb: 0.5,
+                                }}
+                            />
+                            <Typography variant="body2" color={pdfFile ? 'primary.main' : 'text.secondary'}>
+                                {pdfFile ? pdfFile.name : 'PDF-Rechnung auswählen (optional)'}
+                            </Typography>
+                            <Typography variant="caption" color="text.disabled">
+                                Nur PDF-Dateien werden unterstützt
+                            </Typography>
+                        </Box>
                         <Button
                             type="submit"
                             variant="contained"
