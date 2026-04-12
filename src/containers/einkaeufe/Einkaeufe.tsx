@@ -99,6 +99,7 @@ export default function Einkaeufe() {
                 onClose={() => setYearAnchorEl(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                aria-label="Jahr Filter"
             >
                 <Box sx={{ p: 2, width: 160 }}>
                     <Autocomplete
@@ -124,6 +125,7 @@ export default function Einkaeufe() {
                 onClose={() => setProductAnchorEl(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                aria-label="Produkt Filter"
             >
                 <Box sx={{ p: 2, width: 220 }}>
                     <Autocomplete
