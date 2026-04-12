@@ -47,11 +47,15 @@ export const getAllPurchaseInvoices = (
 export const addPurchaseInvoiceItem = (
     id: number,
     addPurchaseInvoiceItemBody: AddPurchaseInvoiceItemBody, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<PurchaseInvoice>> => {const formData = new FormData();
-formData.append('itemData', new Blob([JSON.stringify(addPurchaseInvoiceItemBody.itemData)], { type: 'application/json' }));
-if (addPurchaseInvoiceItemBody.pdf) {
-  formData.append('pdf', addPurchaseInvoiceItemBody.pdf);
-}
+ ): Promise<AxiosResponse<PurchaseInvoice>> => {
+    const formData = new FormData();
+    formData.append(
+      'itemData',
+      new Blob([JSON.stringify(addPurchaseInvoiceItemBody.itemData)], { type: 'application/json' })
+    );
+    if (addPurchaseInvoiceItemBody.pdf) {
+      formData.append('pdf', addPurchaseInvoiceItemBody.pdf);
+    }
 
     return axios.post(
       `/v1/purchase-invoices/${id}/items`,
