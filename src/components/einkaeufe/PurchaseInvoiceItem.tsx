@@ -11,12 +11,13 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { faFileInvoiceDollar, faFilePdf, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faFileInvoiceDollar, faFilePdf, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CustomIconButton from '../../customComponents/CustomIconButton';
 import { PurchaseInvoice, PurchaseInvoiceItem as PurchaseInvoiceItemType } from '../../api/generated/Schemas';
 import { formatStringToDate } from '../../helper/Utils';
 import { getPurchaseInvoiceItemPdf } from '../../api/generated/purchase-invoices';
+import useDeletePurchaseInvoiceItem from '../../api/hooks/useDeletePurchaseInvoiceItem';
 import AddPurchaseInvoiceItemDrawer from './AddPurchaseInvoiceItemDrawer';
 
 interface PurchaseInvoiceItemProps {
@@ -30,6 +31,7 @@ interface InvoiceChildItemProps {
 
 function InvoiceChildItem({ invoiceId, item }: Readonly<InvoiceChildItemProps>) {
     const [pdfError, setPdfError] = useState(false);
+    const { handleDelete, loading: deleteLoading, error: deleteError } = useDeletePurchaseInvoiceItem(invoiceId, item.id!);
 
     const handleOpenPdf = async () => {
         setPdfError(false);
@@ -54,14 +56,34 @@ function InvoiceChildItem({ invoiceId, item }: Readonly<InvoiceChildItemProps>) 
                         PDF konnte nicht geladen werden
                     </Typography>
                 )}
+                {deleteError && (
+                    <Typography variant="caption" color="error">
+                        {deleteError}
+                    </Typography>
+                )}
             </Stack>
-            {item.id !== undefined && (
-                <Tooltip title="PDF öffnen">
-                    <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
-                        <FontAwesomeIcon icon={faFilePdf} size="xs" />
-                    </IconButton>
-                </Tooltip>
-            )}
+            <Stack direction="row" alignItems="center">
+                {item.id !== undefined && (
+                    <Tooltip title="PDF öffnen">
+                        <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
+                            <FontAwesomeIcon icon={faFilePdf} size="xs" />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {item.id !== undefined && (
+                    <Tooltip title="Position löschen">
+                        <IconButton
+                            size="small"
+                            onClick={handleDelete}
+                            aria-label="Position löschen"
+                            disabled={deleteLoading}
+                            color="error"
+                        >
+                            <FontAwesomeIcon icon={faTrash} size="xs" />
+                        </IconButton>
+                    </Tooltip>
+                )}
+            </Stack>
         </Stack>
     );
 }
