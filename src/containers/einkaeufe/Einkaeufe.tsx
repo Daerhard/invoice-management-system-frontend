@@ -20,18 +20,29 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CategoryIcon from '@mui/icons-material/Category';
+import AddIcon from '@mui/icons-material/Add';
 import { useAtom } from 'jotai';
-import { purchaseInvoicesAtom } from '../../store/Global';
+import { purchaseInvoicesAtom, refundsAtom, suppliesAtom } from '../../store/Global';
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
 import usePurchaseInvoices from '../../api/hooks/usePurchaseInvoices';
+import useRefunds from '../../api/hooks/useRefunds';
+import useSupplies from '../../api/hooks/useSupplies';
 import AddPurchaseInvoiceDrawer from '../../components/einkaeufe/AddPurchaseInvoiceDrawer';
 import PurchaseInvoiceItem from '../../components/einkaeufe/PurchaseInvoiceItem';
+import AddRefundDrawer from '../../components/einkaeufe/AddRefundDrawer';
+import RefundItem from '../../components/einkaeufe/RefundItem';
+import AddSupplyDrawer from '../../components/einkaeufe/AddSupplyDrawer';
+import SupplyItem from '../../components/einkaeufe/SupplyItem';
 
 export default function Einkaeufe() {
     useCardmarketOrders();
     usePurchaseInvoices();
+    useRefunds();
+    useSupplies();
 
     const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
+    const [refunds] = useAtom(refundsAtom);
+    const [supplies] = useAtom(suppliesAtom);
 
     const [activeTab, setActiveTab] = useState(0);
     const [yearFilter, setYearFilter] = useState<string | null>(null);
@@ -39,6 +50,8 @@ export default function Einkaeufe() {
     const [page, setPage] = useState(1);
     const itemsPerPage = 15;
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [refundDrawerOpen, setRefundDrawerOpen] = useState(false);
+    const [supplyDrawerOpen, setSupplyDrawerOpen] = useState(false);
 
     const [yearAnchorEl, setYearAnchorEl] = useState<HTMLElement | null>(null);
     const [productAnchorEl, setProductAnchorEl] = useState<HTMLElement | null>(null);
@@ -82,6 +95,16 @@ export default function Einkaeufe() {
         page * itemsPerPage
     );
 
+    const sortedRefunds = useMemo(
+        () => [...refunds].sort((a, b) => (b.id ?? 0) - (a.id ?? 0)),
+        [refunds]
+    );
+
+    const sortedSupplies = useMemo(
+        () => [...supplies].sort((a, b) => (b.id ?? 0) - (a.id ?? 0)),
+        [supplies]
+    );
+
     const handleClearFilters = () => {
         setYearFilter(null);
         setProductFilter(null);
@@ -91,6 +114,8 @@ export default function Einkaeufe() {
     return (
         <Box style={{ width: '100%' }}>
             <AddPurchaseInvoiceDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+            <AddRefundDrawer open={refundDrawerOpen} onClose={() => setRefundDrawerOpen(false)} />
+            <AddSupplyDrawer open={supplyDrawerOpen} onClose={() => setSupplyDrawerOpen(false)} />
 
             {/* Year filter popover */}
             <Popover
@@ -244,17 +269,92 @@ export default function Einkaeufe() {
                     </>
                 )}
                 {activeTab === 1 && (
-                    <Typography variant="body2" color="text.secondary">
-                        Keine Erstattungen vorhanden.
-                    </Typography>
+                    <>
+                        <Box>
+                            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    {sortedRefunds.length > 0 && (
+                                        <Chip
+                                            label={sortedRefunds.length}
+                                            size="small"
+                                            color="primary"
+                                            sx={{ fontWeight: 600, borderRadius: 1 }}
+                                        />
+                                    )}
+                                    <Tooltip title="Neue Erstattung erfassen">
+                                        <IconButton
+                                            color="primary"
+                                            size="small"
+                                            onClick={() => setRefundDrawerOpen(true)}
+                                            aria-label="Neue Erstattung erfassen"
+                                        >
+                                            <AddIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Stack>
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                Erstattungen manuell erfassen und verwalten
+                            </Typography>
+                            <Divider sx={{ mt: 2 }} />
+                        </Box>
+                        <List dense disablePadding>
+                            {sortedRefunds.length > 0 ? (
+                                sortedRefunds.map((refund) => (
+                                    <RefundItem key={refund.id} refund={refund} />
+                                ))
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                    Keine Erstattungen vorhanden.
+                                </Typography>
+                            )}
+                        </List>
+                    </>
                 )}
                 {activeTab === 2 && (
-                    <Typography variant="body2" color="text.secondary">
-                        Keine Zusatzmittel vorhanden.
-                    </Typography>
+                    <>
+                        <Box>
+                            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    {sortedSupplies.length > 0 && (
+                                        <Chip
+                                            label={sortedSupplies.length}
+                                            size="small"
+                                            color="primary"
+                                            sx={{ fontWeight: 600, borderRadius: 1 }}
+                                        />
+                                    )}
+                                    <Tooltip title="Neues Zusatzmittel erfassen">
+                                        <IconButton
+                                            color="primary"
+                                            size="small"
+                                            onClick={() => setSupplyDrawerOpen(true)}
+                                            aria-label="Neues Zusatzmittel erfassen"
+                                        >
+                                            <AddIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Stack>
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                Zusatzmittel manuell erfassen und verwalten
+                            </Typography>
+                            <Divider sx={{ mt: 2 }} />
+                        </Box>
+                        <List dense disablePadding>
+                            {sortedSupplies.length > 0 ? (
+                                sortedSupplies.map((supply) => (
+                                    <SupplyItem key={supply.id} supply={supply} />
+                                ))
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                    Keine Zusatzmittel vorhanden.
+                                </Typography>
+                            )}
+                        </List>
+                    </>
                 )}
             </Stack>
         </Box>
     );
 }
-

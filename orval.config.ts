@@ -16,6 +16,12 @@ module.exports = {
                 },
                 getPurchaseInvoiceItemPdf: {
                     responseType: 'blob',
+                },
+                getRefundPdf: {
+                    responseType: 'blob',
+                },
+                getSupplyPdf: {
+                    responseType: 'blob',
                 }
             }
         }

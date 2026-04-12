@@ -394,6 +394,194 @@ paths:
         '404':
           description: PDF not found
 
+  /v1/refunds:
+    post:
+      tags:
+        - Refunds
+      summary: Create a new refund
+      description: Creates a new refund entry with an optional PDF document.
+      operationId: createRefund
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                refundData:
+                  $ref: '#/components/schemas/refund'
+                pdf:
+                  type: string
+                  format: binary
+              required:
+                - refundData
+      responses:
+        '201':
+          description: Refund created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/refund'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
+    get:
+      tags:
+        - Refunds
+      summary: Get all refunds
+      operationId: getAllRefunds
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/refund'
+
+  /v1/refunds/{id}:
+    delete:
+      tags:
+        - Refunds
+      summary: Delete a refund
+      description: Removes a refund entry. Returns 404 if the refund is not found.
+      operationId: deleteRefund
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Refund deleted successfully.
+        '404':
+          description: Refund not found.
+
+  /v1/refunds/{id}/pdf:
+    get:
+      tags:
+        - Refunds
+      summary: Download the PDF document of a refund
+      operationId: getRefundPdf
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: PDF not found
+
+  /v1/supplies:
+    post:
+      tags:
+        - Supplies
+      summary: Create a new supply
+      description: Creates a new supply entry with an optional PDF document.
+      operationId: createSupply
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                supplyData:
+                  $ref: '#/components/schemas/supply'
+                pdf:
+                  type: string
+                  format: binary
+              required:
+                - supplyData
+      responses:
+        '201':
+          description: Supply created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/supply'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
+    get:
+      tags:
+        - Supplies
+      summary: Get all supplies
+      operationId: getAllSupplies
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/supply'
+
+  /v1/supplies/{id}:
+    delete:
+      tags:
+        - Supplies
+      summary: Delete a supply
+      description: Removes a supply entry. Returns 404 if the supply is not found.
+      operationId: deleteSupply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Supply deleted successfully.
+        '404':
+          description: Supply not found.
+
+  /v1/supplies/{id}/pdf:
+    get:
+      tags:
+        - Supplies
+      summary: Download the PDF document of a supply
+      operationId: getSupplyPdf
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: PDF not found
+
   /v1/orders/{userName}:
     get:
       tags:
@@ -909,6 +1097,62 @@ components:
         - amount
         - price
         - invoiceDate
+
+    refund:
+      type: object
+      description: A refund entry representing money received back from a supplier.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the refund.
+        description:
+          type: string
+          description: Description of the refund.
+        amount:
+          type: number
+          format: double
+          description: Refund amount in euros.
+        date:
+          type: string
+          format: date
+          description: Date of the refund.
+        hasPdf:
+          type: boolean
+          description: Indicates whether a PDF document is attached.
+          readOnly: true
+      required:
+        - description
+        - amount
+        - date
+
+    supply:
+      type: object
+      description: A supply entry representing additional materials or operating expenses.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the supply.
+        description:
+          type: string
+          description: Description of the supply.
+        amount:
+          type: number
+          format: double
+          description: Supply cost in euros.
+        date:
+          type: string
+          format: date
+          description: Date of the supply.
+        hasPdf:
+          type: boolean
+          description: Indicates whether a PDF document is attached.
+          readOnly: true
+      required:
+        - description
+        - amount
+        - date
 
     responseMessage:
       type: object
