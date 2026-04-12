@@ -26,7 +26,7 @@ export default function Einkaeufe() {
     const [purchaseInvoices] = useAtom(purchaseInvoicesAtom);
 
     const sortedInvoices = [...purchaseInvoices].sort(
-        (a, b) => new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()
+        (a, b) => (b.id ?? 0) - (a.id ?? 0)
     );
 
     const [page, setPage] = useState(1);

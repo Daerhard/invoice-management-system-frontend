@@ -8,7 +8,7 @@
 export * from './card';
 export * from './cardId';
 export * from './cardmarketOrder';
-export * from './createPurchaseInvoiceBody';
+export * from './addPurchaseInvoiceItemBody';
 export * from './customer';
 export * from './emailSendRequest';
 export * from './emailSendResponse';
@@ -20,5 +20,6 @@ export * from './invoice';
 export * from './invoiceEmailRequest';
 export * from './orderItem';
 export * from './purchaseInvoice';
+export * from './purchaseInvoiceItem';
 export * from './responseMessage';
 export * from './user';

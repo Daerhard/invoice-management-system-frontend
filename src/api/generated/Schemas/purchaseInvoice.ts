@@ -4,15 +4,18 @@
  * invoice management system
  * OpenAPI spec version: 1.0.0
  */
+import type { PurchaseInvoiceItem } from './purchaseInvoiceItem';
 
 /**
- * Structured data required to create a purchase invoice.
+ * A purchase invoice containing a product name, a computed total price, and a list of items.
  */
 export interface PurchaseInvoice {
   /** Unique identifier for the purchase invoice. */
-  id: number;
+  id?: number;
+  /** Name of the purchased product. */
   productName: string;
-  amount: number;
-  price: number;
-  invoiceDate: string;
+  /** Total price computed from all items. */
+  readonly totalPrice?: number;
+  /** List of purchase invoice items. */
+  readonly items?: PurchaseInvoiceItem[];
 }
