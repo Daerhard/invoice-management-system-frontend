@@ -46,7 +46,7 @@ export default function AddPurchaseInvoiceDrawer({ open, onClose }: AddPurchaseI
                 <Box component="form" onSubmit={handleSubmit}>
                     <Stack spacing={2}>
                         <Autocomplete
-                            options={konamiSets}
+                            options={['Sammlungsauflösung', ...konamiSets]}
                             inputValue={produktname}
                             onInputChange={(_event, newInputValue) => setProduktname(newInputValue)}
                             freeSolo
