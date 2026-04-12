@@ -2,6 +2,7 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { Provider, createStore } from 'jotai';
 import usePurchaseInvoiceForm from './usePurchaseInvoiceForm';
+import { cardmarketOrdersAtom } from '../../store/Global';
 
 // Mock axios with a factory so Jest never tries to load the real ESM module.
 jest.mock('axios', () => ({
@@ -12,8 +13,11 @@ jest.mock('axios', () => ({
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockedAxiosPost: jest.Mock = require('axios').default.post;
 
-const createWrapper = () => {
+const createWrapper = (orders: any[] = []) => {
     const store = createStore();
+    if (orders.length > 0) {
+        store.set(cardmarketOrdersAtom, orders as any);
+    }
     return ({ children }: { children: React.ReactNode }) => (
         <Provider store={store}>{children}</Provider>
     );
@@ -97,5 +101,32 @@ describe('usePurchaseInvoiceForm', () => {
         });
 
         expect(result.current.produktname).toBe('');
+    });
+
+    it('returns konamiSets extracted from cardmarketOrders', () => {
+        const mockOrders = [
+            {
+                order_id: 1,
+                payment_date: '2024-01-01',
+                total_value: 10,
+                shipment_cost: 1,
+                commission: 0.5,
+                merchandise_value: 8.5,
+                article_count: 2,
+                currency: 'EUR',
+                customer: { user_name: 'buyer1', is_professional: false },
+                orderItems: [
+                    { id: 1, price: 5, count: 1, condition: 'NM', orderId: 1, card: { product_name: 'Yu-Gi-Oh!', name: 'Card A', language: 'EN', rarity: 'R', product_id: 1, id: { konamiSet: 'Phantom Rage', number: 'PHRA-EN001' } } },
+                    { id: 2, price: 3.5, count: 1, condition: 'NM', orderId: 1, card: { product_name: 'Yu-Gi-Oh!', name: 'Card B', language: 'EN', rarity: 'C', product_id: 2, id: { konamiSet: 'Darkwing Blast', number: 'DABL-EN001' } } },
+                ],
+            },
+        ];
+        const { result } = renderHook(() => usePurchaseInvoiceForm(), { wrapper: createWrapper(mockOrders) });
+        expect(result.current.konamiSets).toEqual(['Darkwing Blast', 'Phantom Rage']);
+    });
+
+    it('returns empty konamiSets when there are no orders', () => {
+        const { result } = renderHook(() => usePurchaseInvoiceForm(), { wrapper: createWrapper() });
+        expect(result.current.konamiSets).toEqual([]);
     });
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     Alert,
+    Autocomplete,
     Box,
     CircularProgress,
     Button,
@@ -21,6 +22,7 @@ interface AddPurchaseInvoiceDrawerProps {
 
 export default function AddPurchaseInvoiceDrawer({ open, onClose }: AddPurchaseInvoiceDrawerProps) {
     const {
+        konamiSets,
         produktname,
         setProduktname,
         loading,
@@ -43,13 +45,20 @@ export default function AddPurchaseInvoiceDrawer({ open, onClose }: AddPurchaseI
                 <Divider sx={{ mb: 2 }} />
                 <Box component="form" onSubmit={handleSubmit}>
                     <Stack spacing={2}>
-                        <TextField
-                            label="Produktname"
-                            value={produktname}
-                            onChange={(e) => setProduktname(e.target.value)}
-                            size="small"
-                            fullWidth
-                            required
+                        <Autocomplete
+                            options={konamiSets}
+                            inputValue={produktname}
+                            onInputChange={(_event, newInputValue) => setProduktname(newInputValue)}
+                            freeSolo
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Produktname"
+                                    size="small"
+                                    fullWidth
+                                    required
+                                />
+                            )}
                         />
                         <Button
                             type="submit"

@@ -63,6 +63,14 @@ describe('AddPurchaseInvoiceDrawer', () => {
         expect(screen.queryByRole('button', { name: 'Hinzufügen' })).not.toBeInTheDocument();
     });
 
+    it('shows available konamiSets as autocomplete options', () => {
+        usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ konamiSets: ['Darkwing Blast', 'Phantom Rage'] }));
+        renderWithProvider();
+        const input = screen.getByLabelText(/Produktname/);
+        fireEvent.change(input, { target: { value: 'Dark' } });
+        expect(screen.getByRole('option', { name: 'Darkwing Blast' })).toBeInTheDocument();
+    });
+
     it('calls handleSubmit when the form is submitted', () => {
         const handleSubmit = jest.fn((e: React.FormEvent) => { e.preventDefault(); return Promise.resolve(); });
         usePurchaseInvoiceForm.mockReturnValue(buildDefaultFormState({ handleSubmit }));
