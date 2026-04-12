@@ -22,7 +22,14 @@ const renderWithProvider = () => {
 describe('Einkaeufe', () => {
     it('renders the section header', () => {
         renderWithProvider();
-        expect(screen.getByText('Einkäufe')).toBeInTheDocument();
+        expect(screen.getByText('Ausgaben')).toBeInTheDocument();
+    });
+
+    it('renders the tabs', () => {
+        renderWithProvider();
+        expect(screen.getByRole('tab', { name: 'Einkäufe' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Erstattungen' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Zusatzmittel' })).toBeInTheDocument();
     });
 
     it('renders the add button', () => {
