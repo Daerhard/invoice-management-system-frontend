@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAtom } from 'jotai';
 import axios from 'axios';
-import { purchaseInvoicesAtom } from '../../store/Global';
+import { cardmarketOrdersAtom, purchaseInvoicesAtom } from '../../store/Global';
 import { PurchaseInvoice } from '../generated/Schemas';
 
 export interface PurchaseInvoiceFormState {
@@ -18,6 +18,17 @@ export interface PurchaseInvoiceFormState {
 
 export default function usePurchaseInvoiceForm(): PurchaseInvoiceFormState {
     const [, setPurchaseInvoices] = useAtom(purchaseInvoicesAtom);
+    const [cardmarketOrders] = useAtom(cardmarketOrdersAtom);
+
+    const konamiSets = useMemo(() => {
+        const setNames = new Set<string>();
+        cardmarketOrders.forEach((order) => {
+            (order.orderItems ?? []).forEach((item) => {
+                setNames.add(item.card.id.konamiSet);
+            });
+        });
+        return Array.from(setNames).sort();
+    }, [cardmarketOrders]);
 
     const [produktname, setProduktname] = useState('');
     const [loading, setLoading] = useState(false);
@@ -62,7 +73,7 @@ export default function usePurchaseInvoiceForm(): PurchaseInvoiceFormState {
     };
 
     return {
-        konamiSets: [],
+        konamiSets,
         produktname,
         setProduktname,
         loading,
