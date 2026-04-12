@@ -7,6 +7,7 @@ import {
     IconButton,
     List,
     Pagination,
+    Popover,
     Stack,
     Tab,
     Tabs,
@@ -16,7 +17,9 @@ import {
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import FilterListOffIcon from '@mui/icons-material/FilterListOff';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CategoryIcon from '@mui/icons-material/Category';
 import { useAtom } from 'jotai';
 import { purchaseInvoicesAtom } from '../../store/Global';
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
@@ -36,6 +39,9 @@ export default function Einkaeufe() {
     const [page, setPage] = useState(1);
     const itemsPerPage = 15;
     const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const [yearAnchorEl, setYearAnchorEl] = useState<HTMLElement | null>(null);
+    const [productAnchorEl, setProductAnchorEl] = useState<HTMLElement | null>(null);
 
     const availableYears = useMemo(() => {
         const years = new Set<string>();
@@ -85,6 +91,59 @@ export default function Einkaeufe() {
     return (
         <Box style={{ width: '100%' }}>
             <AddPurchaseInvoiceDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+            {/* Year filter popover */}
+            <Popover
+                open={Boolean(yearAnchorEl)}
+                anchorEl={yearAnchorEl}
+                onClose={() => setYearAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                aria-label="Jahr Filter"
+            >
+                <Box sx={{ p: 2, width: 160 }}>
+                    <Autocomplete
+                        size="small"
+                        options={availableYears}
+                        value={yearFilter}
+                        onChange={(_, newValue) => {
+                            setYearFilter(newValue);
+                            setPage(1);
+                            setYearAnchorEl(null);
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} label="Jahr" variant="outlined" autoFocus />
+                        )}
+                    />
+                </Box>
+            </Popover>
+
+            {/* Product filter popover */}
+            <Popover
+                open={Boolean(productAnchorEl)}
+                anchorEl={productAnchorEl}
+                onClose={() => setProductAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                aria-label="Produkt Filter"
+            >
+                <Box sx={{ p: 2, width: 220 }}>
+                    <Autocomplete
+                        size="small"
+                        options={availableProducts}
+                        value={productFilter}
+                        onChange={(_, newValue) => {
+                            setProductFilter(newValue);
+                            setPage(1);
+                            setProductAnchorEl(null);
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} label="Produkt" variant="outlined" autoFocus />
+                        )}
+                    />
+                </Box>
+            </Popover>
+
             <Stack spacing={3} width="100%">
                 <Box>
                     <Stack direction="row" alignItems="center" spacing={1.5}>
@@ -106,7 +165,7 @@ export default function Einkaeufe() {
                     <>
                         <Box>
                             <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                <Stack direction="row" alignItems="center" spacing={1.5}>
+                                <Stack direction="row" alignItems="center" spacing={1}>
                                     {filteredInvoices.length > 0 && (
                                         <Chip
                                             label={filteredInvoices.length}
@@ -115,34 +174,26 @@ export default function Einkaeufe() {
                                             sx={{ fontWeight: 600, borderRadius: 1 }}
                                         />
                                     )}
-                                </Stack>
-                                <Stack direction="row" alignItems="center" spacing={1}>
-                                    <Autocomplete
-                                        size="small"
-                                        sx={{ width: 110 }}
-                                        options={availableYears}
-                                        value={yearFilter}
-                                        onChange={(_, newValue) => {
-                                            setYearFilter(newValue);
-                                            setPage(1);
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField {...params} label="Jahr" variant="standard" />
-                                        )}
-                                    />
-                                    <Autocomplete
-                                        size="small"
-                                        sx={{ width: 180 }}
-                                        options={availableProducts}
-                                        value={productFilter}
-                                        onChange={(_, newValue) => {
-                                            setProductFilter(newValue);
-                                            setPage(1);
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField {...params} label="Produkt" variant="standard" />
-                                        )}
-                                    />
+                                    <Tooltip title={yearFilter ? `Jahr: ${yearFilter}` : 'Nach Jahr filtern'}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={(e) => setYearAnchorEl(e.currentTarget)}
+                                            color={yearFilter ? 'primary' : 'default'}
+                                            aria-label="Nach Jahr filtern"
+                                        >
+                                            <CalendarTodayIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title={productFilter ? `Produkt: ${productFilter}` : 'Nach Produkt filtern'}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={(e) => setProductAnchorEl(e.currentTarget)}
+                                            color={productFilter ? 'primary' : 'default'}
+                                            aria-label="Nach Produkt filtern"
+                                        >
+                                            <CategoryIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
                                     {hasActiveFilters && (
                                         <Tooltip title="Filter zurücksetzen">
                                             <IconButton
@@ -151,7 +202,7 @@ export default function Einkaeufe() {
                                                 aria-label="Filter zurücksetzen"
                                                 color="default"
                                             >
-                                                <FilterListOffIcon fontSize="small" />
+                                                <RestartAltIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     )}
@@ -165,14 +216,14 @@ export default function Einkaeufe() {
                                             <AddShoppingCartIcon />
                                         </IconButton>
                                     </Tooltip>
-                                    <Pagination
-                                        count={Math.ceil(filteredInvoices.length / itemsPerPage)}
-                                        page={page}
-                                        onChange={(_, newValue) => setPage(newValue)}
-                                        shape="rounded"
-                                        color="primary"
-                                    />
                                 </Stack>
+                                <Pagination
+                                    count={Math.ceil(filteredInvoices.length / itemsPerPage)}
+                                    page={page}
+                                    onChange={(_, newValue) => setPage(newValue)}
+                                    shape="rounded"
+                                    color="primary"
+                                />
                             </Stack>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                                 Einkäufe manuell erfassen und verwalten
