@@ -45,11 +45,11 @@ export default function Einkaeufe() {
                 if (year) years.add(year);
             })
         );
-        return [...years].sort((a, b) => Number(b) - Number(a));
+        return Array.from(years).sort((a, b) => Number(b) - Number(a));
     }, [purchaseInvoices]);
 
     const availableProducts = useMemo(() => {
-        return [...new Set(purchaseInvoices.map((inv) => inv.productName).filter(Boolean))].sort();
+        return Array.from(new Set(purchaseInvoices.map((inv) => inv.productName).filter(Boolean))).sort();
     }, [purchaseInvoices]);
 
     const hasActiveFilters = yearFilter !== null || productFilter !== null;
