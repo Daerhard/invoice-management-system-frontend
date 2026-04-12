@@ -92,7 +92,7 @@ export default function Statistik() {
         const map = new Map<string, number>();
         purchaseInvoices.forEach((invoice) => {
             const key = invoice.productName.toLowerCase();
-            map.set(key, (map.get(key) ?? 0) + invoice.price);
+            map.set(key, (map.get(key) ?? 0) + (invoice.totalPrice ?? 0));
         });
         return map;
     }, [purchaseInvoices]);
