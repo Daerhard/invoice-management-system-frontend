@@ -28,6 +28,18 @@ export function getGermanMonthName(month: number): string {
     return germanMonthNames[month];
 }
 
+export function extractErrorMessage(err: unknown): string {
+    if (
+        typeof err === 'object' &&
+        err !== null &&
+        'response' in err &&
+        typeof (err as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+    ) {
+        return (err as { response: { data: { message: string } } }).response.data.message;
+    }
+    return '';
+}
+
 
 
 

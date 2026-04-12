@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { suppliesAtom } from '../../store/Global';
 import { Supply } from '../generated/Schemas';
 import { createSupply } from '../generated/supplies';
+import { extractErrorMessage } from '../../helper/Utils';
 
 export interface AddSupplyFormState {
     description: string;
@@ -80,13 +81,7 @@ export default function useAddSupplyForm(): AddSupplyFormState {
             setMessage('Zusatzmittel erfolgreich gespeichert!');
             resetForm();
         } catch (err: unknown) {
-            const msg =
-                typeof err === 'object' &&
-                err !== null &&
-                'response' in err &&
-                typeof (err as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
-                    ? (err as { response: { data: { message: string } } }).response.data.message
-                    : '';
+            const msg = extractErrorMessage(err);
             setError(`Speichern fehlgeschlagen.${msg ? ` ${msg}` : ''}`);
         } finally {
             setLoading(false);

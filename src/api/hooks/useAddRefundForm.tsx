@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { refundsAtom } from '../../store/Global';
 import { Refund } from '../generated/Schemas';
 import { createRefund } from '../generated/refunds';
+import { extractErrorMessage } from '../../helper/Utils';
 
 export interface AddRefundFormState {
     description: string;
@@ -80,13 +81,7 @@ export default function useAddRefundForm(): AddRefundFormState {
             setMessage('Erstattung erfolgreich gespeichert!');
             resetForm();
         } catch (err: unknown) {
-            const msg =
-                typeof err === 'object' &&
-                err !== null &&
-                'response' in err &&
-                typeof (err as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
-                    ? (err as { response: { data: { message: string } } }).response.data.message
-                    : '';
+            const msg = extractErrorMessage(err);
             setError(`Speichern fehlgeschlagen.${msg ? ` ${msg}` : ''}`);
         } finally {
             setLoading(false);
