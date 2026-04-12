@@ -20,7 +20,6 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CategoryIcon from '@mui/icons-material/Category';
-import AddIcon from '@mui/icons-material/Add';
 import { useAtom } from 'jotai';
 import { purchaseInvoicesAtom, refundsAtom, suppliesAtom } from '../../store/Global';
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
@@ -33,6 +32,8 @@ import AddRefundDrawer from '../../components/einkaeufe/AddRefundDrawer';
 import RefundItem from '../../components/einkaeufe/RefundItem';
 import AddSupplyDrawer from '../../components/einkaeufe/AddSupplyDrawer';
 import SupplyItem from '../../components/einkaeufe/SupplyItem';
+import CustomIconButton from '../../customComponents/CustomIconButton';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 export default function Einkaeufe() {
     useCardmarketOrders();
@@ -282,14 +283,16 @@ export default function Einkaeufe() {
                                         />
                                     )}
                                     <Tooltip title="Neue Erstattung erfassen">
-                                        <IconButton
-                                            color="primary"
-                                            size="small"
-                                            onClick={() => setRefundDrawerOpen(true)}
-                                            aria-label="Neue Erstattung erfassen"
-                                        >
-                                            <AddIcon />
-                                        </IconButton>
+                                        <span>
+                                            <CustomIconButton
+                                                title="Neue Erstattung"
+                                                titleVariant="body2"
+                                                icon={faPlus}
+                                                iconSize="xs"
+                                                iconPosition="right"
+                                                onClick={() => setRefundDrawerOpen(true)}
+                                            />
+                                        </span>
                                     </Tooltip>
                                 </Stack>
                             </Stack>
@@ -325,14 +328,16 @@ export default function Einkaeufe() {
                                         />
                                     )}
                                     <Tooltip title="Neues Arbeitsmittel erfassen">
-                                        <IconButton
-                                            color="primary"
-                                            size="small"
-                                            onClick={() => setSupplyDrawerOpen(true)}
-                                            aria-label="Neues Arbeitsmittel erfassen"
-                                        >
-                                            <AddIcon />
-                                        </IconButton>
+                                        <span>
+                                            <CustomIconButton
+                                                title="Neues Arbeitsmittel"
+                                                titleVariant="body2"
+                                                icon={faPlus}
+                                                iconSize="xs"
+                                                iconPosition="right"
+                                                onClick={() => setSupplyDrawerOpen(true)}
+                                            />
+                                        </span>
                                     </Tooltip>
                                 </Stack>
                             </Stack>
