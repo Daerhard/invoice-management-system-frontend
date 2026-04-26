@@ -42,7 +42,6 @@ const mockOrderUnsaved: CardmarketOrder = {
     total_value: 12,
     commission: 1,
     currency: 'EUR',
-    invoice: null,
 };
 
 const mockOrderSaved: CardmarketOrder = {

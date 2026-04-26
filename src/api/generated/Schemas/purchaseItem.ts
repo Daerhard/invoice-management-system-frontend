@@ -6,20 +6,23 @@
 
  * OpenAPI spec version: 2.0.0
  */
-import type { PurchaseInvoiceItemPurchaseType } from './purchaseInvoiceItemPurchaseType';
+import type { Card } from './card';
 
 /**
- * A single item entry within a purchase invoice.
+ * A single item in a cardmarket purchase.
  */
-export interface PurchaseInvoiceItem {
-  /** Unique identifier for the purchase invoice item. */
+export interface PurchaseItem {
+  /** Unique identifier for the purchase item. */
   id?: number;
-  /** Type of item purchased. */
-  purchaseType: PurchaseInvoiceItemPurchaseType;
-  /** Quantity purchased. */
-  amount: number;
-  /** Price per unit. */
+  /** Identifier of the associated purchase. */
+  purchaseId?: number;
+  /** Number of cards in this item. */
+  count: number;
+  /** Condition of the card (e.g., NM, EX). */
+  condition: string;
+  /** Price per card. */
   price: number;
-  /** Date of the invoice. */
-  invoiceDate: string;
+  /** Whether the card is a first edition. */
+  isFirstEdition: boolean;
+  card: Card;
 }

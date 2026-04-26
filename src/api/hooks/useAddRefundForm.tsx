@@ -39,10 +39,6 @@ export default function useAddRefundForm(): AddRefundFormState {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const parsedAmount = parseFloat(amount);
-        if (!description.trim()) {
-            setError('Bitte eine Beschreibung eingeben.');
-            return;
-        }
         if (isNaN(parsedAmount) || parsedAmount < 0) {
             setError('Bitte einen gültigen Betrag eingeben.');
             return;
@@ -57,13 +53,12 @@ export default function useAddRefundForm(): AddRefundFormState {
         setLoading(true);
 
         const refundData: Refund = {
-            description: description.trim(),
-            amount: parsedAmount,
-            date: String(parsedYear),
+            value: parsedAmount,
+            year: parsedYear,
         };
 
         try {
-            const response = await createRefund({ refundData });
+            const response = await createRefund(refundData);
             setRefunds((prev) => [response.data, ...prev]);
             setMessage('Erstattung erfolgreich gespeichert!');
             resetForm();

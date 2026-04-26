@@ -70,9 +70,9 @@ export default function useAddSupplyForm(): AddSupplyFormState {
         setLoading(true);
 
         const supplyData: Supply = {
-            description: description.trim(),
-            amount: parsedAmount,
-            date,
+            product: description.trim(),
+            value: parsedAmount,
+            supplyDate: date,
         };
 
         try {

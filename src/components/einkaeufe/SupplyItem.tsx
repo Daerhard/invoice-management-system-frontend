@@ -41,13 +41,11 @@ export default function SupplyItem({ supply }: Readonly<SupplyItemProps>) {
                 }
                 action={
                     <Stack direction="row" alignItems="center">
-                        {supply.hasPdf && (
-                            <Tooltip title="PDF öffnen">
-                                <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
-                                    <FontAwesomeIcon icon={faFilePdf} size="xs" />
-                                </IconButton>
-                            </Tooltip>
-                        )}
+                        <Tooltip title="PDF öffnen">
+                            <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
+                                <FontAwesomeIcon icon={faFilePdf} size="xs" />
+                            </IconButton>
+                        </Tooltip>
                         <Tooltip title="Arbeitsmittel löschen">
                             <IconButton
                                 size="small"
@@ -63,16 +61,16 @@ export default function SupplyItem({ supply }: Readonly<SupplyItemProps>) {
                 }
                 title={
                     <Typography variant="body2" fontWeight={600}>
-                        {supply.description}
+                        {supply.product}
                     </Typography>
                 }
                 subheader={
                     <Stack direction="row" spacing={2} sx={{ mt: 0.25 }}>
                         <Typography variant="body2" color="text.secondary">
-                            {`${supply.amount.toFixed(2)} €`}
+                            {`${supply.value.toFixed(2)} €`}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {formatStringToDate(supply.date)}
+                            {formatStringToDate(supply.supplyDate)}
                         </Typography>
                         {pdfError && (
                             <Typography variant="caption" color="error">

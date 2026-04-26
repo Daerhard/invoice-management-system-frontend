@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Card,
     CardHeader,
@@ -7,10 +7,9 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { faFilePdf, faMoneyBillTransfer, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillTransfer, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Refund } from '../../api/generated/Schemas';
-import { getRefundPdf } from '../../api/generated/refunds';
 import useDeleteRefund from '../../api/hooks/useDeleteRefund';
 
 interface RefundItemProps {
@@ -18,19 +17,7 @@ interface RefundItemProps {
 }
 
 export default function RefundItem({ refund }: Readonly<RefundItemProps>) {
-    const [pdfError, setPdfError] = useState(false);
     const { handleDelete, loading: deleteLoading, error: deleteError } = useDeleteRefund(refund.id!);
-
-    const handleOpenPdf = async () => {
-        setPdfError(false);
-        try {
-            const response = await getRefundPdf(refund.id!);
-            const url = URL.createObjectURL(response.data);
-            window.open(url, '_blank');
-        } catch {
-            setPdfError(true);
-        }
-    };
 
     return (
         <Card sx={{ width: '100%', marginBottom: '0.4rem' }}>
@@ -40,13 +27,6 @@ export default function RefundItem({ refund }: Readonly<RefundItemProps>) {
                 }
                 action={
                     <Stack direction="row" alignItems="center">
-                        {refund.hasPdf && (
-                            <Tooltip title="PDF öffnen">
-                                <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
-                                    <FontAwesomeIcon icon={faFilePdf} size="xs" />
-                                </IconButton>
-                            </Tooltip>
-                        )}
                         <Tooltip title="Erstattung löschen">
                             <IconButton
                                 size="small"
@@ -62,22 +42,17 @@ export default function RefundItem({ refund }: Readonly<RefundItemProps>) {
                 }
                 title={
                     <Typography variant="body2" fontWeight={600}>
-                        {refund.description}
+                        Erstattung
                     </Typography>
                 }
                 subheader={
                     <Stack direction="row" spacing={2} sx={{ mt: 0.25 }}>
                         <Typography variant="body2" color="text.secondary">
-                            {`${refund.amount.toFixed(2)} €`}
+                            {`${refund.value.toFixed(2)} €`}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {refund.date.slice(0, 4)}
+                            {String(refund.year)}
                         </Typography>
-                        {pdfError && (
-                            <Typography variant="caption" color="error">
-                                PDF konnte nicht geladen werden
-                            </Typography>
-                        )}
                         {deleteError && (
                             <Typography variant="caption" color="error">
                                 {deleteError}

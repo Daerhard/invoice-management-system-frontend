@@ -7,14 +7,7 @@
  * OpenAPI spec version: 2.0.0
  */
 
-/**
- * A refund entry with a money value and a year.
- */
-export interface Refund {
-  /** Unique identifier for the refund. */
-  id?: number;
-  /** The refunded money value. */
-  value: number;
-  /** The year of the refund. */
-  year: number;
-}
+export type ImportCSVPurchaseDataBody = {
+  /** The CSV file to be uploaded. */
+  file?: Blob;
+};

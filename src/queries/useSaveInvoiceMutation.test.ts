@@ -24,7 +24,6 @@ const mockOrder1: CardmarketOrder = {
     total_value: 6,
     commission: 0.5,
     currency: 'EUR',
-    invoice: null,
 };
 
 const mockOrder2: CardmarketOrder = {
@@ -37,7 +36,6 @@ const mockOrder2: CardmarketOrder = {
     total_value: 12,
     commission: 1,
     currency: 'EUR',
-    invoice: null,
 };
 
 const mockInvoice: Invoice = {
@@ -96,7 +94,7 @@ describe('useSaveInvoiceMutation', () => {
 
         const orders = store.get(cardmarketOrdersAtom);
         expect(orders[0].invoice).toEqual(mockInvoice);
-        expect(orders[1].invoice).toBeNull();
+        expect(orders[1].invoice).toBeUndefined();
     });
 
     it('leaves unrelated orders unchanged in the atom', async () => {
@@ -137,6 +135,6 @@ describe('useSaveInvoiceMutation', () => {
         });
 
         const orders = store.get(cardmarketOrdersAtom);
-        expect(orders[0].invoice).toBeNull();
+        expect(orders[0].invoice).toBeUndefined();
     });
 });
