@@ -20,7 +20,7 @@ import {
     Typography,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import TuneIcon from '@mui/icons-material/Tune';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useAtom } from 'jotai';
 import { useProfessionalCustomersQuery } from '../../queries/useProfessionalCustomersQuery';
@@ -158,7 +158,7 @@ export default function Customers() {
                             variant="outlined"
                             color="primary"
                             size="small"
-                            startIcon={<FilterListIcon />}
+                            startIcon={<TuneIcon />}
                             onClick={() => setDrawerOpen(true)}
                         >
                             Filter

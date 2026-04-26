@@ -22,14 +22,12 @@ import {
     Stack,
     Tab,
     Tabs,
-    Tooltip,
-    IconButton,
     Typography,
 } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import EuroIcon from '@mui/icons-material/Euro';
 import AddIcon from '@mui/icons-material/Add';
+import TuneIcon from '@mui/icons-material/Tune';
 import FilterDrawer from '../../components/cardmarketOrders/filters/FilterDrawer';
 import ImportOrdersDrawer from '../../components/cardmarketOrders/ImportOrdersDrawer';
 import AddNachzahlungDrawer from '../../components/einnahmen/AddNachzahlungDrawer';
@@ -133,7 +131,7 @@ export default function Einnahmen() {
                                         variant="outlined"
                                         color="primary"
                                         size="small"
-                                        startIcon={<FilterListIcon />}
+                                        startIcon={<TuneIcon />}
                                         onClick={() => setDrawerOpen(true)}
                                         aria-label="Filter öffnen"
                                     >
@@ -193,16 +191,16 @@ export default function Einnahmen() {
                                             sx={{ fontWeight: 600, borderRadius: 1 }}
                                         />
                                     )}
-                                    <Tooltip title="Neue Nachzahlung erfassen">
-                                        <IconButton
-                                            color="primary"
-                                            size="small"
-                                            onClick={() => setNachzahlungDrawerOpen(true)}
-                                            aria-label="Neue Nachzahlung erfassen"
-                                        >
-                                            <AddIcon />
-                                        </IconButton>
-                                    </Tooltip>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => setNachzahlungDrawerOpen(true)}
+                                        aria-label="Neue Nachzahlung erfassen"
+                                    >
+                                        Hinzufügen
+                                    </Button>
                                 </Stack>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>

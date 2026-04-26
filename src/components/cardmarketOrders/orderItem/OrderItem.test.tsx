@@ -8,12 +8,6 @@ import { CardmarketOrder } from '../../../api/generated/Schemas';
 jest.mock('../../../containers/invoices/PDFInvoicePreview', () => () => <div data-testid="pdf-invoice-preview" />);
 jest.mock('../../../containers/invoices/SendInvoiceEmailDialog', () => () => <div data-testid="send-invoice-email-dialog" />);
 jest.mock('./OrderItemContent', () => () => <div data-testid="order-item-content" />);
-jest.mock('@fortawesome/react-fontawesome', () => ({
-    FontAwesomeIcon: () => <span data-testid="icon" />,
-}));
-jest.mock('../../../customComponents/CustomIconButton', () => ({ title, onClick, disabled }: { title: string, onClick?: () => void, disabled?: boolean }) => (
-    <button aria-label={title} onClick={onClick} disabled={disabled} />
-));
 
 const mockOrderWithoutInvoice: CardmarketOrder = {
     customer: { user_name: 'TestUser', is_professional: false },
@@ -67,85 +61,88 @@ const renderWithProviders = (cardmarketOrder: CardmarketOrder) => {
 };
 
 describe('OrderItem', () => {
-    it('shows customer name without "Kunde:" prefix', () => {
+    it('shows customer name', () => {
         renderWithProviders(mockOrderWithoutInvoice);
         expect(screen.getByText('TestUser')).toBeInTheDocument();
-        expect(screen.queryByText('Kunde: TestUser')).not.toBeInTheDocument();
     });
 
     it('shows order id', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByText(/Bestellnummer: 42/)).toBeInTheDocument();
+        expect(screen.getByText(/#42/)).toBeInTheDocument();
     });
 
-    it('shows "Öffne Bestelldetails" button in subheader row', () => {
+    it('shows action buttons for PDF, E-invoice and send email', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByRole('button', { name: 'Öffne Bestelldetails' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Rechnung PDF' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'E-Rechnung' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'E-Mail senden' })).toBeInTheDocument();
     });
 
-    it('shows action buttons for Rechnung (PDF), Rechnung (E) and Versenden', () => {
+    it('shows details toggle button', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByRole('button', { name: 'Rechnung (PDF)' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Rechnung (E)' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Versenden' })).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Erstelle Rechnung (E)' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Details' })).toBeInTheDocument();
     });
 
-    it('opens send email dialog when clicking "Versenden" for professional customer', () => {
+    it('opens send email dialog when clicking send button for professional customer', () => {
         renderWithProviders(mockProfessionalOrder);
         expect(screen.queryByTestId('send-invoice-email-dialog')).not.toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Versenden' }));
+        fireEvent.click(screen.getByRole('button', { name: 'E-Mail senden' }));
 
         expect(screen.getByTestId('send-invoice-email-dialog')).toBeInTheDocument();
     });
 
-    it('"Versenden" button is disabled for non-professional customers', () => {
+    it('send email button is disabled for non-professional customers', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByRole('button', { name: 'Versenden' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'E-Mail senden' })).toBeDisabled();
     });
 
-    it('"Versenden" button is enabled for professional customers', () => {
+    it('send email button is enabled for professional customers', () => {
         renderWithProviders(mockProfessionalOrder);
-        expect(screen.getByRole('button', { name: 'Versenden' })).not.toBeDisabled();
+        expect(screen.getByRole('button', { name: 'E-Mail senden' })).not.toBeDisabled();
     });
 
-    it('always renders the pdf invoice ticker', () => {
+    it('opens PDF invoice preview on button click', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByTestId('pdf-invoice-ticker')).toBeInTheDocument();
+        expect(screen.queryByTestId('pdf-invoice-preview')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Rechnung PDF' }));
+
+        expect(screen.getByTestId('pdf-invoice-preview')).toBeInTheDocument();
     });
 
-    it('always renders the e-invoice ticker', () => {
+    it('shows Gewerblich chip for professional customers', () => {
+        renderWithProviders(mockProfessionalOrder);
+        expect(screen.getByText('Gewerblich')).toBeInTheDocument();
+    });
+
+    it('does not show Gewerblich chip for non-professional customers', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByTestId('e-invoice-ticker')).toBeInTheDocument();
+        expect(screen.queryByText('Gewerblich')).not.toBeInTheDocument();
     });
 
-    it('always renders the send-invoice ticker', () => {
+    it('expands order details on toggle click', () => {
         renderWithProviders(mockOrderWithoutInvoice);
-        expect(screen.getByTestId('send-invoice-ticker')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-item-content')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Details' }));
+
+        expect(screen.getByTestId('order-item-content')).toBeInTheDocument();
     });
 
-    it('pdf ticker shows success color when invoice is saved', () => {
-        renderWithProviders(mockOrderWithInvoice);
-        const ticker = screen.getByTestId('pdf-invoice-ticker');
-        expect(ticker).toBeInTheDocument();
-    });
+    it('invoice PDF button is rendered for orders with and without saved invoice', () => {
+        const { rerender } = renderWithProviders(mockOrderWithoutInvoice);
+        expect(screen.getByRole('button', { name: 'Rechnung PDF' })).toBeInTheDocument();
 
-    it('send-invoice ticker shows success color when invoice is sent', () => {
-        renderWithProviders(mockOrderWithSentInvoice);
-        const ticker = screen.getByTestId('send-invoice-ticker');
-        expect(ticker).toHaveStyle({ color: 'rgb(46, 125, 50)' });
-    });
-
-    it('send-invoice ticker shows disabled color when invoice is not sent', () => {
-        renderWithProviders(mockOrderWithInvoice);
-        const ticker = screen.getByTestId('send-invoice-ticker');
-        expect(ticker).toHaveStyle({ color: 'rgba(0, 0, 0, 0.26)' });
-    });
-
-    it('does not show "Rechnung gespeichert" as visible text', () => {
-        renderWithProviders(mockOrderWithInvoice);
-        expect(screen.queryByText('Rechnung gespeichert')).not.toBeInTheDocument();
+        const store = createStore();
+        const queryClient = new QueryClient();
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <Provider store={store}>
+                    <OrderItem cardmarketOrder={mockOrderWithInvoice} />
+                </Provider>
+            </QueryClientProvider>
+        );
+        expect(screen.getByRole('button', { name: /Rechnung PDF/ })).toBeInTheDocument();
     });
 });
-

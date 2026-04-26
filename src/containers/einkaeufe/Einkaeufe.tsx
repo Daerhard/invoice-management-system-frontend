@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
     Autocomplete,
     Box,
+    Button,
     Chip,
     Divider,
     IconButton,
@@ -16,10 +17,11 @@ import {
     Typography,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import AddIcon from '@mui/icons-material/Add';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CategoryIcon from '@mui/icons-material/Category';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useAtom } from 'jotai';
 import { purchaseInvoicesAtom, refundsAtom, suppliesAtom } from '../../store/Global';
 import useCardmarketOrders from '../../api/hooks/useCardmarketOrders';
@@ -32,8 +34,6 @@ import AddRefundDrawer from '../../components/einkaeufe/AddRefundDrawer';
 import RefundItem from '../../components/einkaeufe/RefundItem';
 import AddSupplyDrawer from '../../components/einkaeufe/AddSupplyDrawer';
 import SupplyItem from '../../components/einkaeufe/SupplyItem';
-import CustomIconButton from '../../customComponents/CustomIconButton';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 export default function Einkaeufe() {
     useCardmarketOrders();
@@ -118,7 +118,6 @@ export default function Einkaeufe() {
             <AddRefundDrawer open={refundDrawerOpen} onClose={() => setRefundDrawerOpen(false)} />
             <AddSupplyDrawer open={supplyDrawerOpen} onClose={() => setSupplyDrawerOpen(false)} />
 
-            {/* Year filter popover */}
             <Popover
                 open={Boolean(yearAnchorEl)}
                 anchorEl={yearAnchorEl}
@@ -144,7 +143,6 @@ export default function Einkaeufe() {
                 </Box>
             </Popover>
 
-            {/* Product filter popover */}
             <Popover
                 open={Boolean(productAnchorEl)}
                 anchorEl={productAnchorEl}
@@ -187,6 +185,7 @@ export default function Einkaeufe() {
                         <Tab label="Arbeitsmittel" />
                     </Tabs>
                 </Box>
+
                 {activeTab === 0 && (
                     <>
                         <Box>
@@ -226,30 +225,31 @@ export default function Einkaeufe() {
                                                 size="small"
                                                 onClick={handleClearFilters}
                                                 aria-label="Filter zurücksetzen"
-                                                color="default"
                                             >
                                                 <RestartAltIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     )}
-                                    <Tooltip title="Neuen Einkauf erfassen">
-                                        <IconButton
-                                            color="primary"
-                                            size="small"
-                                            onClick={() => setDrawerOpen(true)}
-                                            aria-label="Neuen Einkauf erfassen"
-                                        >
-                                            <AddShoppingCartIcon />
-                                        </IconButton>
-                                    </Tooltip>
                                 </Stack>
-                                <Pagination
-                                    count={Math.ceil(filteredInvoices.length / itemsPerPage)}
-                                    page={page}
-                                    onChange={(_, newValue) => setPage(newValue)}
-                                    shape="rounded"
-                                    color="primary"
-                                />
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => setDrawerOpen(true)}
+                                        aria-label="Neuen Einkauf erfassen"
+                                    >
+                                        Hinzufügen
+                                    </Button>
+                                    <Pagination
+                                        count={Math.ceil(filteredInvoices.length / itemsPerPage)}
+                                        page={page}
+                                        onChange={(_, newValue) => setPage(newValue)}
+                                        shape="rounded"
+                                        color="primary"
+                                    />
+                                </Stack>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                                 Einkäufe manuell erfassen und verwalten
@@ -269,6 +269,7 @@ export default function Einkaeufe() {
                         </List>
                     </>
                 )}
+
                 {activeTab === 1 && (
                     <>
                         <Box>
@@ -282,19 +283,17 @@ export default function Einkaeufe() {
                                             sx={{ fontWeight: 600, borderRadius: 1 }}
                                         />
                                     )}
-                                    <Tooltip title="Neue Erstattung erfassen">
-                                        <span>
-                                            <CustomIconButton
-                                                title="Neue Erstattung"
-                                                titleVariant="body2"
-                                                icon={faPlus}
-                                                iconSize="xs"
-                                                iconPosition="right"
-                                                onClick={() => setRefundDrawerOpen(true)}
-                                            />
-                                        </span>
-                                    </Tooltip>
                                 </Stack>
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<AddIcon />}
+                                    onClick={() => setRefundDrawerOpen(true)}
+                                    aria-label="Neue Erstattung erfassen"
+                                >
+                                    Hinzufügen
+                                </Button>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                                 Erstattungen manuell erfassen und verwalten
@@ -314,6 +313,7 @@ export default function Einkaeufe() {
                         </List>
                     </>
                 )}
+
                 {activeTab === 2 && (
                     <>
                         <Box>
@@ -327,19 +327,17 @@ export default function Einkaeufe() {
                                             sx={{ fontWeight: 600, borderRadius: 1 }}
                                         />
                                     )}
-                                    <Tooltip title="Neues Arbeitsmittel erfassen">
-                                        <span>
-                                            <CustomIconButton
-                                                title="Neues Arbeitsmittel"
-                                                titleVariant="body2"
-                                                icon={faPlus}
-                                                iconSize="xs"
-                                                iconPosition="right"
-                                                onClick={() => setSupplyDrawerOpen(true)}
-                                            />
-                                        </span>
-                                    </Tooltip>
                                 </Stack>
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<AddIcon />}
+                                    onClick={() => setSupplyDrawerOpen(true)}
+                                    aria-label="Neues Arbeitsmittel erfassen"
+                                >
+                                    Hinzufügen
+                                </Button>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                                 Arbeitsmittel manuell erfassen und verwalten

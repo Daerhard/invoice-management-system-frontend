@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
-    Box, Card, CardContent, CardHeader, Chip, Collapse, Stack, Tooltip, Typography,
+    Box, Chip, Collapse, IconButton, Stack, Tooltip, Typography,
 } from '@mui/material';
-import { faEnvelopeOpen, faEye, faFileInvoiceDollar, faFileLines } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import CustomIconButton from '../../../customComponents/CustomIconButton';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import SendIcon from '@mui/icons-material/Send';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import OrderItemContent from './OrderItemContent';
 import { formatStringToDate } from '../../../helper/Utils';
 import { CardmarketOrder } from '../../../api/generated/Schemas';
@@ -13,96 +14,44 @@ import PDFInvoicePreview from '../../../containers/invoices/PDFInvoicePreview';
 import SendInvoiceEmailDialog from '../../../containers/invoices/SendInvoiceEmailDialog';
 
 interface OrderItemProps {
-    cardmarketOrder: CardmarketOrder
+    cardmarketOrder: CardmarketOrder;
 }
 
 function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
-    const [open, setOpen] = useState(false)
-    const toggleDetails = () => setOpen(!open)
+    const [open, setOpen] = useState(false);
     const [showInvoicePreview, setShowInvoicePreview] = useState(false);
-    const openInvoicePreview = () => setShowInvoicePreview(true);
-    const closeInvoicePreview = () => setShowInvoicePreview(false);
     const [showEmailDialog, setShowEmailDialog] = useState(false);
-    const openEmailDialog = () => setShowEmailDialog(true);
-    const closeEmailDialog = () => setShowEmailDialog(false);
 
     const invoiceSaved = !!cardmarketOrder.invoice;
     const invoiceSent = !!cardmarketOrder.invoice?.sent;
 
-
     return (
-        <Card sx={{ width: '100%', marginBottom: '0.4rem' }}>
-            <Box sx={{ overflowX: 'auto' }}>
-            <CardHeader
-                avatar={
-                    <Box sx={{ color: 'primary.main' }}>
-                        <FontAwesomeIcon icon={faFileLines} size="lg" />
-                    </Box>
-                }
-                action={
-                    <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" justifyContent="flex-end">
-                        <Stack direction="row" alignItems="center">
-                            <CustomIconButton
-                                title="Rechnung (PDF)"
-                                titleVariant="body2"
-                                icon={faFileInvoiceDollar}
-                                iconSize="xs"
-                                onClick={openInvoicePreview}
-                            />
-                            <Tooltip title="Rechnung gespeichert PDF">
-                                <CheckCircleOutlineIcon
-                                    data-testid="pdf-invoice-ticker"
-                                    sx={{ fontSize: 14, color: invoiceSaved ? 'success.main' : 'action.disabled' }}
-                                />
-                            </Tooltip>
-                        </Stack>
-                        {showInvoicePreview && <PDFInvoicePreview
-                            cardmarketOrder={cardmarketOrder}
-                            open={showInvoicePreview}
-                            onClose={closeInvoicePreview}
-                        />}
-                        <Stack direction="row" alignItems="center">
-                            <CustomIconButton
-                                title="Rechnung (E)"
-                                titleVariant="body2"
-                                icon={faFileInvoiceDollar}
-                                iconSize="xs"
-                            />
-                            <Tooltip title="Rechnung gespeichert E">
-                                <CheckCircleOutlineIcon
-                                    data-testid="e-invoice-ticker"
-                                    sx={{ fontSize: 16, color: 'action.disabled' }}
-                                />
-                            </Tooltip>
-                        </Stack>
-                        <Stack direction="row" alignItems="center">
-                            <CustomIconButton
-                                title="Versenden"
-                                titleVariant="body2"
-                                icon={faEnvelopeOpen}
-                                iconSize="xs"
-                                onClick={cardmarketOrder.customer.is_professional ? openEmailDialog : undefined}
-                                disabled={!cardmarketOrder.customer.is_professional}
-                            />
-                            <Tooltip title="Rechnung Versand">
-                                <CheckCircleOutlineIcon
-                                    data-testid="send-invoice-ticker"
-                                    sx={{ fontSize: 14, color: invoiceSent ? 'success.main' : 'action.disabled' }}
-                                />
-                            </Tooltip>
-                        </Stack>
-                        {showEmailDialog && (
-                            <SendInvoiceEmailDialog
-                                cardmarketOrder={cardmarketOrder}
-                                open={showEmailDialog}
-                                onClose={closeEmailDialog}
-                            />
-                        )}
-                    </Stack>
-                }
-                title={
+        <Box
+            sx={{
+                width: '100%',
+                mb: 0.75,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+                bgcolor: 'background.paper',
+                overflow: 'hidden',
+                transition: 'border-color 0.15s ease',
+                '&:hover': { borderColor: 'rgba(61,107,82,0.35)' },
+            }}
+        >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.25 }}>
+                <Box sx={{
+                    width: 36, height: 36, borderRadius: 1.5,
+                    bgcolor: 'rgba(61,107,82,0.08)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'primary.main', flexShrink: 0,
+                }}>
+                    <ReceiptLongIcon sx={{ fontSize: 18 }} />
+                </Box>
+
+                <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="body2" fontWeight={600}>
+                        <Typography variant="body2" fontWeight={600} noWrap>
                             {cardmarketOrder.customer.user_name}
                         </Typography>
                         {cardmarketOrder.customer.is_professional && (
@@ -111,38 +60,98 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 size="small"
                                 color="primary"
                                 variant="outlined"
-                                sx={{ height: 16, fontSize: '0.62rem', borderRadius: 1 }}
+                                sx={{ height: 16, fontSize: '0.6rem', borderRadius: 1 }}
                             />
                         )}
                     </Stack>
-                }
-                subheader={
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: 0.25, flexWrap: 'wrap', rowGap: 0.25 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                            {`Bezahldatum: ${formatStringToDate(cardmarketOrder.payment_date)}`}
+                    <Stack direction="row" spacing={2} sx={{ mt: 0.25 }}>
+                        <Typography variant="caption" color="text.secondary">
+                            {formatStringToDate(cardmarketOrder.payment_date)}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                            {`Bestellnummer: ${cardmarketOrder.order_id}`}
+                        <Typography variant="caption" color="text.secondary">
+                            #{cardmarketOrder.order_id}
                         </Typography>
-                        <CustomIconButton
-                            title="Öffne Bestelldetails"
-                            titleVariant="body2"
-                            icon={faEye}
-                            iconSize="xs"
-                            iconPosition="left"
-                            onClick={toggleDetails}
-                        />
+                        <Typography variant="caption" fontWeight={600} color="primary.main">
+                            {cardmarketOrder.total_value} {cardmarketOrder.currency}
+                        </Typography>
                     </Stack>
-                }
-                sx={{ py: 1, pb: open ? 0 : 1, minWidth: 0 }}
-            />
+                </Box>
+
+                <Stack direction="row" alignItems="center" spacing={0.25} flexShrink={0}>
+                    <Tooltip title={invoiceSaved ? 'Rechnung PDF (gespeichert)' : 'Rechnung PDF erstellen'}>
+                        <IconButton
+                            size="small"
+                            onClick={() => setShowInvoicePreview(true)}
+                            sx={{ color: invoiceSaved ? 'success.main' : 'text.secondary' }}
+                            aria-label="Rechnung PDF"
+                        >
+                            <PictureAsPdfIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="E-Rechnung (nicht verfügbar)">
+                        <span>
+                            <IconButton size="small" disabled aria-label="E-Rechnung">
+                                <ArticleOutlinedIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+
+                    <Tooltip title={
+                        !cardmarketOrder.customer.is_professional
+                            ? 'Nur für gewerbliche Kunden'
+                            : invoiceSent
+                                ? 'Rechnung bereits versendet'
+                                : 'Rechnung per E-Mail senden'
+                    }>
+                        <span>
+                            <IconButton
+                                size="small"
+                                onClick={cardmarketOrder.customer.is_professional ? () => setShowEmailDialog(true) : undefined}
+                                disabled={!cardmarketOrder.customer.is_professional}
+                                sx={{ color: invoiceSent ? 'success.main' : 'text.secondary' }}
+                                aria-label="E-Mail senden"
+                            >
+                                <SendIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+
+                    <Tooltip title={open ? 'Details ausblenden' : 'Details anzeigen'}>
+                        <IconButton size="small" onClick={() => setOpen(!open)} aria-label="Details">
+                            <KeyboardArrowDownIcon
+                                sx={{
+                                    fontSize: 18,
+                                    transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.2s ease',
+                                }}
+                            />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
             </Box>
+
+            {showInvoicePreview && (
+                <PDFInvoicePreview
+                    cardmarketOrder={cardmarketOrder}
+                    open={showInvoicePreview}
+                    onClose={() => setShowInvoicePreview(false)}
+                />
+            )}
+            {showEmailDialog && (
+                <SendInvoiceEmailDialog
+                    cardmarketOrder={cardmarketOrder}
+                    open={showEmailDialog}
+                    onClose={() => setShowEmailDialog(false)}
+                />
+            )}
+
             <Collapse in={open} timeout="auto" unmountOnExit>
-                <CardContent sx={{ pt: 0 }}>
+                <Box sx={{ px: 2, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
                     <OrderItemContent cardmarketOrder={cardmarketOrder} />
-                </CardContent>
+                </Box>
             </Collapse>
-        </Card>
+        </Box>
     );
 }
 
