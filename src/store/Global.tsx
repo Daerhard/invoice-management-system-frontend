@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { CardmarketOrder, Customer, PurchaseInvoice, Refund, Supply } from '../api/generated/Schemas'
+import { CardmarketOrder, Customer, EuerReport, PurchaseInvoice, Refund, Supply } from '../api/generated/Schemas'
 import { Dayjs } from 'dayjs'
 
 export interface Einkauf {
@@ -24,6 +24,7 @@ export const purchaseInvoicesAtom = atom<PurchaseInvoice[]>([])
 export const refundsAtom = atom<Refund[]>([])
 export const suppliesAtom = atom<Supply[]>([])
 export const nachzahlungenAtom = atom<Nachzahlung[]>([])
+export const euerReportsAtom = atom<EuerReport[]>([])
 
 export const customerSelectAtom = atom<Customer | null>(null)
 export const cardmarketOrderSelectAtom = atom<CardmarketOrder | null>(null)
