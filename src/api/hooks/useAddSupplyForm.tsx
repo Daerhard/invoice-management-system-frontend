@@ -76,7 +76,8 @@ export default function useAddSupplyForm(): AddSupplyFormState {
         };
 
         try {
-            const response = await createSupply({ supplyData, pdf: pdfFile ?? undefined });
+            const pdf = pdfFile ? new File([pdfFile], pdfFile.name, { type: 'application/pdf' }) : undefined;
+            const response = await createSupply({ supplyData, pdf });
             setSupplies((prev) => [response.data, ...prev]);
             setMessage('Arbeitsmittel erfolgreich gespeichert!');
             resetForm();

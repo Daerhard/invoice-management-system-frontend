@@ -17,9 +17,11 @@ import {
     Chip,
     CircularProgress,
     Divider,
+    FormControlLabel,
     List,
     Pagination,
     Stack,
+    Switch,
     Tab,
     Tabs,
     Typography,
@@ -46,7 +48,7 @@ export default function Einnahmen() {
     const [cardmarketOrderSelect] = useAtom(cardmarketOrderSelectAtom);
     const [startDateSelect] = useAtom(startDateSelectAtom);
     const [endDateSelect] = useAtom(endDateSelectAtom);
-    const [onlyBusinessCustomers] = useAtom(businessCustomerSelectAtom);
+    const [onlyBusinessCustomers, setOnlyBusinessCustomers] = useAtom(businessCustomerSelectAtom);
     const [nachzahlungen] = useAtom(nachzahlungenAtom);
 
     const [activeTab, setActiveTab] = useState(0);
@@ -115,6 +117,17 @@ export default function Einnahmen() {
                                             sx={{ fontWeight: 600, borderRadius: 1 }}
                                         />
                                     )}
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={onlyBusinessCustomers}
+                                                onChange={(e) => setOnlyBusinessCustomers(e.target.checked)}
+                                                size="small"
+                                            />
+                                        }
+                                        label={<Typography variant="body2">Nur Gewerbliche</Typography>}
+                                        sx={{ ml: 0 }}
+                                    />
                                 </Stack>
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                     <Button

@@ -63,6 +63,21 @@ function OrderItem({ cardmarketOrder }: Readonly<OrderItemProps>) {
                                 sx={{ height: 16, fontSize: '0.6rem', borderRadius: 1 }}
                             />
                         )}
+                        {invoiceSent ? (
+                            <Chip
+                                label="Versendet"
+                                size="small"
+                                color="success"
+                                sx={{ height: 16, fontSize: '0.6rem', borderRadius: 1 }}
+                            />
+                        ) : invoiceSaved ? (
+                            <Chip
+                                label="Rechnung erstellt"
+                                size="small"
+                                color="warning"
+                                sx={{ height: 16, fontSize: '0.6rem', borderRadius: 1 }}
+                            />
+                        ) : null}
                     </Stack>
                     <Stack direction="row" spacing={2} sx={{ mt: 0.25 }}>
                         <Typography variant="caption" color="text.secondary">
