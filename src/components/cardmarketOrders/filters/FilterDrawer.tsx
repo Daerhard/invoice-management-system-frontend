@@ -4,7 +4,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import CustomerFilter from './CustomerFilter';
 import CardmarketOrderFilter from './CardmarketOrderFilter';
 import DateRangeFilter from './DateRangeFilter';
-import BusinessCustomerFilter from './BusinessCustomerFilter';
 import CreateInvoicesPDFByDateRange from '../../invoices/CreateInvoicesPDFByDateRange';
 
 interface FilterDrawerProps {
@@ -32,9 +31,6 @@ export default function FilterDrawer({ open, onClose }: FilterDrawerProps) {
                     </Grid2>
                     <Grid2 size={12}>
                         <DateRangeFilter />
-                    </Grid2>
-                    <Grid2 size={12}>
-                        <BusinessCustomerFilter />
                     </Grid2>
                     <Grid2 size={12}>
                         <Divider sx={{ my: 1 }} />

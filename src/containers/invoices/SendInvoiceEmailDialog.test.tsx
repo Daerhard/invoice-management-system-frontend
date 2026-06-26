@@ -32,7 +32,6 @@ const mockOrder: CardmarketOrder = {
     total_value: 7,
     commission: 0.5,
     currency: 'EUR',
-    invoice: null,
 };
 
 const mockOrderNoEmail: CardmarketOrder = {

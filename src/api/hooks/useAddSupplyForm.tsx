@@ -70,13 +70,14 @@ export default function useAddSupplyForm(): AddSupplyFormState {
         setLoading(true);
 
         const supplyData: Supply = {
-            description: description.trim(),
-            amount: parsedAmount,
-            date,
+            product: description.trim(),
+            value: parsedAmount,
+            supplyDate: date,
         };
 
         try {
-            const response = await createSupply({ supplyData, pdf: pdfFile ?? undefined });
+            const pdf = pdfFile ? new File([pdfFile], pdfFile.name, { type: 'application/pdf' }) : undefined;
+            const response = await createSupply({ supplyData, pdf });
             setSupplies((prev) => [response.data, ...prev]);
             setMessage('Arbeitsmittel erfolgreich gespeichert!');
             resetForm();

@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
-import {
-    Card,
-    CardHeader,
-    IconButton,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
-import { faFilePdf, faBoxOpen, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Box, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Supply } from '../../api/generated/Schemas';
 import { formatStringToDate } from '../../helper/Utils';
 import { getSupplyPdf } from '../../api/generated/supplies';
@@ -34,59 +28,62 @@ export default function SupplyItem({ supply }: Readonly<SupplyItemProps>) {
     };
 
     return (
-        <Card sx={{ width: '100%', marginBottom: '0.4rem' }}>
-            <CardHeader
-                avatar={
-                    <FontAwesomeIcon icon={faBoxOpen} size="lg" style={{ color: 'var(--color-primary)' }} />
-                }
-                action={
-                    <Stack direction="row" alignItems="center">
-                        {supply.hasPdf && (
-                            <Tooltip title="PDF öffnen">
-                                <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
-                                    <FontAwesomeIcon icon={faFilePdf} size="xs" />
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                        <Tooltip title="Arbeitsmittel löschen">
-                            <IconButton
-                                size="small"
-                                onClick={handleDelete}
-                                aria-label="Arbeitsmittel löschen"
-                                disabled={deleteLoading}
-                                color="error"
-                            >
-                                <FontAwesomeIcon icon={faTrash} size="xs" />
-                            </IconButton>
-                        </Tooltip>
-                    </Stack>
-                }
-                title={
-                    <Typography variant="body2" fontWeight={600}>
-                        {supply.description}
-                    </Typography>
-                }
-                subheader={
+        <Box
+            sx={{
+                width: '100%',
+                mb: 0.75,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+                bgcolor: 'background.paper',
+                overflow: 'hidden',
+                transition: 'border-color 0.15s ease',
+                '&:hover': { borderColor: 'rgba(61,107,82,0.35)' },
+            }}
+        >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.25 }}>
+                <Box sx={{
+                    width: 36, height: 36, borderRadius: 1.5,
+                    bgcolor: 'rgba(61,107,82,0.08)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'primary.main', flexShrink: 0,
+                }}>
+                    <Inventory2OutlinedIcon sx={{ fontSize: 18 }} />
+                </Box>
+
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>{supply.product}</Typography>
                     <Stack direction="row" spacing={2} sx={{ mt: 0.25 }}>
-                        <Typography variant="body2" color="text.secondary">
-                            {`${supply.amount.toFixed(2)} €`}
+                        <Typography variant="caption" color="text.secondary">
+                            {supply.value.toFixed(2)} €
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            {formatStringToDate(supply.date)}
+                        <Typography variant="caption" color="text.secondary">
+                            {formatStringToDate(supply.supplyDate)}
                         </Typography>
-                        {pdfError && (
-                            <Typography variant="caption" color="error">
-                                PDF konnte nicht geladen werden
-                            </Typography>
-                        )}
-                        {deleteError && (
-                            <Typography variant="caption" color="error">
-                                {deleteError}
-                            </Typography>
-                        )}
+                        {pdfError && <Typography variant="caption" color="error">PDF nicht verfügbar</Typography>}
+                        {deleteError && <Typography variant="caption" color="error">{deleteError}</Typography>}
                     </Stack>
-                }
-            />
-        </Card>
+                </Box>
+
+                <Stack direction="row" alignItems="center" spacing={0.25} flexShrink={0}>
+                    <Tooltip title="PDF öffnen">
+                        <IconButton size="small" onClick={handleOpenPdf} aria-label="PDF öffnen">
+                            <PictureAsPdfIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Arbeitsmittel löschen">
+                        <IconButton
+                            size="small"
+                            onClick={handleDelete}
+                            disabled={deleteLoading}
+                            color="error"
+                            aria-label="Arbeitsmittel löschen"
+                        >
+                            <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+            </Box>
+        </Box>
     );
 }

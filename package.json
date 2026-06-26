@@ -36,7 +36,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "generate:api": "orval"
+    "openapi:bundle": "pnpm --package=@redocly/cli dlx redocly bundle openapi/openapi_master.yml -o openapi/openapi.yml",
+    "generate:api": "pnpm openapi:bundle && orval"
   },
   "eslintConfig": {
     "extends": [

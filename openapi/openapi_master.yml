@@ -1,0 +1,147 @@
+openapi: '3.0.1'
+info:
+  title: Invoice Management System – Complete API
+  description: >
+    Master specification that combines all services of the Invoice Management
+    System into a single OpenAPI document.
+    The combined openapi.yml is generated from this master file by the Gradle
+    task 'bundleOpenApi'. Do not edit openapi.yml directly; edit the
+    individual service specs instead.
+  version: 2.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+paths:
+  # Customers, Users and Orders
+  /v1/customers:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1customers"
+  /v1/customers/professional:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1customers~1professional"
+  /v1/customers/{userName}/email:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1customers~1{userName}~1email"
+  /v1/import:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1import"
+  /v1/orders:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1orders"
+  /v1/orders/{userName}:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1orders~1{userName}"
+  /v1/orders/{externalOrderId}/invoice:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
+  /v1/users:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1users"
+  /v1/users/{id}:
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1users~1{id}"
+
+  # Invoice Generation
+  /v1/generateInvoicePDF/{cardmarketExternalOrderId}:
+    $ref: "./openapi_generate_invoices.yml#/paths/~1v1~1generateInvoicePDF~1{cardmarketExternalOrderId}"
+  /v1/generateInvoicesPDF/{startDate}/{endDate}:
+    $ref: "./openapi_generate_invoices.yml#/paths/~1v1~1generateInvoicesPDF~1{startDate}~1{endDate}"
+  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
+    $ref: "./openapi_generate_invoices.yml#/paths/~1v1~1generateInvoiceZUGFeRD~1{cardmarketExternalOrderId}"
+
+  # Purchase Invoices, Refunds and Supplies
+  /v1/purchase-invoices:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices"
+  /v1/purchase-invoices/{id}/items:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices~1{id}~1items"
+  /v1/purchase-invoices/{id}/items/{itemId}:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}"
+  /v1/purchase-invoices/{id}/items/{itemId}/pdf:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}~1pdf"
+  /v1/refunds:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1refunds"
+  /v1/refunds/{id}:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1refunds~1{id}"
+  /v1/supplies:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1supplies"
+  /v1/supplies/{id}:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1supplies~1{id}"
+  /v1/supplies/{id}/pdf:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1supplies~1{id}~1pdf"
+
+  # Cardmarket Purchases
+  /v1/purchases/import:
+    $ref: "./openapi_cardmarket_purchases.yml#/paths/~1v1~1purchases~1import"
+  /v1/purchases:
+    $ref: "./openapi_cardmarket_purchases.yml#/paths/~1v1~1purchases"
+  /v1/purchases/{userName}:
+    $ref: "./openapi_cardmarket_purchases.yml#/paths/~1v1~1purchases~1{userName}"
+
+  # E-Mail-Service
+  /v1/email/send:
+    $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1send"
+  /v1/email/invoice/{orderId}:
+    $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1invoice~1{orderId}"
+
+  # EÜR
+  /v1/euer:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer"
+  /v1/euer/{id}:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}"
+  /v1/euer/{id}/publish:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}~1publish"
+  /v1/euer/{id}/positions:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}~1positions"
+  /v1/euer/{id}/positions/{positionId}:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}~1positions~1{positionId}"
+
+components:
+  schemas:
+    # Customers, Users and Orders
+    user:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/user"
+    customer:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/customer"
+    emailUpdate:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/emailUpdate"
+    cardmarketOrder:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/cardmarketOrder"
+    orderItem:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/orderItem"
+    card:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/card"
+    cardId:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/cardId"
+    invoice:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/invoice"
+    responseMessage:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/responseMessage"
+
+    # Purchase Invoices, Refunds and Supplies
+    purchaseInvoice:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/purchaseInvoice"
+    purchaseInvoiceItem:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/purchaseInvoiceItem"
+    refund:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/refund"
+    supply:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/supply"
+
+    # Cardmarket Purchases
+    cardmarketPurchase:
+      $ref: "./openapi_cardmarket_purchases.yml#/components/schemas/cardmarketPurchase"
+    purchaseItem:
+      $ref: "./openapi_cardmarket_purchases.yml#/components/schemas/purchaseItem"
+
+    # E-Mail-Service
+    emailSendRequest:
+      $ref: "./openapi_e-mail_service.yml#/components/schemas/emailSendRequest"
+    invoiceEmailRequest:
+      $ref: "./openapi_e-mail_service.yml#/components/schemas/invoiceEmailRequest"
+    emailSendResponse:
+      $ref: "./openapi_e-mail_service.yml#/components/schemas/emailSendResponse"
+
+    # EÜR
+    createEuerRequest:
+      $ref: "./openapi_euer.yml#/components/schemas/createEuerRequest"
+    euerReport:
+      $ref: "./openapi_euer.yml#/components/schemas/euerReport"
+    euerPosition:
+      $ref: "./openapi_euer.yml#/components/schemas/euerPosition"
+    euerPositionRequest:
+      $ref: "./openapi_euer.yml#/components/schemas/euerPositionRequest"
+    euerSection:
+      $ref: "./openapi_euer.yml#/components/schemas/euerSection"

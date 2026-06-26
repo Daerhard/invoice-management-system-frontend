@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
     invoiceManagementSystem: {
         output: {
             mode: 'tags',
@@ -26,5 +26,6 @@ module.exports = {
             }
         }
     }
-}
-export {}
+};
+
+export default config;

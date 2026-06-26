@@ -201,14 +201,14 @@ export default function Statistik() {
 
         const refundsByYear = new Map<string, number>();
         refunds.forEach((r) => {
-            const year = r.date.slice(0, 4);
-            refundsByYear.set(year, (refundsByYear.get(year) ?? 0) + r.amount);
+            const year = String(r.year);
+            refundsByYear.set(year, (refundsByYear.get(year) ?? 0) + r.value);
         });
 
         const suppliesByYear = new Map<string, number>();
         supplies.forEach((s) => {
-            const year = s.date.slice(0, 4);
-            suppliesByYear.set(year, (suppliesByYear.get(year) ?? 0) + s.amount);
+            const year = s.supplyDate.slice(0, 4);
+            suppliesByYear.set(year, (suppliesByYear.get(year) ?? 0) + s.value);
         });
 
         // Collect all years from orders, refunds, supplies and purchase invoices
